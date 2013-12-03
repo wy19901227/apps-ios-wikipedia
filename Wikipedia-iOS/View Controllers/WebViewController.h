@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "MWNetworkOp.h"
 
-@interface ViewController : UIViewController <UITextFieldDelegate, UIWebViewDelegate, NetworkOpDelegate, UISearchDisplayDelegate, UITableViewDelegate, UISearchBarDelegate, UIScrollViewDelegate>
+@interface WebViewController : UIViewController <UITextFieldDelegate, UIWebViewDelegate, NetworkOpDelegate, UISearchDisplayDelegate, UITableViewDelegate, UISearchBarDelegate, UIScrollViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIWebView *webView;
 @property (weak, nonatomic) IBOutlet UILabel *debugLabel;
