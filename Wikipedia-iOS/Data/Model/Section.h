@@ -13,10 +13,10 @@
 
 @interface Section : NSManagedObject
 
+@property (nonatomic, retain) NSDate * dateRetrieved;
 @property (nonatomic, retain) NSString * html;
 @property (nonatomic, retain) NSNumber * index;
 @property (nonatomic, retain) NSString * title;
-@property (nonatomic, retain) NSDate * dateRetrieved;
 @property (nonatomic, retain) Article *article;
 @property (nonatomic, retain) Image *thumbnailImage;
 

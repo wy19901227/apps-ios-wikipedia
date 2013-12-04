@@ -7,13 +7,13 @@
 //
 
 #import "Article.h"
-#import "DiscoveryContext.h"
-#import "DiscoveryMethod.h"
+#import "Domain.h"
 #import "GalleryImage.h"
 #import "History.h"
 #import "Image.h"
 #import "Saved.h"
 #import "Section.h"
+#import "Site.h"
 
 
 @implementation Article
@@ -21,12 +21,12 @@
 @dynamic dateCreated;
 @dynamic lastScrollLocation;
 @dynamic title;
-@dynamic discoveryContext;
-@dynamic discoveryMethod;
+@dynamic domain;
+@dynamic galleryImage;
 @dynamic history;
 @dynamic saved;
 @dynamic section;
+@dynamic site;
 @dynamic thumbnailImage;
-@dynamic galleryImage;
 
 @end

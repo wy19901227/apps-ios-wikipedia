@@ -14,17 +14,16 @@
 
 @implementation Image
 
-@dynamic dateRetrieved;
-@dynamic width;
-@dynamic height;
 @dynamic data;
-@dynamic imageDescription;
+@dynamic dateRetrieved;
 @dynamic extension;
 @dynamic fileName;
-@dynamic title;
+@dynamic height;
+@dynamic imageDescription;
 @dynamic sourceUrl;
+@dynamic width;
 @dynamic article;
-@dynamic section;
 @dynamic galleryImage;
+@dynamic section;
 
 @end

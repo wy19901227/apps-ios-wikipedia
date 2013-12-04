@@ -9,28 +9,28 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DiscoveryContext, DiscoveryMethod, GalleryImage, History, Image, Saved, Section;
+@class Domain, GalleryImage, History, Image, Saved, Section, Site;
 
 @interface Article : NSManagedObject
 
 @property (nonatomic, retain) NSDate * dateCreated;
 @property (nonatomic, retain) NSNumber * lastScrollLocation;
 @property (nonatomic, retain) NSString * title;
-@property (nonatomic, retain) NSSet *discoveryContext;
-@property (nonatomic, retain) DiscoveryMethod *discoveryMethod;
+@property (nonatomic, retain) Domain *domain;
+@property (nonatomic, retain) NSSet *galleryImage;
 @property (nonatomic, retain) NSSet *history;
 @property (nonatomic, retain) NSSet *saved;
 @property (nonatomic, retain) NSSet *section;
+@property (nonatomic, retain) Site *site;
 @property (nonatomic, retain) Image *thumbnailImage;
-@property (nonatomic, retain) NSSet *galleryImage;
 @end
 
 @interface Article (CoreDataGeneratedAccessors)
 
-- (void)addDiscoveryContextObject:(DiscoveryContext *)value;
-- (void)removeDiscoveryContextObject:(DiscoveryContext *)value;
-- (void)addDiscoveryContext:(NSSet *)values;
-- (void)removeDiscoveryContext:(NSSet *)values;
+- (void)addGalleryImageObject:(GalleryImage *)value;
+- (void)removeGalleryImageObject:(GalleryImage *)value;
+- (void)addGalleryImage:(NSSet *)values;
+- (void)removeGalleryImage:(NSSet *)values;
 
 - (void)addHistoryObject:(History *)value;
 - (void)removeHistoryObject:(History *)value;
@@ -46,10 +46,5 @@
 - (void)removeSectionObject:(Section *)value;
 - (void)addSection:(NSSet *)values;
 - (void)removeSection:(NSSet *)values;
-
-- (void)addGalleryImageObject:(GalleryImage *)value;
-- (void)removeGalleryImageObject:(GalleryImage *)value;
-- (void)addGalleryImage:(NSSet *)values;
-- (void)removeGalleryImage:(NSSet *)values;
 
 @end

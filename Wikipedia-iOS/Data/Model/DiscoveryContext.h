@@ -9,12 +9,12 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Article;
+@class History;
 
 @interface DiscoveryContext : NSManagedObject
 
 @property (nonatomic, retain) NSNumber * isPrefix;
 @property (nonatomic, retain) NSString * text;
-@property (nonatomic, retain) Article *article;
+@property (nonatomic, retain) History *history;
 
 @end

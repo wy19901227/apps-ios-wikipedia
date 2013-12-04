@@ -43,46 +43,6 @@
 
 // Named with %% to ensure order of execution
 
-- (void)test_00_CreateDiscoveryMethods
-{
-    // Populate discoveryMethods table with records for “search", "link", and "random” if they
-    // don't aready exist.
-    
-    DataContextSingleton *dataContext = [DataContextSingleton sharedInstance];
-    
-    // Determine how many discovery methods already exist in the database
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName : @"DiscoveryMethod"
-                                              inManagedObjectContext : dataContext];
-    [fetchRequest setEntity:entity];
-    
-    NSError *error = nil;
-    NSArray *existingMethods = [dataContext executeFetchRequest:fetchRequest error:&error];
-    
-    // Add the 3 (present) discovery methods if they don't already exists
-    if(existingMethods.count != 3){
-        
-        DiscoveryMethod *searchMethod = [NSEntityDescription insertNewObjectForEntityForName:@"DiscoveryMethod" inManagedObjectContext:dataContext];
-        searchMethod.name = @"search";
-        
-        DiscoveryMethod *linkMethod = [NSEntityDescription insertNewObjectForEntityForName:@"DiscoveryMethod" inManagedObjectContext:dataContext];
-        linkMethod.name = @"link";
-        
-        DiscoveryMethod *randomMethod = [NSEntityDescription insertNewObjectForEntityForName:@"DiscoveryMethod" inManagedObjectContext:dataContext];
-        randomMethod.name = @"random";
-        
-        NSError *error = nil;
-        if (![dataContext save:&error]) {
-            NSLog(@"Whoops, couldn't save: %@", [error localizedDescription]);
-        }
-        
-    }
-
-    // Fail if there are not now 3 discovery methods
-    existingMethods = [dataContext executeFetchRequest:fetchRequest error:&error];
-    XCTAssert(existingMethods.count == 3, @"");
-}
-
 - (void)test_01_CreateArticle
 {
     NSError *error = nil;
@@ -94,6 +54,15 @@
     article.lastScrollLocation = @123.0f;
     article.title = @"This is a sample title.";
 
+    // Add history for article
+    History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:dataContext];
+    history0.dateVisited = [NSDate date];
+    [article addHistoryObject:history0];
+
+    History *history1 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:dataContext];
+    history1.dateVisited = [NSDate dateWithTimeIntervalSinceNow:60 * 60 * 24];
+    [article addHistoryObject:history1];
+
     // Add prefix context for article
     DiscoveryContext *preContext = [NSEntityDescription insertNewObjectForEntityForName:@"DiscoveryContext" inManagedObjectContext:dataContext];
     preContext.isPrefix = @YES;
@@ -104,7 +73,8 @@
     postContext.isPrefix = @YES;
     postContext.text = @"Some potato chip post-context.";
 
-    article.discoveryContext = [NSSet setWithObjects:postContext, preContext, nil];
+    preContext.history = history0;
+    postContext.history = history0;
 
     // Add sections for article
     Section *section0 = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:dataContext];
@@ -121,15 +91,6 @@
 
     article.section = [NSSet setWithObjects:section0, section1, nil];
 
-    // Add history for article
-    History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:dataContext];
-    history0.dateVisited = [NSDate date];
-    [article addHistoryObject:history0];
-    
-    History *history1 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:dataContext];
-    history1.dateVisited = [NSDate dateWithTimeIntervalSinceNow:60 * 60 * 24];
-    [article addHistoryObject:history1];
-    
     // Add saved for article
     Saved *saved0 = [NSEntityDescription insertNewObjectForEntityForName:@"Saved" inManagedObjectContext:dataContext];
     saved0.dateSaved = [NSDate date];
@@ -156,7 +117,8 @@
     if (methods.count == 1) {
         DiscoveryMethod *method = (DiscoveryMethod *)methods[0];
         NSLog(@"%@", method.name);
-        article.discoveryMethod = method;
+        history0.discoveryMethod = method;
+history1.discoveryMethod = method;
     }
 
     // Create test image
@@ -175,13 +137,16 @@
     thumb.data = imageData;
     thumb.fileName = @"thisThumb.jpg";
     thumb.extension = @"jpg";
-    thumb.title = @"Sample thumb title";
     thumb.imageDescription = @"Sample thumb description";
     thumb.dateRetrieved = [NSDate date];
     thumb.width = @100.0f;
     thumb.height = @200.0f;
-    thumb.sourceUrl = nil;
+    thumb.sourceUrl = @"http://www.this_is_a_placeholder.org/image.jpg";
     article.thumbnailImage = thumb;
+
+    article.site = (Site *)[self getEntityForName: @"Site" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"wikipedia.org"]];
+    
+    article.domain = (Domain *)[self getEntityForName: @"Domain" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"en"]];
 
     // Save the article!
     error = nil;
@@ -251,6 +216,10 @@
     error = nil;
     NSArray *images = [dataContext executeFetchRequest:fetchRequest error:&error];
     XCTAssert(error == nil, @"Could determine how many images remain.");
+    
+    // Note: this Assert will probably fail. Left in place as a reminder to implement some way to limit
+    // number of images! Maybe when app starts remove all images older than a certain date, or remove
+    // any in excess of a size threshold?
     XCTAssert(images.count == 0, @"Images still exist but should not.");
 }
 
@@ -271,6 +240,29 @@
     
     XCTAssert(error == nil, @"Could determine how many discovery methods remain.");
     XCTAssert(existingMethods.count == 3, @"Expected discovery methods not found");
+}
+
+-(NSManagedObject *)getEntityForName:(NSString *)entityName withPredicate:(NSPredicate *)predicate
+{
+    DataContextSingleton *dataContext = [DataContextSingleton sharedInstance];
+
+    NSError *error = nil;
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entity = [NSEntityDescription entityForName: entityName
+                                              inManagedObjectContext: dataContext];
+    [fetchRequest setEntity:entity];
+    [fetchRequest setPredicate:predicate];
+
+    error = nil;
+    NSArray *methods = [dataContext executeFetchRequest:fetchRequest error:&error];
+    //XCTAssert(error == nil, @"Could not fetch article.");
+
+    if (methods.count == 1) {
+        NSManagedObject *method = (NSManagedObject *)methods[0];
+        return method;
+    }else{
+        return nil;
+    }
 }
 
 @end

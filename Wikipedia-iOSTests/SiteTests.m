@@ -14,13 +14,13 @@
 @end
 
 @implementation SiteTests {
-    Site *site;
+    MWSite *site;
 }
 
 - (void)setUp
 {
     [super setUp];
-    site = [[Site alloc] initWithDomain:@"en.wikipedia.org"];
+    site = [[MWSite alloc] initWithDomain:@"en.wikipedia.org"];
 }
 
 - (void)tearDown
@@ -35,7 +35,7 @@
 
 - (void)testEquals
 {
-    Site *otherSite = [[Site alloc] initWithDomain:@"en.wikipedia.org"];
+    MWSite *otherSite = [[MWSite alloc] initWithDomain:@"en.wikipedia.org"];
     XCTAssertEqualObjects(site, otherSite);
 }
 

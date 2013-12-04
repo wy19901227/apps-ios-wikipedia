@@ -1,5 +1,5 @@
 //
-//  DiscoveryMethod.h
+//  Domain.h
 //  Wikipedia-iOS
 //
 //  Created by Monte Hurd on 12/3/13.
@@ -11,13 +11,13 @@
 
 @class Article;
 
-@interface DiscoveryMethod : NSManagedObject
+@interface Domain : NSManagedObject
 
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSSet *article;
 @end
 
-@interface DiscoveryMethod (CoreDataGeneratedAccessors)
+@interface Domain (CoreDataGeneratedAccessors)
 
 - (void)addArticleObject:(Article *)value;
 - (void)removeArticleObject:(Article *)value;

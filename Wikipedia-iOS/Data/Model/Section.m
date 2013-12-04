@@ -13,10 +13,10 @@
 
 @implementation Section
 
+@dynamic dateRetrieved;
 @dynamic html;
 @dynamic index;
 @dynamic title;
-@dynamic dateRetrieved;
 @dynamic article;
 @dynamic thumbnailImage;
 

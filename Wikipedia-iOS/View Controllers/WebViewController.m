@@ -57,6 +57,13 @@
 @property (strong, nonatomic) NSString *loadingSectionsRemainingMessage;
 @property (strong, nonatomic) NSString *searchFieldPlaceholderText;
 
+@property (strong, nonatomic) Site *currentSite;
+@property (strong, nonatomic) Domain *currentDomain;
+
+@property (strong, nonatomic) DiscoveryMethod *searchDiscoveryMethod;
+@property (strong, nonatomic) DiscoveryMethod *linkDiscoveryMethod;
+@property (strong, nonatomic) DiscoveryMethod *randomDiscoveryMethod;
+
 @end
 
 #pragma mark Internal variables
@@ -99,9 +106,23 @@
 
     dataContext_ = [DataContextSingleton sharedInstance];
 
-    [self setupNavbarSubview];
+// TODO: update these associations based on Brion's comments.   -   -   -   -   -   -   -   -   -
 
-[self ensureDiscoveryMethodsExist];
+    // Add site for article
+    self.currentSite = (Site *)[self getEntityForName: @"Site" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"wikipedia.org"]];
+    
+    // Add domain for article
+    self.currentDomain = (Domain *)[self getEntityForName: @"Domain" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"en"]];
+    
+    self.searchDiscoveryMethod = (DiscoveryMethod *)[self getEntityForName: @"DiscoveryMethod" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"search"]];
+    
+    self.linkDiscoveryMethod = (DiscoveryMethod *)[self getEntityForName: @"DiscoveryMethod" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"link"]];
+    
+    self.randomDiscoveryMethod = (DiscoveryMethod *)[self getEntityForName: @"DiscoveryMethod" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"random"]];
+
+//  -   -   -   -   -   -   -   -   -
+
+    [self setupNavbarSubview];
 
     // Need to switch to localized strings...
     NSString *loadingMsgDiv = @"<div style='text-align:center;font-weight:bold'>";
@@ -371,9 +392,9 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     NSNumber *thumbWidth = self.searchResultsOrdered[indexPath.row][@"thumbnail"][@"width"];
     NSNumber *thumbHeight = self.searchResultsOrdered[indexPath.row][@"thumbnail"][@"height"];
 
-    // Check for db record for thumb here. If found use it rather than downloading it again!
-    Image *thumbnailFromDB = (Image *)[self getEntityForName: @"Image" withPredicate:[NSPredicate predicateWithFormat:@"fileName == %@", [thumbURL lastPathComponent]]];
-    
+    // Check for db record for thumb. If found use it rather than downloading it again!
+    Image *thumbnailFromDB = (Image *)[self getEntityForName: @"Image" withPredicate:[NSPredicate predicateWithFormat:@"sourceUrl == %@", thumbURL]];
+
     if(thumbnailFromDB){
         // Yay! Cached thumbnail found! Use it!
         // Needs to be synchronous!
@@ -435,7 +456,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             thumb.data = thumbData;
             thumb.fileName = [thumbURL lastPathComponent];
             thumb.extension = [thumbURL pathExtension];
-            thumb.title = title;
             thumb.imageDescription = nil;
             thumb.sourceUrl = thumbURL;
             thumb.dateRetrieved = [NSDate date];
@@ -443,6 +463,9 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             thumb.height = thumbHeight;
             
             article.thumbnailImage = thumb;
+
+            article.site = self.currentSite;
+            article.domain = self.currentDomain;
 
             NSError *error = nil;
             [dataContext_ save:&error];
@@ -801,22 +824,24 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         // Add history for article
         History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:dataContext_];
         history0.dateVisited = [NSDate date];
+        history0.discoveryMethod = self.searchDiscoveryMethod;
         [article addHistoryObject:history0];
+
+        article.site = self.currentSite;
+        article.domain = self.currentDomain;
 
         // Add saved for article
         //Saved *saved0 = [NSEntityDescription insertNewObjectForEntityForName:@"Saved" inManagedObjectContext:dataContext_];
         //saved0.dateSaved = [NSDate date];
         //[article addSavedObject:saved0];
         
-        // Add discovery method for article
-        
-        DiscoveryMethod *method = (DiscoveryMethod *)[self getEntityForName: @"DiscoveryMethod" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"search"]];
-        article.discoveryMethod = method;
-
         // Save the article!
         NSError *error = nil;
         [dataContext_ save:&error];
-        
+
+        NSLog(@"error = %@", error);
+        NSLog(@"error = %@", error.localizedDescription);
+
         // Send html across bridge to web view
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
             // Clear out the loading message at the top of page
@@ -955,42 +980,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         return method;
     }else{
         return nil;
-    }
-}
-
-#pragma mark Discovery method records creation
-
-- (void)ensureDiscoveryMethodsExist
-{
-    // Populate discoveryMethods table with records for “search", "link", and "random” if they
-    // don't aready exist.
-    
-    // Determine how many discovery methods already exist in the database
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName : @"DiscoveryMethod"
-                                              inManagedObjectContext : dataContext_];
-    [fetchRequest setEntity:entity];
-    
-    NSError *error = nil;
-    NSArray *existingMethods = [dataContext_ executeFetchRequest:fetchRequest error:&error];
-    
-    // Add the 3 (present) discovery methods if they don't already exists
-    if(existingMethods.count != 3){
-        
-        DiscoveryMethod *searchMethod = [NSEntityDescription insertNewObjectForEntityForName:@"DiscoveryMethod" inManagedObjectContext:dataContext_];
-        searchMethod.name = @"search";
-        
-        DiscoveryMethod *linkMethod = [NSEntityDescription insertNewObjectForEntityForName:@"DiscoveryMethod" inManagedObjectContext:dataContext_];
-        linkMethod.name = @"link";
-        
-        DiscoveryMethod *randomMethod = [NSEntityDescription insertNewObjectForEntityForName:@"DiscoveryMethod" inManagedObjectContext:dataContext_];
-        randomMethod.name = @"random";
-        
-        NSError *error = nil;
-        if (![dataContext_ save:&error]) {
-            NSLog(@"Whoops, couldn't save: %@", [error localizedDescription]);
-        }
-        
     }
 }
 

@@ -1,19 +1,18 @@
 //
-//  DiscoveryContext.m
+//  Domain.m
 //  Wikipedia-iOS
 //
 //  Created by Monte Hurd on 12/3/13.
 //  Copyright (c) 2013 Wikimedia Foundation. All rights reserved.
 //
 
-#import "DiscoveryContext.h"
+#import "Domain.h"
 #import "Article.h"
 
 
-@implementation DiscoveryContext
+@implementation Domain
 
-@dynamic isPrefix;
-@dynamic text;
+@dynamic name;
 @dynamic article;
 
 @end
