@@ -154,7 +154,7 @@
         NSString *href = payload[@"href"];
         if ([href hasPrefix:@"/wiki/"]) {
             NSString *title = [href substringWithRange:NSMakeRange(6, href.length - 6)];
-            [weakSelf navigateToPage:title];
+            [weakSelf navigateToPage:title discoveryMethod:weakSelf.linkDiscoveryMethod];
         }else if ([href hasPrefix:@"//"]) {
             href = [@"http:" stringByAppendingString:href];
             
@@ -501,7 +501,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 {
     NSString *title = self.searchResultsOrdered[indexPath.row][@"title"];
 
-    [self navigateToPage:title];
+    [self navigateToPage:title discoveryMethod:self.searchDiscoveryMethod];
 
     self.searchField.text = @"";
 }
@@ -684,7 +684,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    [self navigateToPage:textField.text];
+    [self navigateToPage:textField.text discoveryMethod:self.searchDiscoveryMethod];
 
     return NO;
 }
@@ -729,7 +729,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 #pragma mark Article loading ops
 
-- (void)navigateToPage:(NSString *)pageTitle
+- (void)navigateToPage:(NSString *)pageTitle discoveryMethod:(DiscoveryMethod *)discoveryMethod
 {
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
 
@@ -742,11 +742,11 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         // Add a "Loading..." message as first element of cleared page
         [bridge_ sendMessage:@"append" withPayload:@{@"html": self.loadingSectionZeroMessage}];
 
-        [self retrieveArticleForPageTitle:pageTitle];
+        [self retrieveArticleForPageTitle:pageTitle discoveryMethod:discoveryMethod];
     }];
 }
 
-- (void)retrieveArticleForPageTitle:(NSString *)pageTitle
+- (void)retrieveArticleForPageTitle:(NSString *)pageTitle discoveryMethod:(DiscoveryMethod *)discoveryMethod
 {
     Article *article = (Article *)[self getEntityForName: @"Article" withPredicate:[NSPredicate predicateWithFormat:@"title == %@", pageTitle]];
     
@@ -825,7 +825,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         // Add history for article
         History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:dataContext_];
         history0.dateVisited = [NSDate date];
-        history0.discoveryMethod = self.searchDiscoveryMethod;
+        history0.discoveryMethod = discoveryMethod;
         [article addHistoryObject:history0];
 
         article.site = self.currentSite;

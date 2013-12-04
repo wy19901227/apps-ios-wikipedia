@@ -31,7 +31,7 @@
         <relationship name="image" maxCount="1" deletionRule="Nullify" destinationEntity="Image" inverseName="galleryImage" inverseEntity="Image" syncable="YES"/>
     </entity>
     <entity name="History" representedClassName="History" syncable="YES">
-        <attribute name="dateVisited" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="dateVisited" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
         <relationship name="article" maxCount="1" deletionRule="Nullify" destinationEntity="Article" inverseName="history" inverseEntity="Article" syncable="YES"/>
         <relationship name="discoveryContext" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DiscoveryContext" inverseName="history" inverseEntity="DiscoveryContext" syncable="YES"/>
         <relationship name="discoveryMethod" maxCount="1" deletionRule="Nullify" destinationEntity="DiscoveryMethod" inverseName="history" inverseEntity="DiscoveryMethod" syncable="YES"/>
@@ -50,7 +50,7 @@
         <relationship name="section" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Section" inverseName="thumbnailImage" inverseEntity="Section" syncable="YES"/>
     </entity>
     <entity name="Saved" representedClassName="Saved" syncable="YES">
-        <attribute name="dateSaved" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="dateSaved" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
         <relationship name="article" maxCount="1" deletionRule="Nullify" destinationEntity="Article" inverseName="saved" inverseEntity="Article" syncable="YES"/>
     </entity>
     <entity name="Section" representedClassName="Section" syncable="YES">
@@ -71,9 +71,9 @@
         <element name="DiscoveryMethod" positionX="-506" positionY="-39" width="128" height="75"/>
         <element name="Domain" positionX="79" positionY="-48" width="128" height="75"/>
         <element name="GalleryImage" positionX="-29" positionY="315" width="128" height="90"/>
-        <element name="History" positionX="-317" positionY="-105" width="128" height="105"/>
+        <element name="History" positionX="-317" positionY="-105" width="128" height="103"/>
         <element name="Image" positionX="-371" positionY="234" width="128" height="208"/>
-        <element name="Saved" positionX="108" positionY="99" width="128" height="75"/>
+        <element name="Saved" positionX="108" positionY="99" width="128" height="73"/>
         <element name="Section" positionX="-551" positionY="63" width="128" height="135"/>
         <element name="Site" positionX="79" positionY="204" width="128" height="75"/>
     </elements>
