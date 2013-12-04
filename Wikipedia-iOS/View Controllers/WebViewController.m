@@ -25,6 +25,8 @@
 #import "Saved.h"
 #import "DiscoveryMethod.h"
 #import "Image.h"
+#import "HistoryViewController.h"
+#import "NSDate-Utilities.h"
 
 #pragma mark Defines
 
@@ -273,6 +275,9 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     //self.navigationController.navigationBar.backgroundColor = [UIColor greenColor];
     //self.navigationController.navigationBar.layer.borderWidth = 0.5;
     //self.navigationController.navigationBar.layer.borderColor = [UIColor purpleColor].CGColor;
+    
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(historyToggle)];
+    [self.searchField.leftView addGestureRecognizer:tap];
 }
 
 -(NSAttributedString *)getAttributedPlaceholderString
@@ -288,6 +293,26 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
                 range:NSMakeRange(0, str.length)];
 
     return str;
+}
+
+#pragma mark History
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField
+{
+    // Ensure the web VC is the top VC.
+    [self.navigationController popToViewController:self animated:YES];
+}
+
+-(void)historyToggle
+{
+    if(self.navigationController.topViewController != self){
+        // Hide if it's already showing.
+        [self.navigationController popToViewController:self animated:YES];
+        return;
+    }
+    self.searchField.text = @"";
+    [self.searchField resignFirstResponder];
+    [self performSegueWithIdentifier:@"ShowHistorySegue" sender:self];
 }
 
 #pragma mark KVO
@@ -824,7 +849,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         
         // Add history for article
         History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:dataContext_];
-        history0.dateVisited = [NSDate date];
+        history0.dateVisited = [NSDate date]; //dateWithDaysBeforeNow:22];
         history0.discoveryMethod = discoveryMethod;
         [article addHistoryObject:history0];
 
