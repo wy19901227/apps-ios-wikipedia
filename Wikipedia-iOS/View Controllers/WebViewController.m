@@ -64,6 +64,9 @@
 @property (strong, nonatomic) DiscoveryMethod *linkDiscoveryMethod;
 @property (strong, nonatomic) DiscoveryMethod *randomDiscoveryMethod;
 
+@property (strong, nonatomic) NSString *currentSearchString;
+@property (strong, nonatomic) NSArray *currentSearchStringWordsToHighlight;
+
 @end
 
 #pragma mark Internal variables
@@ -74,8 +77,6 @@
     NSOperationQueue *searchQ_;
     NSOperationQueue *thumbnailQ_;
     UIView *navBarSubview_;
-    NSString *currentSearchString_;
-    NSArray *currentSearchStringWordsToHighlight_;
     CGFloat scrollViewDragBeganVerticalOffset_;
     DataContextSingleton *dataContext_;
 }
@@ -132,8 +133,8 @@
     
     self.apiURL = SEARCH_API_URL;
 
-    currentSearchString_ = @"";
-    currentSearchStringWordsToHighlight_ = @[];
+    self.currentSearchString = @"";
+    self.currentSearchStringWordsToHighlight = @[];
     self.searchField.attributedPlaceholder = [self getAttributedPlaceholderString];
     self.searchResultsOrdered = [[NSMutableArray alloc] init];
     
@@ -347,7 +348,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 {
     NSString *searchString = self.searchField.text;
 
-    currentSearchString_ = searchString;
+    self.currentSearchString = searchString;
     [self updateWordsToHighlight];
 
     NSString *trimmedSearchString = [searchString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
@@ -521,7 +522,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
                 value:SEARCH_FONT_COLOR
                 range:NSMakeRange(0, str.length)];
 
-    for (NSString *word in currentSearchStringWordsToHighlight_) {
+    for (NSString *word in self.currentSearchStringWordsToHighlight) {
         // Search term highlighting
         NSRange rangeOfThisWordInTitle = [title rangeOfString: word
                                                       options: NSCaseInsensitiveSearch |
@@ -548,7 +549,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     // different from the punctuation in the retrieved search result title.
     NSMutableCharacterSet *charSet = [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
     [charSet formUnionWithCharacterSet:[NSMutableCharacterSet punctuationCharacterSet]];
-    currentSearchStringWordsToHighlight_ = [currentSearchString_ componentsSeparatedByCharactersInSet:charSet];
+    self.currentSearchStringWordsToHighlight = [self.currentSearchString componentsSeparatedByCharactersInSet:charSet];
 }
 
 #pragma mark Search term methods (requests titles matching search term and associated thumbnail urls)
