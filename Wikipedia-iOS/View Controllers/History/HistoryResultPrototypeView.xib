@@ -13,8 +13,8 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="62"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="225" translatesAutoresizingMaskIntoConstraints="NO" id="6gV-a2-bBZ">
-                        <rect key="frame" x="75" y="3" width="225" height="55"/>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="198" translatesAutoresizingMaskIntoConstraints="NO" id="6gV-a2-bBZ">
+                        <rect key="frame" x="102" y="3" width="198" height="55"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -25,7 +25,7 @@
                         <nil key="highlightedColor"/>
                     </label>
                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Osd-Rs-zDt">
-                        <rect key="frame" x="5" y="3" width="55" height="55"/>
+                        <rect key="frame" x="36" y="3" width="55" height="55"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="55" id="EEY-hd-rOn"/>
@@ -34,8 +34,8 @@
                     </imageView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="Osd-Rs-zDt" firstAttribute="leading" secondItem="c2I-Os-6UK" secondAttribute="leading" constant="5" id="7rT-zT-nvx"/>
-                    <constraint firstItem="6gV-a2-bBZ" firstAttribute="leading" secondItem="Osd-Rs-zDt" secondAttribute="trailing" constant="15" id="DJ2-bz-8H4"/>
+                    <constraint firstItem="Osd-Rs-zDt" firstAttribute="leading" secondItem="c2I-Os-6UK" secondAttribute="leading" constant="36" id="7rT-zT-nvx"/>
+                    <constraint firstItem="6gV-a2-bBZ" firstAttribute="leading" secondItem="Osd-Rs-zDt" secondAttribute="trailing" constant="11" id="DJ2-bz-8H4"/>
                     <constraint firstAttribute="trailing" secondItem="6gV-a2-bBZ" secondAttribute="trailing" constant="20" symbolic="YES" id="aTu-dD-9pX"/>
                     <constraint firstAttribute="centerY" secondItem="Osd-Rs-zDt" secondAttribute="centerY" constant="0.5" id="bmG-XJ-mP7"/>
                     <constraint firstAttribute="centerY" secondItem="6gV-a2-bBZ" secondAttribute="centerY" constant="0.5" id="hK4-dK-ad4"/>

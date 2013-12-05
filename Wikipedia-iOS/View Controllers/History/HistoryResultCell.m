@@ -28,7 +28,7 @@
         UIColor *borderColor = [UIColor colorWithWhite:0.0 alpha:0.1];
         
         self.imageView.layer.borderColor = borderColor.CGColor;
-        self.imageView.layer.borderWidth = 0.5f;
+        self.imageView.layer.borderWidth = 1.0f / [UIScreen mainScreen].scale;
         
         self.imageView.layer.cornerRadius = 0.0f;
         self.imageView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.025];

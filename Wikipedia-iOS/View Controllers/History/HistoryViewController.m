@@ -15,9 +15,10 @@
 #import "Domain.h"
 #import "WebViewController.h"
 #import "HistoryResultCell.h"
+#import "HistoryTableHeadingLabel.h"
 
 #define HISTORY_THUMBNAIL_WIDTH 110
-#define HISTORY_RESULT_HEIGHT 70
+#define HISTORY_RESULT_HEIGHT 66
 
 #define HISTORY_TEXT_COLOR [UIColor colorWithWhite:0.0f alpha:0.7f]
 #define HISTORY_DATE_HEADER_TEXT_COLOR [UIColor colorWithWhite:0.0f alpha:0.6f]
@@ -74,7 +75,7 @@
     [self getHistoryData];
     [self getHistorySectionTitleDateStrings];
 
-    UILabel *historyLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 10, 48)];
+    HistoryTableHeadingLabel *historyLabel = [[HistoryTableHeadingLabel alloc] initWithFrame:CGRectMake(0, 0, 10, 48)];
     historyLabel.text = @"Browsing History";
     historyLabel.textAlignment = NSTextAlignmentCenter;
     historyLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:20];
