@@ -408,7 +408,8 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    SearchResultCell *cell = (SearchResultCell *)[tableView dequeueReusableCellWithIdentifier:@"SearchResultCell"];
+    static NSString *cellID = @"SearchResultCell";
+    SearchResultCell *cell = (SearchResultCell *)[tableView dequeueReusableCellWithIdentifier:cellID];
 
     NSString *title = self.searchResultsOrdered[indexPath.row][@"title"];
 

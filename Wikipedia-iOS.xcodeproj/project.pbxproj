@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0406EF001850F9E00001B4D7 /* HistoryResultCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0406EEFE1850F9E00001B4D7 /* HistoryResultCell.m */; };
+		0406EF011850F9E00001B4D7 /* HistoryResultCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0406EEFE1850F9E00001B4D7 /* HistoryResultCell.m */; };
+		0406EF021850F9E00001B4D7 /* HistoryResultPrototypeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0406EEFF1850F9E00001B4D7 /* HistoryResultPrototypeView.xib */; };
+		0406EF031850F9E00001B4D7 /* HistoryResultPrototypeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0406EEFF1850F9E00001B4D7 /* HistoryResultPrototypeView.xib */; };
 		040E5C431841F73C007AFE6F /* SearchBarLogoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 040E5C3D1841F73C007AFE6F /* SearchBarLogoView.m */; };
 		040E5C441841F73C007AFE6F /* SearchBarTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 040E5C3F1841F73C007AFE6F /* SearchBarTextField.m */; };
 		040E5C451841F73C007AFE6F /* SearchResultCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 040E5C411841F73C007AFE6F /* SearchResultCell.m */; };
@@ -99,6 +103,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0406EEFD1850F9E00001B4D7 /* HistoryResultCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HistoryResultCell.h; sourceTree = "<group>"; };
+		0406EEFE1850F9E00001B4D7 /* HistoryResultCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HistoryResultCell.m; sourceTree = "<group>"; };
+		0406EEFF1850F9E00001B4D7 /* HistoryResultPrototypeView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HistoryResultPrototypeView.xib; sourceTree = "<group>"; };
 		040E5C3C1841F73C007AFE6F /* SearchBarLogoView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchBarLogoView.h; sourceTree = "<group>"; };
 		040E5C3D1841F73C007AFE6F /* SearchBarLogoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchBarLogoView.m; sourceTree = "<group>"; };
 		040E5C3E1841F73C007AFE6F /* SearchBarTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchBarTextField.h; sourceTree = "<group>"; };
@@ -214,6 +221,9 @@
 		040E5C3B1841F73C007AFE6F /* Objects */ = {
 			isa = PBXGroup;
 			children = (
+				0406EEFD1850F9E00001B4D7 /* HistoryResultCell.h */,
+				0406EEFE1850F9E00001B4D7 /* HistoryResultCell.m */,
+				0406EEFF1850F9E00001B4D7 /* HistoryResultPrototypeView.xib */,
 				040E5C3C1841F73C007AFE6F /* SearchBarLogoView.h */,
 				040E5C3D1841F73C007AFE6F /* SearchBarLogoView.m */,
 				040E5C3E1841F73C007AFE6F /* SearchBarTextField.h */,
@@ -515,6 +525,7 @@
 				04C43AAC18344131006C643B /* bridge-index.html in Resources */,
 				040E5C461841F73C007AFE6F /* SearchResultPrototypeView.xib in Resources */,
 				D4991443181D51DE00E6073C /* InfoPlist.strings in Resources */,
+				0406EF021850F9E00001B4D7 /* HistoryResultPrototypeView.xib in Resources */,
 				04A4762A183EF835009C0D82 /* w@2x.png in Resources */,
 				04A47629183EF835009C0D82 /* w.png in Resources */,
 				D4BC22B4181E9E6300CAC673 /* empty.png in Resources */,
@@ -527,6 +538,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				04C43AAD18344131006C643B /* bridge-index.html in Resources */,
+				0406EF031850F9E00001B4D7 /* HistoryResultPrototypeView.xib in Resources */,
 				D4991465181D51DF00E6073C /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -557,6 +569,7 @@
 				04142A7B184EC7B2006EF779 /* Image.m in Sources */,
 				04142A57184EC56D006EF779 /* DiscoveryContext.m in Sources */,
 				04C43AAE18344131006C643B /* CommunicationBridge.m in Sources */,
+				0406EF001850F9E00001B4D7 /* HistoryResultCell.m in Sources */,
 				D4991449181D51DE00E6073C /* AppDelegate.m in Sources */,
 				04142A8B184F882A006EF779 /* HistoryViewController.m in Sources */,
 				04142A5B184EC57F006EF779 /* DiscoveryMethod.m in Sources */,
@@ -605,6 +618,7 @@
 				D4DE203118283FF200148CA2 /* CommunicationBridgeTests.m in Sources */,
 				04142A90184F974E006EF779 /* NSDate-Utilities.m in Sources */,
 				04142A70184EC5C9006EF779 /* Saved.m in Sources */,
+				0406EF011850F9E00001B4D7 /* HistoryResultCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

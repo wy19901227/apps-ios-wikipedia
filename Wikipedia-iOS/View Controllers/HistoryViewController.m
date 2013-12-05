@@ -14,9 +14,10 @@
 #import "Site.h"
 #import "Domain.h"
 #import "WebViewController.h"
+#import "HistoryResultCell.h"
 
 #define HISTORY_THUMBNAIL_WIDTH 110
-#define HISTORY_RESULT_HEIGHT 60
+#define HISTORY_RESULT_HEIGHT 70
 
 @interface HistoryViewController ()
 {
@@ -63,6 +64,11 @@
 
     self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 10, 10)];
     self.tableView.tableFooterView.backgroundColor = [UIColor whiteColor];
+    
+    // Register the history results cell for reuse
+    [self.tableView registerNib:[UINib nibWithNibName:@"HistoryResultPrototypeView" bundle:nil] forCellReuseIdentifier:@"HistoryResultCell"];
+    
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 }
 
 -(void)getHistoryData
@@ -194,8 +200,8 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *cellID = @"Cell";
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID forIndexPath:indexPath];
+    static NSString *cellID = @"HistoryResultCell";
+    HistoryResultCell *cell = (HistoryResultCell *)[tableView dequeueReusableCellWithIdentifier:cellID];
     
     NSDictionary *dict = dataArray[indexPath.section];
     NSArray *array = [dict objectForKey:@"data"];
@@ -206,8 +212,30 @@
     
     cell.textLabel.text = title;
     
-    cell.imageView.image = [UIImage imageWithData:historyEntry.article.thumbnailImage.data];
-    
+    Image *thumbnailFromDB = historyEntry.article.thumbnailImage;
+    if(thumbnailFromDB){
+        UIImage *image = [UIImage imageWithData:thumbnailFromDB.data];
+        cell.imageView.image = image;
+        cell.useField = YES;
+        return cell;
+    }
+
+    // If execution reaches this point a cached core data thumb was not found.
+
+    // Set thumbnail placeholder
+//TODO: (don't load thumb from file every time in loop if no image found. fix here and in search)
+    cell.imageView.image = [UIImage imageNamed:@"logo-search-placeholder.png"];
+    cell.useField = NO;
+
+    //if (!thumbURL){
+    //    // Don't bother downloading if no thumbURL
+    //    return cell;
+    //}
+
+//TODO:
+    // determine thumbURL then get thumb
+    // if no thumbURL mine section html for image reference and download it
+
     return cell;
 }
 
@@ -224,6 +252,11 @@
     WebViewController *webViewController = [self getWebViewController];
     [webViewController navigateToPage:historyEntry.article.title discoveryMethod:historyEntry.discoveryMethod];
     [self.navigationController popToViewController:webViewController animated:YES];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return HISTORY_RESULT_HEIGHT;
 }
 
 -(WebViewController *)getWebViewController
