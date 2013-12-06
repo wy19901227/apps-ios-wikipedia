@@ -226,6 +226,10 @@
     cell.textLabel.text = title;
     cell.textLabel.textColor = HISTORY_TEXT_COLOR;
     
+//TODO: pull this out so not loading image from file more than once.
+    NSString *imageName = [NSString stringWithFormat:@"history-%@.png", historyEntry.discoveryMethod.name];
+    cell.methodImageView.image = [UIImage imageNamed:imageName];
+
     Image *thumbnailFromDB = historyEntry.article.thumbnailImage;
     if(thumbnailFromDB){
         UIImage *image = [UIImage imageWithData:thumbnailFromDB.data];

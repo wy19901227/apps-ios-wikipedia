@@ -13,8 +13,8 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="62"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="198" translatesAutoresizingMaskIntoConstraints="NO" id="6gV-a2-bBZ">
-                        <rect key="frame" x="102" y="3" width="198" height="55"/>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="194" translatesAutoresizingMaskIntoConstraints="NO" id="6gV-a2-bBZ">
+                        <rect key="frame" x="106" y="3" width="194" height="55"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -25,16 +25,26 @@
                         <nil key="highlightedColor"/>
                     </label>
                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Osd-Rs-zDt">
-                        <rect key="frame" x="36" y="3" width="55" height="55"/>
+                        <rect key="frame" x="40" y="3" width="55" height="55"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="55" id="EEY-hd-rOn"/>
                             <constraint firstAttribute="width" constant="55" id="an5-O3-h22"/>
                         </constraints>
                     </imageView>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="CoX-MH-rLG" userLabel="Method Image View">
+                        <rect key="frame" x="11" y="22" width="18" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="18" id="IO7-Ma-olQ"/>
+                            <constraint firstAttribute="height" constant="18" id="oSZ-ob-6B1"/>
+                        </constraints>
+                    </imageView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="Osd-Rs-zDt" firstAttribute="leading" secondItem="c2I-Os-6UK" secondAttribute="leading" constant="36" id="7rT-zT-nvx"/>
+                    <constraint firstItem="Osd-Rs-zDt" firstAttribute="leading" secondItem="CoX-MH-rLG" secondAttribute="trailing" constant="11" id="4LG-Gv-dEJ"/>
+                    <constraint firstAttribute="centerY" secondItem="CoX-MH-rLG" secondAttribute="centerY" id="6wk-6p-qNB"/>
+                    <constraint firstItem="CoX-MH-rLG" firstAttribute="leading" secondItem="c2I-Os-6UK" secondAttribute="leading" constant="11" id="Can-U7-haP"/>
                     <constraint firstItem="6gV-a2-bBZ" firstAttribute="leading" secondItem="Osd-Rs-zDt" secondAttribute="trailing" constant="11" id="DJ2-bz-8H4"/>
                     <constraint firstAttribute="trailing" secondItem="6gV-a2-bBZ" secondAttribute="trailing" constant="20" symbolic="YES" id="aTu-dD-9pX"/>
                     <constraint firstAttribute="centerY" secondItem="Osd-Rs-zDt" secondAttribute="centerY" constant="0.5" id="bmG-XJ-mP7"/>
@@ -43,6 +53,7 @@
             </tableViewCellContentView>
             <connections>
                 <outlet property="imageView" destination="Osd-Rs-zDt" id="Dwm-6q-j6W"/>
+                <outlet property="methodImageView" destination="CoX-MH-rLG" id="Hqx-bw-5Rd"/>
                 <outlet property="textLabel" destination="6gV-a2-bBZ" id="8MQ-zs-5C1"/>
             </connections>
         </tableViewCell>
