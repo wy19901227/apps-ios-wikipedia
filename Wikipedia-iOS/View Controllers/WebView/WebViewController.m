@@ -7,7 +7,6 @@
 //
 
 #import "WebViewController.h"
-
 #import "CommunicationBridge.h"
 #import "NSURLRequest+DictionaryRequest.h"
 #import "MWNetworkActivityIndicatorManager.h"
@@ -15,18 +14,12 @@
 #import "SearchResultCell.h"
 #import "SearchBarLogoView.h"
 #import "SearchBarTextField.h"
-
-#import <CoreData/CoreData.h>
-#import "Article.h"
-#import "DiscoveryContext.h"
-#import "DataContextSingleton.h"
-#import "Section.h"
-#import "History.h"
-#import "Saved.h"
-#import "DiscoveryMethod.h"
-#import "Image.h"
+#import "ArticleCoreDataObjects.h"
+#import "ArticleDataContextSingleton.h"
 #import "HistoryViewController.h"
 #import "NSDate-Utilities.h"
+#import "SessionSingleton.h"
+#import "NSManagedObjectContext+SimpleFetch.h"
 
 #pragma mark Defines
 
@@ -48,6 +41,8 @@
 #define SEARCH_LOADING_MSG_SECTION_ZERO @"Loading..."
 #define SEARCH_LOADING_MSG_SECTION_REMAINING @"Loading the rest of the article..."
 
+#define WEBVIEW_ALERT_FORMAT_STRING @"<div style='text-align:center;font-weight:bold'>%@</div>"
+
 @interface WebViewController (){
 
 }
@@ -55,12 +50,6 @@
 @property (strong, nonatomic) SearchBarTextField *searchField;
 @property (strong, atomic) NSMutableArray *searchResultsOrdered;
 @property (strong, nonatomic) NSString *apiURL;
-@property (strong, nonatomic) NSString *loadingSectionZeroMessage;
-@property (strong, nonatomic) NSString *loadingSectionsRemainingMessage;
-@property (strong, nonatomic) NSString *searchFieldPlaceholderText;
-
-@property (strong, nonatomic) Site *currentSite;
-@property (strong, nonatomic) Domain *currentDomain;
 
 @property (strong, nonatomic) DiscoveryMethod *searchDiscoveryMethod;
 @property (strong, nonatomic) DiscoveryMethod *linkDiscoveryMethod;
@@ -80,7 +69,7 @@
     NSOperationQueue *thumbnailQ_;
     UIView *navBarSubview_;
     CGFloat scrollViewDragBeganVerticalOffset_;
-    DataContextSingleton *dataContext_;
+    ArticleDataContextSingleton *articleDataContext_;
 }
 
 #pragma mark Network activity indicator methods
@@ -107,31 +96,19 @@
 {
     [super viewDidLoad];
 
-    dataContext_ = [DataContextSingleton sharedInstance];
+    articleDataContext_ = [ArticleDataContextSingleton sharedInstance];
 
 // TODO: update these associations based on Brion's comments.   -   -   -   -   -   -   -   -   -
 
-    // Add site for article
-    self.currentSite = (Site *)[self getEntityForName: @"Site" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"wikipedia.org"]];
+    self.searchDiscoveryMethod = (DiscoveryMethod *)[articleDataContext_ getEntityForName: @"DiscoveryMethod" withPredicateFormat:@"name == %@", @"search"];
     
-    // Add domain for article
-    self.currentDomain = (Domain *)[self getEntityForName: @"Domain" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"en"]];
+    self.linkDiscoveryMethod = (DiscoveryMethod *)[articleDataContext_ getEntityForName: @"DiscoveryMethod" withPredicateFormat:@"name == %@", @"link"];
     
-    self.searchDiscoveryMethod = (DiscoveryMethod *)[self getEntityForName: @"DiscoveryMethod" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"search"]];
-    
-    self.linkDiscoveryMethod = (DiscoveryMethod *)[self getEntityForName: @"DiscoveryMethod" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"link"]];
-    
-    self.randomDiscoveryMethod = (DiscoveryMethod *)[self getEntityForName: @"DiscoveryMethod" withPredicate:[NSPredicate predicateWithFormat:@"name == %@", @"random"]];
+    self.randomDiscoveryMethod = (DiscoveryMethod *)[articleDataContext_ getEntityForName: @"DiscoveryMethod" withPredicateFormat:@"name == %@", @"random"];
 
 //  -   -   -   -   -   -   -   -   -
 
     [self setupNavbarSubview];
-
-    // Need to switch to localized strings...
-    NSString *loadingMsgDiv = @"<div style='text-align:center;font-weight:bold'>";
-    self.loadingSectionZeroMessage = [NSString stringWithFormat:@"%@%@</div>", loadingMsgDiv, SEARCH_LOADING_MSG_SECTION_ZERO];
-    self.loadingSectionsRemainingMessage = [NSString stringWithFormat:@"%@%@</div>", loadingMsgDiv, SEARCH_LOADING_MSG_SECTION_REMAINING];
-    self.searchFieldPlaceholderText = SEARCH_FIELD_PLACEHOLDER_TEXT;
     
     self.apiURL = SEARCH_API_URL;
 
@@ -282,7 +259,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 -(NSAttributedString *)getAttributedPlaceholderString
 {
-    NSMutableAttributedString *str = [[NSMutableAttributedString alloc] initWithString:self.searchFieldPlaceholderText];
+    NSMutableAttributedString *str = [[NSMutableAttributedString alloc] initWithString:SEARCH_FIELD_PLACEHOLDER_TEXT];
 
     [str addAttribute:NSFontAttributeName
                 value:SEARCH_FONT_HIGHLIGHTED
@@ -389,6 +366,31 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     self.searchResultsTable.hidden = NO;
 }
 
+-(NSString *)cleanTitle:(NSString *)title
+{
+    return [title stringByReplacingOccurrencesOfString:@"_" withString:@" "];
+}
+
+-(Article *)getArticleForTitle:(NSString *)title
+{
+    Article *article = (Article *)[articleDataContext_ getEntityForName: @"Article" withPredicateFormat: @"\
+                       title ==[c] %@ \
+                       AND \
+                       site.name == %@ \
+                       AND \
+                       domain.name == %@",
+                       title,
+                       [SessionSingleton sharedInstance].site.name,
+                       [SessionSingleton sharedInstance].domain.name
+    ];
+    if (!article) {
+        article = [NSEntityDescription insertNewObjectForEntityForName:@"Article" inManagedObjectContext:articleDataContext_];
+        article.title = title;
+        article.dateCreated = [NSDate date];
+    }
+    return article;
+}
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     return self.searchResultsOrdered.count;
@@ -420,7 +422,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     NSNumber *thumbHeight = self.searchResultsOrdered[indexPath.row][@"thumbnail"][@"height"];
 
     // Check for db record for thumb. If found use it rather than downloading it again!
-    Image *thumbnailFromDB = (Image *)[self getEntityForName: @"Image" withPredicate:[NSPredicate predicateWithFormat:@"sourceUrl == %@", thumbURL]];
+    Image *thumbnailFromDB = (Image *)[articleDataContext_ getEntityForName: @"Image" withPredicateFormat:@"sourceUrl == %@", thumbURL];
 
     if(thumbnailFromDB){
         // Yay! Cached thumbnail found! Use it!
@@ -472,14 +474,10 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         // Save thumbnail to core data article.image record for later use. This can be async.
         NSMutableData *thumbData = weakThumbnailOp.dataRetrieved;
         dispatch_async(dispatch_get_main_queue(), ^(){
-            Article *article = (Article *)[self getEntityForName: @"Article" withPredicate:[NSPredicate predicateWithFormat:@"title == %@", title]];
-            if (!article) {
-                article = [NSEntityDescription insertNewObjectForEntityForName:@"Article" inManagedObjectContext:dataContext_];
-                article.title = title;
-                article.dateCreated = [NSDate date];
-            }
+
+            Article *article = [self getArticleForTitle:title];
             
-            Image *thumb = [NSEntityDescription insertNewObjectForEntityForName:@"Image" inManagedObjectContext:dataContext_];
+            Image *thumb = [NSEntityDescription insertNewObjectForEntityForName:@"Image" inManagedObjectContext:articleDataContext_];
             thumb.data = thumbData;
             thumb.fileName = [thumbURL lastPathComponent];
             thumb.extension = [thumbURL pathExtension];
@@ -491,11 +489,11 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             
             article.thumbnailImage = thumb;
 
-            article.site = self.currentSite;
-            article.domain = self.currentDomain;
+            article.site = [SessionSingleton sharedInstance].site;     //self.currentSite;
+            article.domain = [SessionSingleton sharedInstance].domain; //self.currentDomain;
 
             NSError *error = nil;
-            [dataContext_ save:&error];
+            [articleDataContext_ save:&error];
         });
     };
     [thumbnailQ_ addOperation:thumbnailOp];
@@ -627,7 +625,10 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         
         NSMutableArray *a = @[].mutableCopy;
         for (NSString *title in searchResults[1]) {
-            [a addObject:@{@"title": title, @"thumbnail": @{}}.mutableCopy];
+
+            NSString *cleanTitle = [self cleanTitle:title];
+
+            [a addObject:@{@"title": cleanTitle, @"thumbnail": @{}}.mutableCopy];
         }
         self.searchResultsOrdered = a;
         
@@ -755,7 +756,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 #pragma mark Article loading ops
 
-- (void)navigateToPage:(NSString *)pageTitle discoveryMethod:(DiscoveryMethod *)discoveryMethod
+- (void)navigateToPage:(NSString *)title discoveryMethod:(DiscoveryMethod *)discoveryMethod
 {
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
 
@@ -766,30 +767,26 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         [bridge_ sendMessage:@"clear" withPayload:@{}];
 
         // Add a "Loading..." message as first element of cleared page
-        [bridge_ sendMessage:@"append" withPayload:@{@"html": self.loadingSectionZeroMessage}];
+        [bridge_ sendMessage:@"append" withPayload:@{@"html": [NSString stringWithFormat:WEBVIEW_ALERT_FORMAT_STRING, SEARCH_LOADING_MSG_SECTION_ZERO]}];
 
-        [self retrieveArticleForPageTitle:pageTitle discoveryMethod:discoveryMethod];
+        NSString *cleanTitle = [self cleanTitle:title];
+        
+        [self retrieveArticleForPageTitle:cleanTitle discoveryMethod:discoveryMethod];
     }];
 }
 
 - (void)retrieveArticleForPageTitle:(NSString *)pageTitle discoveryMethod:(DiscoveryMethod *)discoveryMethod
 {
-    Article *article = (Article *)[self getEntityForName: @"Article" withPredicate:[NSPredicate predicateWithFormat:@"title == %@", pageTitle]];
-    
-    // If core data article with sections already exists just show it
-    if (article) {
-        if (article.section.count > 0) {
-            [self displayArticle:article];
-            return;
-        }
-        // If no sections in the existing article don't return. Allows sections to be retrieved if core data
-        // article was created when thumbnails were retrieved (before any sections are fetched).
-    }else{
-        // Else create core data article and then proceed to retrieve its data
-        article = [NSEntityDescription insertNewObjectForEntityForName:@"Article" inManagedObjectContext:dataContext_];
-        article.title = pageTitle;
-        article.dateCreated = [NSDate date];
+    Article *article = [self getArticleForTitle:pageTitle];
+
+    // If article with sections just show them
+    if (article.section.count > 0) {
+        [self displayArticle:article];
+        return;
     }
+
+    // If no sections core data article may have been created when thumbnails were retrieved (before any sections are fetched)
+    // or may not have had any sections last time we checked. So check now.
 
     // Cancel any in-progress article retrieval operations
     [articleRetrievalQ_ cancelAllOperations];
@@ -824,36 +821,60 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         //NSLog(@"completionBlock for %@", pageTitle);
         // Ensure web view is scrolled to top of new article
         [self.webView.scrollView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:NO];
-        
+
+        // Check for error retrieving section zero data.
+        if(weakOp.jsonRetrieved[@"error"]){
+            NSDictionary *errorDict = weakOp.jsonRetrieved[@"error"];
+            //NSLog(@"errorDict = %@", errorDict);
+            
+            // Set error condition so dependent remaining sections op doesn't even start.
+            weakOp.error = [NSError errorWithDomain:@"Section Zero Op" code:001 userInfo:errorDict];
+            
+            // Remove the article so it doesn't get saved.
+            [articleDataContext_ deleteObject:article];
+            
+            // Send html across bridge to web view
+            [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+                // Clear out previous page's html
+                [bridge_ sendMessage:@"clear" withPayload:@{}];
+                
+                // Show the api's "Page not found" message as first element of cleared page
+                [bridge_ sendMessage:@"append" withPayload:@{@"html": [NSString stringWithFormat:WEBVIEW_ALERT_FORMAT_STRING, errorDict[@"info"]]}];
+            }];
+            
+            return;
+        }
+
         article.lastScrollLocation = @0.0f;
 
-        // Get article section zero dict
+        // Get article section zero html
         NSArray *sections = weakOp.jsonRetrieved[@"mobileview"][@"sections"];
-        __block NSDictionary *sectionZeroDict = @{};
+
+        __block NSString *section0HTML = @"";
         [sections enumerateObjectsUsingBlock:^(NSDictionary *dict, NSUInteger idx, BOOL *stop){
             if ([dict[@"id"] isEqual: @0]) {
-                sectionZeroDict = dict;
+                section0HTML = (dict[@"text"]) ? dict[@"text"] : @"";
                 *stop = YES;
             }
         }];
 
         // Add sections for article
-        Section *section0 = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:dataContext_];
+        Section *section0 = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_];
         section0.index = @0;
         section0.title = @"";
         section0.dateRetrieved = [NSDate date];
-        section0.html = sectionZeroDict[@"text"];
+        section0.html = section0HTML;
         article.section = [NSSet setWithObjects:section0, nil];
         
         // Add history for article
-        History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:dataContext_];
+        History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:articleDataContext_];
         history0.dateVisited = [NSDate date];
         //history0.dateVisited = [NSDate dateWithDaysBeforeNow:1];
         history0.discoveryMethod = discoveryMethod;
         [article addHistoryObject:history0];
 
-        article.site = self.currentSite;
-        article.domain = self.currentDomain;
+        article.site = [[SessionSingleton sharedInstance] site];   //self.currentSite;
+        article.domain = [[SessionSingleton sharedInstance] domain]; //self.currentDomain;
 
         // Add saved for article
         //Saved *saved0 = [NSEntityDescription insertNewObjectForEntityForName:@"Saved" inManagedObjectContext:dataContext_];
@@ -862,7 +883,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         
         // Save the article!
         NSError *error = nil;
-        [dataContext_ save:&error];
+        [articleDataContext_ save:&error];
 
         NSLog(@"error = %@", error);
         NSLog(@"error = %@", error.localizedDescription);
@@ -872,10 +893,10 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             // Clear out the loading message at the top of page
             [bridge_ sendMessage:@"clear" withPayload:@{}];
             // Add the first section html
-            [bridge_ sendMessage:@"append" withPayload:@{@"html": sectionZeroDict[@"text"]}];
+            [bridge_ sendMessage:@"append" withPayload:@{@"html": section0HTML}];
             // Add a loading message beneath the first section so user can see more is on the way
             [bridge_ sendMessage: @"append"
-                     withPayload: @{@"html": [NSString stringWithFormat:@"<div id='loadingMessage'>%@</div>", self.loadingSectionsRemainingMessage]}];
+                     withPayload: @{@"html": [NSString stringWithFormat:@"<div id='loadingMessage'>%@</div>", [NSString stringWithFormat:WEBVIEW_ALERT_FORMAT_STRING, SEARCH_LOADING_MSG_SECTION_REMAINING]]}];
         }];
     };
     
@@ -916,7 +937,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
                 [sectionText addObject:section[@"text"]];
 
                 // Add sections for article
-                Section *thisSection = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:dataContext_];
+                Section *thisSection = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_];
                 thisSection.index = section[@"id"];
                 thisSection.title = section[@"line"];
                 thisSection.html = section[@"text"];
@@ -927,7 +948,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         }
 
         NSError *error = nil;
-        [dataContext_ save:&error];
+        [articleDataContext_ save:&error];
 
         // Join article sections text
         NSString *joint = @""; //@"<div style=\"background-color:#ffffff;height:55px;\"></div>";
@@ -984,29 +1005,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         // Display all sections
         [bridge_ sendMessage:@"append" withPayload:@{@"html": htmlStr}];
     }];
-}
-
-#pragma mark Get core data entity
-
--(NSManagedObject *)getEntityForName:(NSString *)entityName withPredicate:(NSPredicate *)predicate
-{
-    NSError *error = nil;
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName: entityName
-                                              inManagedObjectContext: dataContext_];
-    [fetchRequest setEntity:entity];
-    [fetchRequest setPredicate:predicate];
-
-    error = nil;
-    NSArray *methods = [dataContext_ executeFetchRequest:fetchRequest error:&error];
-    //XCTAssert(error == nil, @"Could not fetch article.");
-
-    if (methods.count == 1) {
-        NSManagedObject *method = (NSManagedObject *)methods[0];
-        return method;
-    }else{
-        return nil;
-    }
 }
 
 @end
