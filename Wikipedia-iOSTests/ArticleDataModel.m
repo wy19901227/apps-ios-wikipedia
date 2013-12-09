@@ -52,7 +52,7 @@
     Article *article = [NSEntityDescription insertNewObjectForEntityForName:@"Article" inManagedObjectContext:dataContext];
 
     article.dateCreated = [NSDate date];
-    article.lastScrollLocation = @123.0f;
+    article.lastScrollY = @123.0f;
     article.title = @"This is a sample title.";
 
     // Add history for article

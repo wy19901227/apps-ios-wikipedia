@@ -11,8 +11,6 @@
 		040E5C4F184566F4007AFE6F /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 040E5C4E184566F4007AFE6F /* CoreData.framework */; };
 		040E5C841846AC13007AFE6F /* ArticleDataContextSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 040E5C831846AC13007AFE6F /* ArticleDataContextSingleton.m */; };
 		040E5C851846AC13007AFE6F /* ArticleDataContextSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 040E5C831846AC13007AFE6F /* ArticleDataContextSingleton.m */; };
-		04142A53184EC55E006EF779 /* Article.m in Sources */ = {isa = PBXBuildFile; fileRef = 04142A52184EC55E006EF779 /* Article.m */; };
-		04142A54184EC55E006EF779 /* Article.m in Sources */ = {isa = PBXBuildFile; fileRef = 04142A52184EC55E006EF779 /* Article.m */; };
 		04142A57184EC56D006EF779 /* DiscoveryContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 04142A56184EC56D006EF779 /* DiscoveryContext.m */; };
 		04142A58184EC56D006EF779 /* DiscoveryContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 04142A56184EC56D006EF779 /* DiscoveryContext.m */; };
 		04142A5B184EC57F006EF779 /* DiscoveryMethod.m in Sources */ = {isa = PBXBuildFile; fileRef = 04142A5A184EC57F006EF779 /* DiscoveryMethod.m */; };
@@ -71,6 +69,8 @@
 		044786701852B5010050563B /* SessionSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 0447866E1852B5010050563B /* SessionSingleton.m */; };
 		0447867C1852BBFE0050563B /* NSManagedObjectContext+SimpleFetch.m in Sources */ = {isa = PBXBuildFile; fileRef = 0447867B1852BBFE0050563B /* NSManagedObjectContext+SimpleFetch.m */; };
 		0447867D1852BBFE0050563B /* NSManagedObjectContext+SimpleFetch.m in Sources */ = {isa = PBXBuildFile; fileRef = 0447867B1852BBFE0050563B /* NSManagedObjectContext+SimpleFetch.m */; };
+		0447868018563A020050563B /* Article.m in Sources */ = {isa = PBXBuildFile; fileRef = 0447867F18563A020050563B /* Article.m */; };
+		0447868118563A020050563B /* Article.m in Sources */ = {isa = PBXBuildFile; fileRef = 0447867F18563A020050563B /* Article.m */; };
 		0466F44F183A30CC00EA1FD7 /* logo-search-placeholder.png in Resources */ = {isa = PBXBuildFile; fileRef = 0466F44D183A30CC00EA1FD7 /* logo-search-placeholder.png */; };
 		0466F450183A30CC00EA1FD7 /* logo-search-placeholder@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0466F44E183A30CC00EA1FD7 /* logo-search-placeholder@2x.png */; };
 		04A47629183EF835009C0D82 /* w.png in Resources */ = {isa = PBXBuildFile; fileRef = 04A47627183EF835009C0D82 /* w.png */; };
@@ -133,8 +133,6 @@
 		040E5C4E184566F4007AFE6F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		040E5C821846AC13007AFE6F /* ArticleDataContextSingleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArticleDataContextSingleton.h; sourceTree = "<group>"; };
 		040E5C831846AC13007AFE6F /* ArticleDataContextSingleton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArticleDataContextSingleton.m; sourceTree = "<group>"; };
-		04142A51184EC55E006EF779 /* Article.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Article.h; path = "Wikipedia-iOS/Data/Model/Article.h"; sourceTree = SOURCE_ROOT; };
-		04142A52184EC55E006EF779 /* Article.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Article.m; path = "Wikipedia-iOS/Data/Model/Article.m"; sourceTree = SOURCE_ROOT; };
 		04142A55184EC56D006EF779 /* DiscoveryContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DiscoveryContext.h; path = "Wikipedia-iOS/Data/Model/DiscoveryContext.h"; sourceTree = SOURCE_ROOT; };
 		04142A56184EC56D006EF779 /* DiscoveryContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DiscoveryContext.m; path = "Wikipedia-iOS/Data/Model/DiscoveryContext.m"; sourceTree = SOURCE_ROOT; };
 		04142A59184EC57F006EF779 /* DiscoveryMethod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DiscoveryMethod.h; path = "Wikipedia-iOS/Data/Model/DiscoveryMethod.h"; sourceTree = SOURCE_ROOT; };
@@ -184,6 +182,8 @@
 		044786711852B61D0050563B /* ArticleCoreDataObjects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArticleCoreDataObjects.h; sourceTree = "<group>"; };
 		0447867A1852BBFE0050563B /* NSManagedObjectContext+SimpleFetch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObjectContext+SimpleFetch.h"; sourceTree = "<group>"; };
 		0447867B1852BBFE0050563B /* NSManagedObjectContext+SimpleFetch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObjectContext+SimpleFetch.m"; sourceTree = "<group>"; };
+		0447867E18563A020050563B /* Article.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Article.h; sourceTree = "<group>"; };
+		0447867F18563A020050563B /* Article.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Article.m; sourceTree = "<group>"; };
 		0466F44D183A30CC00EA1FD7 /* logo-search-placeholder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-search-placeholder.png"; sourceTree = "<group>"; };
 		0466F44E183A30CC00EA1FD7 /* logo-search-placeholder@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-search-placeholder@2x.png"; sourceTree = "<group>"; };
 		04A47627183EF835009C0D82 /* w.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = w.png; sourceTree = "<group>"; };
@@ -388,6 +388,8 @@
 			children = (
 				04FD6C78184EBFCD002CA02F /* ArticleData.xcdatamodeld */,
 				044786711852B61D0050563B /* ArticleCoreDataObjects.h */,
+				0447867E18563A020050563B /* Article.h */,
+				0447867F18563A020050563B /* Article.m */,
 				0447865F18528DCF0050563B /* Section.h */,
 				0447866018528DCF0050563B /* Section.m */,
 				04142A79184EC7B2006EF779 /* Image.h */,
@@ -406,8 +408,6 @@
 				04142A5A184EC57F006EF779 /* DiscoveryMethod.m */,
 				04142A55184EC56D006EF779 /* DiscoveryContext.h */,
 				04142A56184EC56D006EF779 /* DiscoveryContext.m */,
-				04142A51184EC55E006EF779 /* Article.h */,
-				04142A52184EC55E006EF779 /* Article.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -653,7 +653,6 @@
 				04142A77184EC5E1006EF779 /* Site.m in Sources */,
 				04142A5F184EC593006EF779 /* Domain.m in Sources */,
 				04C43AC2183442FC006C643B /* NSURLRequest+DictionaryRequest.m in Sources */,
-				04142A53184EC55E006EF779 /* Article.m in Sources */,
 				04C43ABE183442FC006C643B /* NSRunLoop+TimeOutAndFlag.m in Sources */,
 				04C43AA6183440C1006C643B /* MWNetworkOp.m in Sources */,
 				040E5C841846AC13007AFE6F /* ArticleDataContextSingleton.m in Sources */,
@@ -663,6 +662,7 @@
 				D4991449181D51DE00E6073C /* AppDelegate.m in Sources */,
 				04142A5B184EC57F006EF779 /* DiscoveryMethod.m in Sources */,
 				04478633185145090050563B /* HistoryViewController.m in Sources */,
+				0447868018563A020050563B /* Article.m in Sources */,
 				04478641185146210050563B /* HistoryTableHeadingLabel.m in Sources */,
 				04142A67184EC5AC006EF779 /* History.m in Sources */,
 				04142A63184EC5A0006EF779 /* GalleryImage.m in Sources */,
@@ -688,7 +688,6 @@
 				04478636185145090050563B /* SearchBarLogoView.m in Sources */,
 				0447863A185145090050563B /* SearchResultCell.m in Sources */,
 				04C43AC3183442FC006C643B /* NSURLRequest+DictionaryRequest.m in Sources */,
-				04142A54184EC55E006EF779 /* Article.m in Sources */,
 				04C43A9E183440B0006C643B /* MWCrumbyTest.m in Sources */,
 				04142A78184EC5E1006EF779 /* Site.m in Sources */,
 				0447867D1852BBFE0050563B /* NSManagedObjectContext+SimpleFetch.m in Sources */,
@@ -704,6 +703,7 @@
 				04478634185145090050563B /* HistoryViewController.m in Sources */,
 				04142A60184EC593006EF779 /* Domain.m in Sources */,
 				04C43AC1183442FC006C643B /* NSString+Extras.m in Sources */,
+				0447868118563A020050563B /* Article.m in Sources */,
 				04FD6C7B184EBFCD002CA02F /* ArticleData.xcdatamodeld in Sources */,
 				04478630185145090050563B /* HistoryResultCell.m in Sources */,
 				040E5C851846AC13007AFE6F /* ArticleDataContextSingleton.m in Sources */,

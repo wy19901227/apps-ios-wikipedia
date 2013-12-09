@@ -58,6 +58,8 @@
 @property (strong, nonatomic) NSString *currentSearchString;
 @property (strong, nonatomic) NSArray *currentSearchStringWordsToHighlight;
 
+@property (strong, nonatomic) NSString *currentArticleTitle;
+
 @end
 
 #pragma mark Internal variables
@@ -95,6 +97,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
+    self.currentArticleTitle = @"";
 
     articleDataContext_ = [ArticleDataContextSingleton sharedInstance];
 
@@ -307,7 +311,30 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     }
 }
 
-#pragma mark Scroll
+#pragma mark Web view scroll offset recording
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
+{
+    if(!decelerate) [self scrollViewScrollingEnded:scrollView];
+}
+
+-(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
+    [self scrollViewScrollingEnded:scrollView];
+}
+
+-(void)scrollViewScrollingEnded:(UIScrollView *)scrollView
+{
+    if (scrollView == self.webView.scrollView) {
+        // Save scroll location
+        Article *article = [self getArticleForTitle:self.currentArticleTitle];
+        article.lastScrollX = @(scrollView.contentOffset.x);
+        article.lastScrollY = @(scrollView.contentOffset.y);
+        NSError *error = nil;
+        [articleDataContext_ save:&error];
+    }
+}
+
+#pragma mark Scroll hiding keyboard threshold
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
@@ -758,6 +785,10 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 - (void)navigateToPage:(NSString *)title discoveryMethod:(DiscoveryMethod *)discoveryMethod
 {
+    NSString *cleanTitle = [self cleanTitle:title];
+
+    self.currentArticleTitle = cleanTitle;
+
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
 
         self.searchResultsTable.hidden = YES;
@@ -845,7 +876,8 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             return;
         }
 
-        article.lastScrollLocation = @0.0f;
+        article.lastScrollX = @0.0f;
+        article.lastScrollY = @0.0f;
 
         // Get article section zero html
         NSArray *sections = weakOp.jsonRetrieved[@"mobileview"][@"sections"];
@@ -1004,7 +1036,16 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         [bridge_ sendMessage:@"clear" withPayload:@{}];
         // Display all sections
         [bridge_ sendMessage:@"append" withPayload:@{@"html": htmlStr}];
+        
+        CGPoint p = CGPointMake(article.lastScrollX.floatValue, article.lastScrollY.floatValue);
+        [self performSelector:@selector(scrollWebViewToOffset:) withObject:NSStringFromCGPoint(p) afterDelay:0.05f];
     }];
+}
+
+-(void)scrollWebViewToOffset:(NSString *)offset
+{
+    CGPoint p = CGPointFromString(offset);
+    [self.webView.scrollView setContentOffset:p animated:NO];
 }
 
 @end
