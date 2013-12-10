@@ -21,6 +21,7 @@
 #import "SessionSingleton.h"
 #import "NSManagedObjectContext+SimpleFetch.h"
 #import "AlertLabel.h"
+#import "UIWebView+Reveal.h"
 
 #pragma mark Defines
 
@@ -61,12 +62,16 @@
 
 @property (strong, nonatomic) NSString *currentArticleTitle;
 
+@property (strong, nonatomic) CommunicationBridge *bridge;
+
+@property (nonatomic) CGPoint scrollOffset;
+@property (nonatomic) BOOL unsafeToScroll;
+
 @end
 
 #pragma mark Internal variables
 
 @implementation WebViewController {
-    CommunicationBridge *bridge_;
     NSOperationQueue *articleRetrievalQ_;
     NSOperationQueue *searchQ_;
     NSOperationQueue *thumbnailQ_;
@@ -99,6 +104,10 @@
 {
     [super viewDidLoad];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(webViewFinishedLoading) name:@"WebViewFinishedLoading" object:nil];
+    self.unsafeToScroll = NO;
+    self.scrollOffset = CGPointZero;
+
     self.currentArticleTitle = @"";
     self.alertLabel.text = @"";
 
@@ -129,26 +138,6 @@
     searchQ_ = [[NSOperationQueue alloc] init];
     thumbnailQ_ = [[NSOperationQueue alloc] init];
     
-    bridge_ = [[CommunicationBridge alloc] initWithWebView:self.webView];
-    [bridge_ addListener:@"DOMLoaded" withBlock:^(NSString *messageType, NSDictionary *payload) {
-        //NSLog(@"QQQ HEY DOMLoaded!");
-    }];
-
-    __weak WebViewController *weakSelf = self;
-    [bridge_ addListener:@"linkClicked" withBlock:^(NSString *messageType, NSDictionary *payload) {
-        NSString *href = payload[@"href"];
-        if ([href hasPrefix:@"/wiki/"]) {
-            NSString *title = [href substringWithRange:NSMakeRange(6, href.length - 6)];
-            [weakSelf navigateToPage:title discoveryMethod:weakSelf.linkDiscoveryMethod];
-        }else if ([href hasPrefix:@"//"]) {
-            href = [@"http:" stringByAppendingString:href];
-            
-NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to external link: %@", href];
-[weakSelf.webView stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:@"alert('%@')", msg]];
-
-        }
-    }];
-    
     [self setupQMonitorDebuggingLabel];
 
     // Comment out to show the q debugging label.
@@ -171,11 +160,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     // Ensure the keyboard hides if the web view is scrolled
     self.webView.scrollView.delegate = self;
 
-    // Prime the web view's content div. Without something in the div, the first
-    // time an article loads, its "Loading..." message doesn't display in time
-    // for some reason.
-    [bridge_ sendMessage:@"append" withPayload:@{@"html": @"&nbsp;"}];
-
     // Observe changes to nav bar's bounds so the nav bar's subview's frame can be
     // kept in sync so it always overlays it perfectly, even as rotation animation
     // tweens the nav bar frame.
@@ -187,6 +171,67 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     
     // Force the nav bar's subview to update for initial display - needed for iOS 6.
     [self updateNavBarSubviewFrame];
+}
+
+#pragma mark Webview obj-c to javascript bridge
+
+-(void)resetBridge
+{
+    // This needs to be called before sending a new page of html to the embedded UIWebView.
+    // The bridge is the web view's delegate, and one of the web view delegate methods which
+    // the bridge implements is "webViewDidFinishLoad:". This method only gets called the first
+    // time a page is displayed unless the bridge is reset before beginning to send a page of
+    // html. "webViewDidFinishLoad:" seems the only *reliable* way of being notified when the
+    // page dom has been loaded and the web view's view had taken on the size of the content
+    // it is rendering. It is only then that we can scroll to a saved article's previous
+    // scroll offsets.
+
+    // Because the bridge is a property now, rather than a private var, ARC should take care of
+    // cleanup when the bridge is reset.
+//TODO: confirm this comment ^
+    self.bridge = [[CommunicationBridge alloc] initWithWebView:self.webView];
+    [self.bridge addListener:@"DOMLoaded" withBlock:^(NSString *messageType, NSDictionary *payload) {
+        //NSLog(@"QQQ HEY DOMLoaded!");
+    }];
+
+    __weak WebViewController *weakSelf = self;
+    [self.bridge addListener:@"linkClicked" withBlock:^(NSString *messageType, NSDictionary *payload) {
+        NSString *href = payload[@"href"];
+        if ([href hasPrefix:@"/wiki/"]) {
+            NSString *title = [href substringWithRange:NSMakeRange(6, href.length - 6)];
+            [weakSelf navigateToPage:title discoveryMethod:weakSelf.linkDiscoveryMethod];
+        }else if ([href hasPrefix:@"//"]) {
+            href = [@"http:" stringByAppendingString:href];
+            
+NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to external link: %@", href];
+[weakSelf.webView stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:@"alert('%@')", msg]];
+
+        }
+    }];
+
+    self.unsafeToScroll = NO;
+    self.scrollOffset = CGPointZero;
+}
+
+#pragma mark Loading last-viewed article on app start
+
+-(void)setLastViewedArticleTitle:(NSString *)lastViewedArticleTitle
+{
+    [[NSUserDefaults standardUserDefaults] setObject:lastViewedArticleTitle forKey:@"LastViewedArticleTitle"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+-(NSString *)getLastViewedArticleTitle
+{
+    NSString *lastViewedArticleTitle = [[NSUserDefaults standardUserDefaults] objectForKey:@"LastViewedArticleTitle"];
+    return lastViewedArticleTitle;
+}
+
+-(void)viewDidAppear:(BOOL)animated
+{
+    // Should be ok to call "navigateToPage:" on viewDidAppear because it contains logic preventing
+    // reloads of pages already being displayed.
+    [self navigateToPage:[self getLastViewedArticleTitle] discoveryMethod:nil];
 }
 
 #pragma mark Debugging
@@ -332,6 +377,10 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 -(void)scrollViewScrollingEnded:(UIScrollView *)scrollView
 {
     if (scrollView == self.webView.scrollView) {
+        // Once we've started scrolling around don't allow the webview delegate to scroll
+        // to a saved position! Super annoying otherwise.
+        self.unsafeToScroll = YES;
+
         // Save scroll location
         Article *article = [self getArticleForTitle:self.currentArticleTitle];
         article.lastScrollX = @(scrollView.contentOffset.x);
@@ -339,6 +388,16 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         NSError *error = nil;
         [articleDataContext_ save:&error];
     }
+}
+
+#pragma mark Web view scroll offset - using it!
+
+-(void)webViewFinishedLoading
+{
+    if(!self.unsafeToScroll){
+        [self.webView.scrollView setContentOffset:self.scrollOffset animated:NO];
+    }
+    [self.webView reveal];
 }
 
 #pragma mark Scroll hiding keyboard threshold
@@ -809,19 +868,33 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 - (void)navigateToPage:(NSString *)title discoveryMethod:(DiscoveryMethod *)discoveryMethod
 {
-    NSString *cleanTitle = [self cleanTitle:title];
-
-    self.currentArticleTitle = cleanTitle;
+    static BOOL isFirstArticle = YES;
 
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+        NSString *cleanTitle = [self cleanTitle:title];
 
+        // Hide the search results.
         self.searchResultsTable.hidden = YES;
+        // Hide the keyboard.
         [self.searchField resignFirstResponder];
+
+        // Don't try to load nothing. Core data takes exception with such nonsense.
+        if (cleanTitle == nil) return;
+        
+        // Don't reload an article if it's already showing! The exception is if the article
+        // being shown is the first article being shown. In that case, lastViewedArticleTitle
+        // isn't currently onscreen so it doesn't matter (and won't flicker).
+        if ([cleanTitle isEqualToString:[self getLastViewedArticleTitle]] && !isFirstArticle) return;
+
+        // Fade the web view out so there's not a flickery transition between old and new html.
+        [self.webView fade];
+
+        self.currentArticleTitle = cleanTitle;
+        isFirstArticle = NO;
+        [self setLastViewedArticleTitle:cleanTitle];
         
         // Show loading message
         self.alertLabel.text = SEARCH_LOADING_MSG_SECTION_ZERO;
-
-        NSString *cleanTitle = [self cleanTitle:title];
         
         [self retrieveArticleForPageTitle:cleanTitle discoveryMethod:discoveryMethod];
     }];
@@ -962,11 +1035,16 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
         // Send html across bridge to web view
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-            // Clear previous article html
-            [bridge_ sendMessage:@"clear" withPayload:@{}];
+
+            // See comments inside resetBridge.
+            [self resetBridge];
+
             // Add the first section html
-            [bridge_ sendMessage:@"append" withPayload:@{@"html": section0HTML}];
-            
+            [self.bridge sendMessage:@"append" withPayload:@{@"html": section0HTML}];
+
+            // Show the web view again. (Had faded it out to prevent flickery transition to new html.)
+            [self.webView reveal];
+
             if(sections.count > 1){
                 // Show loading more sections message so user can see more is on the way
                 self.alertLabel.text = SEARCH_LOADING_MSG_SECTION_REMAINING;
@@ -1041,7 +1119,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             self.alertLabel.hidden = YES;
             
             // Add the remaining sections beneath the first section
-            [bridge_ sendMessage:@"append" withPayload:@{@"html": htmlStr}];
+            [self.bridge sendMessage:@"append" withPayload:@{@"html": htmlStr}];
         }];
     };
     
@@ -1065,11 +1143,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 - (void)displayArticle:(Article *)article
 {
-    [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-        // Clear previous article html
-        [bridge_ sendMessage:@"clear" withPayload:@{}];
-    }];
-
     // Get sorted sections for this article (sorts the article.section NSSet into sortedSections)
     NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES];
     NSArray *sortedSections = [article.section sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
@@ -1080,6 +1153,11 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             [sectionText addObject:section.html];
         }
     }
+
+    // See comments inside resetBridge.
+    [self resetBridge];
+
+    self.scrollOffset = CGPointMake(article.lastScrollX.floatValue, article.lastScrollY.floatValue);
 
     // Join article sections text
     NSString *joint = @""; //@"<div style=\"background-color:#ffffff;height:55px;\"></div>";
@@ -1093,10 +1171,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         self.alertLabel.hidden = YES;
 
         // Display all sections
-        [bridge_ sendMessage:@"append" withPayload:@{@"html": htmlStr}];
-        
-        CGPoint p = CGPointMake(article.lastScrollX.floatValue, article.lastScrollY.floatValue);
-        [self performSelector:@selector(scrollWebViewToOffset:) withObject:NSStringFromCGPoint(p) afterDelay:0.05f];
+        [self.bridge sendMessage:@"append" withPayload:@{@"html": htmlStr}];        
     }];
 }
 
