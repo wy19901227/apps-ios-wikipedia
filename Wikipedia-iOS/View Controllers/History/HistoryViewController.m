@@ -97,7 +97,9 @@
                                               inManagedObjectContext: articleDataContext_];
     [fetchRequest setEntity:entity];
     
-    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"dateVisited > %@", [[NSDate date] dateBySubtractingDays:30]]];
+    // For now fetch all history records - history entries older than 30 days will
+    // be placed into "garbage" array below and removed.
+    //[fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"dateVisited > %@", [[NSDate date] dateBySubtractingDays:30]]];
 
     NSSortDescriptor *dateSort = [[NSSortDescriptor alloc] initWithKey:@"dateVisited" ascending:NO selector:nil];
 
@@ -107,6 +109,7 @@
     NSMutableArray *yesterday = [@[] mutableCopy];
     NSMutableArray *lastWeek = [@[] mutableCopy];
     NSMutableArray *lastMonth = [@[] mutableCopy];
+    NSMutableArray *garbage = [@[] mutableCopy];
 
     error = nil;
     NSArray *historyEntities = [articleDataContext_ executeFetchRequest:fetchRequest error:&error];
@@ -135,13 +138,41 @@
             [lastWeek addObject:history];
         }else if ([history.dateVisited isLaterThanDate:[[NSDate date] dateBySubtractingDays:30]]) {
             [lastMonth addObject:history];
+        }else{
+            // Older than 30 days == Garbage! Remove!
+            [garbage addObject:history];
         }
     }
     
+    [self removeGarbage:garbage];
+
     [self.historyDataArray addObject:[@{@"data": today, @"sectionTitle": @"Today", @"sectionDateString": @""} mutableCopy]];
     [self.historyDataArray addObject:[@{@"data": yesterday, @"sectionTitle": @"Yesterday", @"sectionDateString": @""} mutableCopy]];
     [self.historyDataArray addObject:[@{@"data": lastWeek, @"sectionTitle": @"Last week", @"sectionDateString": @""} mutableCopy]];
     [self.historyDataArray addObject:[@{@"data": lastMonth, @"sectionTitle": @"Last month", @"sectionDateString": @""} mutableCopy]];
+}
+
+#pragma mark - History garbage removal
+
+-(void) removeGarbage:(NSMutableArray *)garbage
+{
+    //NSLog(@"GARBAGE COUNT = %lu", (unsigned long)garbage.count);
+    //NSLog(@"GARBAGE = %@", garbage);
+    if (garbage.count == 0) return;
+
+    for (History *history in garbage) {
+        // Article deletes don't cascade to images (intentionally) so delete these article thumbnails manually.
+        Image *thumb = history.article.thumbnailImage;
+        if (thumb) [articleDataContext_ deleteObject:thumb];
+
+        // Image deletes don't cascade when article is deleted so delete manually for now.
+        Article *article = history.article;
+        if (article) [articleDataContext_ deleteObject:article];
+    }
+    
+    NSError *error = nil;
+    [articleDataContext_ save:&error];
+    //NSLog(@"GARBAGE error = %@", error);
 }
 
 #pragma mark - History section titles

@@ -1012,7 +1012,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         // Add history for article
         History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:articleDataContext_];
         history0.dateVisited = [NSDate date];
-        //history0.dateVisited = [NSDate dateWithDaysBeforeNow:1];
+        //history0.dateVisited = [NSDate dateWithDaysBeforeNow:31];
         history0.discoveryMethod = discoveryMethod;
         [article addHistoryObject:history0];
 
