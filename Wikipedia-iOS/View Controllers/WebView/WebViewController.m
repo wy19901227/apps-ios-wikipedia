@@ -20,6 +20,7 @@
 #import "NSDate-Utilities.h"
 #import "SessionSingleton.h"
 #import "NSManagedObjectContext+SimpleFetch.h"
+#import "AlertLabel.h"
 
 #pragma mark Defines
 
@@ -38,10 +39,10 @@
 
 #define SEARCH_API_URL @"https://en.m.wikipedia.org/w/api.php"
 
-#define SEARCH_LOADING_MSG_SECTION_ZERO @"Loading..."
+#define SEARCH_LOADING_MSG_SECTION_ZERO @"Loading first section of the article..."
 #define SEARCH_LOADING_MSG_SECTION_REMAINING @"Loading the rest of the article..."
-
-#define WEBVIEW_ALERT_FORMAT_STRING @"<div style='text-align:center;font-weight:bold'>%@</div>"
+#define SEARCH_LOADING_MSG_ARTICLE_LOADED @"Article loaded."
+#define SEARCH_LOADING_MSG_SEARCHING @"Searching..."
 
 @interface WebViewController (){
 
@@ -99,6 +100,7 @@
     [super viewDidLoad];
 
     self.currentArticleTitle = @"";
+    self.alertLabel.text = @"";
 
     articleDataContext_ = [ArticleDataContextSingleton sharedInstance];
 
@@ -148,6 +150,9 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     }];
     
     [self setupQMonitorDebuggingLabel];
+
+    // Comment out to show the q debugging label.
+    self.debugLabel.alpha = 0.0f;
     
     // Perform search when text entered into searchField
     [self.searchField addTarget:self action:@selector(reloadSearchResultsTableForSearchString) forControlEvents:UIControlEventEditingChanged];
@@ -282,6 +287,8 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 {
     // Ensure the web VC is the top VC.
     [self.navigationController popToViewController:self animated:YES];
+
+    self.alertLabel.hidden = YES;
 }
 
 -(void)historyToggle
@@ -617,7 +624,12 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
     // Cancel any in-progress article retrieval operations
     [searchQ_ cancelAllOperations];
-    
+
+    // Show "Searching..." message.
+    [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+        self.alertLabel.text = SEARCH_LOADING_MSG_SEARCHING;
+    }];
+
     MWNetworkOp *searchOp = [[MWNetworkOp alloc] init];
     searchOp.delegate = self;
     searchOp.request = [NSURLRequest postRequestWithURL: [NSURL URLWithString:self.apiURL]
@@ -644,7 +656,19 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
         if(weakSearchOp.error){
             //NSLog(@"search op completionBlock bailed on error %@", weakSearchOp.error);
+            
+            // Show error message.
+            // (need to extract msg from error *before* main q block - the error is dealloc'ed by
+            // the time the block is dequeued)
+            NSString *errorMsg = weakSearchOp.error.localizedDescription;
+            [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+                self.alertLabel.text = errorMsg;
+            }];
             return;
+        }else{
+            [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+                self.alertLabel.text = @"";
+            }];
         }
         
         NSArray *searchResults = (NSArray *)weakSearchOp.jsonRetrieved;
@@ -794,11 +818,8 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         self.searchResultsTable.hidden = YES;
         [self.searchField resignFirstResponder];
         
-        // Clear out previous page's html
-        [bridge_ sendMessage:@"clear" withPayload:@{}];
-
-        // Add a "Loading..." message as first element of cleared page
-        [bridge_ sendMessage:@"append" withPayload:@{@"html": [NSString stringWithFormat:WEBVIEW_ALERT_FORMAT_STRING, SEARCH_LOADING_MSG_SECTION_ZERO]}];
+        // Show loading message
+        self.alertLabel.text = SEARCH_LOADING_MSG_SECTION_ZERO;
 
         NSString *cleanTitle = [self cleanTitle:title];
         
@@ -845,8 +866,28 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     };
     firstSectionOp.completionBlock = ^(){
         [self networkActivityIndicatorPop];
+
+        if (weakOp.error) {
+            // Show error message.
+            // (need to extract msg from error *before* main q block - the error is dealloc'ed by
+            // the time the block is dequeued)
+            NSString *errorMsg = weakOp.error.localizedDescription;
+            [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+                self.alertLabel.text = errorMsg;
+            }];
+
+            // Remove the article so it doesn't get saved.
+            [articleDataContext_ deleteObject:article];
+            
+            return;
+        }
+
         if(weakOp.isCancelled){
             //NSLog(@"completionBlock bailed (because op was cancelled) for %@", pageTitle);
+            
+            // Remove the article so it doesn't get saved.
+            [articleDataContext_ deleteObject:article];
+
             return;
         }
         //NSLog(@"completionBlock for %@", pageTitle);
@@ -866,11 +907,8 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             
             // Send html across bridge to web view
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-                // Clear out previous page's html
-                [bridge_ sendMessage:@"clear" withPayload:@{}];
-                
-                // Show the api's "Page not found" message as first element of cleared page
-                [bridge_ sendMessage:@"append" withPayload:@{@"html": [NSString stringWithFormat:WEBVIEW_ALERT_FORMAT_STRING, errorDict[@"info"]]}];
+                // Show the api's "Page not found" message as first element of cleared page.
+                self.alertLabel.text = errorDict[@"info"];
             }];
             
             return;
@@ -917,18 +955,27 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         NSError *error = nil;
         [articleDataContext_ save:&error];
 
-        NSLog(@"error = %@", error);
-        NSLog(@"error = %@", error.localizedDescription);
+        if (error) {
+            NSLog(@"error = %@", error);
+            NSLog(@"error = %@", error.localizedDescription);
+        }
 
         // Send html across bridge to web view
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-            // Clear out the loading message at the top of page
+            // Clear previous article html
             [bridge_ sendMessage:@"clear" withPayload:@{}];
             // Add the first section html
             [bridge_ sendMessage:@"append" withPayload:@{@"html": section0HTML}];
-            // Add a loading message beneath the first section so user can see more is on the way
-            [bridge_ sendMessage: @"append"
-                     withPayload: @{@"html": [NSString stringWithFormat:@"<div id='loadingMessage'>%@</div>", [NSString stringWithFormat:WEBVIEW_ALERT_FORMAT_STRING, SEARCH_LOADING_MSG_SECTION_REMAINING]]}];
+            
+            if(sections.count > 1){
+                // Show loading more sections message so user can see more is on the way
+                self.alertLabel.text = SEARCH_LOADING_MSG_SECTION_REMAINING;
+            }else{
+                // Show article loaded message
+                self.alertLabel.text = SEARCH_LOADING_MSG_ARTICLE_LOADED;
+                // Then hide the message (hidden has been overriden to fade out slowly)
+                self.alertLabel.hidden = YES;
+            }
         }];
     };
     
@@ -988,8 +1035,11 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         
         // Send html across bridge to web view
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-            // Clear out the loading message beneath the first section
-            [bridge_ sendMessage:@"remove" withPayload:@{@"element": @"loadingMessage"}];
+            // Show article loaded message
+            self.alertLabel.text = SEARCH_LOADING_MSG_ARTICLE_LOADED;
+            // Then hide the message (hidden has been overriden to fade out slowly)
+            self.alertLabel.hidden = YES;
+            
             // Add the remaining sections beneath the first section
             [bridge_ sendMessage:@"append" withPayload:@{@"html": htmlStr}];
         }];
@@ -1015,6 +1065,11 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 - (void)displayArticle:(Article *)article
 {
+    [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+        // Clear previous article html
+        [bridge_ sendMessage:@"clear" withPayload:@{}];
+    }];
+
     // Get sorted sections for this article (sorts the article.section NSSet into sortedSections)
     NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES];
     NSArray *sortedSections = [article.section sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
@@ -1032,8 +1087,11 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
     // Send html across bridge to web view
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-        // Clear out the loading message at the top of page
-        [bridge_ sendMessage:@"clear" withPayload:@{}];
+        // Show article loaded message
+        self.alertLabel.text = SEARCH_LOADING_MSG_ARTICLE_LOADED;
+        // Then hide the message (hidden has been overriden to fade out slowly)
+        self.alertLabel.hidden = YES;
+
         // Display all sections
         [bridge_ sendMessage:@"append" withPayload:@{@"html": htmlStr}];
         
