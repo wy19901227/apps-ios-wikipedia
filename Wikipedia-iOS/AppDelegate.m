@@ -7,11 +7,40 @@
 //
 
 #import "AppDelegate.h"
+#import "URLCache.h"
 
 @implementation AppDelegate
 
+- (NSString *)documentRootPath
+{
+    NSArray* documentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentRootPath = [documentPaths objectAtIndex:0];
+    return documentRootPath;
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+
+
+
+
+
+
+
+URLCache *urlCache = [[URLCache alloc] initWithMemoryCapacity:4 * 1024 * 1024
+                                                 diskCapacity:20 * 1024 * 1024
+                                                     diskPath:nil];
+[NSURLCache setSharedURLCache:urlCache];
+
+
+
+
+
+
+
+
+
+
     [self registerStandardUserDefaults];
     [self systemWideStyleOverrides];
 

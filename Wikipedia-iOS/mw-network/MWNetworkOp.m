@@ -300,4 +300,35 @@
 	[self finish];
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse
+{
+    NSLog(@"CACHING A RESPONSE!!!!");
+    return cachedResponse;
+
+}
+*/
+
+
+
+
 @end
