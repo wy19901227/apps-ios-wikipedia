@@ -140,6 +140,7 @@ history1.discoveryMethod = method;
     thumb.data = imageData;
     thumb.fileName = @"thisThumb.jpg";
     thumb.extension = @"jpg";
+    thumb.mimeType = @"image/jpeg";
     thumb.imageDescription = @"Sample thumb description";
     thumb.dateRetrieved = [NSDate date];
     thumb.width = @100.0f;

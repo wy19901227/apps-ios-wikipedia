@@ -44,6 +44,7 @@
         <attribute name="fileName" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="height" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="imageDescription" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="mimeType" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="sourceUrl" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="width" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <relationship name="article" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Article" inverseName="thumbnailImage" inverseEntity="Article" syncable="YES"/>
@@ -74,7 +75,7 @@
         <element name="Domain" positionX="0" positionY="0" width="128" height="75"/>
         <element name="GalleryImage" positionX="0" positionY="0" width="128" height="90"/>
         <element name="History" positionX="0" positionY="0" width="128" height="105"/>
-        <element name="Image" positionX="0" positionY="0" width="128" height="210"/>
+        <element name="Image" positionX="0" positionY="0" width="128" height="223"/>
         <element name="Saved" positionX="0" positionY="0" width="128" height="75"/>
         <element name="Section" positionX="0" positionY="0" width="128" height="150"/>
         <element name="Site" positionX="0" positionY="0" width="128" height="75"/>

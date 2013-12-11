@@ -579,6 +579,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             thumb.dateRetrieved = [NSDate date];
             thumb.width = thumbWidth;
             thumb.height = thumbHeight;
+            thumb.mimeType = @"image/jpeg";
             
             article.thumbnailImage = thumb;
 

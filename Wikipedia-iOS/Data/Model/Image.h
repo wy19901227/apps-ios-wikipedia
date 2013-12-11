@@ -2,7 +2,7 @@
 //  Image.h
 //  Wikipedia-iOS
 //
-//  Created by Monte Hurd on 12/3/13.
+//  Created by Monte Hurd on 12/11/13.
 //  Copyright (c) 2013 Wikimedia Foundation. All rights reserved.
 //
 
@@ -21,6 +21,7 @@
 @property (nonatomic, retain) NSString * imageDescription;
 @property (nonatomic, retain) NSString * sourceUrl;
 @property (nonatomic, retain) NSNumber * width;
+@property (nonatomic, retain) NSString * mimeType;
 @property (nonatomic, retain) NSSet *article;
 @property (nonatomic, retain) NSSet *galleryImage;
 @property (nonatomic, retain) NSSet *section;
