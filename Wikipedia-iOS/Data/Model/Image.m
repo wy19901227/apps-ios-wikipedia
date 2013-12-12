@@ -15,6 +15,7 @@
 @implementation Image
 
 @dynamic data;
+@dynamic dateLastAccessed;
 @dynamic dateRetrieved;
 @dynamic extension;
 @dynamic fileName;
@@ -23,7 +24,6 @@
 @dynamic mimeType;
 @dynamic sourceUrl;
 @dynamic width;
-@dynamic dateLastAccessed;
 @dynamic article;
 @dynamic galleryImage;
 @dynamic section;

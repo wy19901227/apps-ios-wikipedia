@@ -14,6 +14,7 @@
 @interface Image : NSManagedObject
 
 @property (nonatomic, retain) NSData * data;
+@property (nonatomic, retain) NSDate * dateLastAccessed;
 @property (nonatomic, retain) NSDate * dateRetrieved;
 @property (nonatomic, retain) NSString * extension;
 @property (nonatomic, retain) NSString * fileName;
@@ -22,7 +23,6 @@
 @property (nonatomic, retain) NSString * mimeType;
 @property (nonatomic, retain) NSString * sourceUrl;
 @property (nonatomic, retain) NSNumber * width;
-@property (nonatomic, retain) NSDate * dateLastAccessed;
 @property (nonatomic, retain) NSSet *article;
 @property (nonatomic, retain) NSSet *galleryImage;
 @property (nonatomic, retain) NSSet *section;

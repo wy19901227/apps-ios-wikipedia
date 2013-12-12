@@ -53,9 +53,9 @@
 @property (strong, atomic) NSMutableArray *searchResultsOrdered;
 @property (strong, nonatomic) NSString *apiURL;
 
-@property (strong, nonatomic) DiscoveryMethod *searchDiscoveryMethod;
-@property (strong, nonatomic) DiscoveryMethod *linkDiscoveryMethod;
-@property (strong, nonatomic) DiscoveryMethod *randomDiscoveryMethod;
+@property (strong, nonatomic) NSString *searchDiscoveryMethod;
+@property (strong, nonatomic) NSString *linkDiscoveryMethod;
+@property (strong, nonatomic) NSString *randomDiscoveryMethod;
 
 @property (strong, nonatomic) NSString *currentSearchString;
 @property (strong, nonatomic) NSArray *currentSearchStringWordsToHighlight;
@@ -115,11 +115,11 @@
 
 // TODO: update these associations based on Brion's comments.   -   -   -   -   -   -   -   -   -
 
-    self.searchDiscoveryMethod = (DiscoveryMethod *)[articleDataContext_ getEntityForName: @"DiscoveryMethod" withPredicateFormat:@"name == %@", @"search"];
+    self.searchDiscoveryMethod = @"search";
     
-    self.linkDiscoveryMethod = (DiscoveryMethod *)[articleDataContext_ getEntityForName: @"DiscoveryMethod" withPredicateFormat:@"name == %@", @"link"];
+    self.linkDiscoveryMethod = @"link";
     
-    self.randomDiscoveryMethod = (DiscoveryMethod *)[articleDataContext_ getEntityForName: @"DiscoveryMethod" withPredicateFormat:@"name == %@", @"random"];
+    self.randomDiscoveryMethod = @"random";
 
 //  -   -   -   -   -   -   -   -   -
 
@@ -473,8 +473,8 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
                        AND \
                        domain.name == %@",
                        title,
-                       [SessionSingleton sharedInstance].site.name,
-                       [SessionSingleton sharedInstance].domain.name
+                       [SessionSingleton sharedInstance].site,
+                       [SessionSingleton sharedInstance].domain
     ];
     if (!article) {
         article = [NSEntityDescription insertNewObjectForEntityForName:@"Article" inManagedObjectContext:articleDataContext_];
@@ -871,7 +871,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 #pragma mark Article loading ops
 
-- (void)navigateToPage:(NSString *)title discoveryMethod:(DiscoveryMethod *)discoveryMethod
+- (void)navigateToPage:(NSString *)title discoveryMethod:(NSString *)discoveryMethod
 {
     static BOOL isFirstArticle = YES;
 
@@ -906,7 +906,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     }];
 }
 
-- (void)retrieveArticleForPageTitle:(NSString *)pageTitle discoveryMethod:(DiscoveryMethod *)discoveryMethod
+- (void)retrieveArticleForPageTitle:(NSString *)pageTitle discoveryMethod:(NSString *)discoveryMethod
 {
     Article *article = [self getArticleForTitle:pageTitle];
 
