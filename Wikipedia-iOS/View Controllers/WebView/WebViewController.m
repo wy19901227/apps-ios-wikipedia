@@ -518,6 +518,9 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     Image *thumbnailFromDB = (Image *)[articleDataContext_ getEntityForName: @"Image" withPredicateFormat:@"sourceUrl == %@", thumbURL];
 
     if(thumbnailFromDB){
+
+//TODO: update thumbnailFromDB.dateLastAccessed here! Probably on background thread. Not sure best way to ensure just single object will be updated...
+
         // Yay! Cached thumbnail found! Use it!
         // Needs to be synchronous!
         UIImage *image = [UIImage imageWithData:thumbnailFromDB.data];
@@ -577,6 +580,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             thumb.imageDescription = nil;
             thumb.sourceUrl = thumbURL;
             thumb.dateRetrieved = [NSDate date];
+            thumb.dateLastAccessed = [NSDate date];
             thumb.width = thumbWidth;
             thumb.height = thumbHeight;
             thumb.mimeType = @"image/jpeg";

@@ -143,6 +143,7 @@ history1.discoveryMethod = method;
     thumb.mimeType = @"image/jpeg";
     thumb.imageDescription = @"Sample thumb description";
     thumb.dateRetrieved = [NSDate date];
+    thumb.dateLastAccessed = [NSDate date];
     thumb.width = @100.0f;
     thumb.height = @200.0f;
     thumb.sourceUrl = @"http://www.this_is_a_placeholder.org/image.jpg";

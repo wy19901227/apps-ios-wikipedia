@@ -20,9 +20,10 @@
 @dynamic fileName;
 @dynamic height;
 @dynamic imageDescription;
+@dynamic mimeType;
 @dynamic sourceUrl;
 @dynamic width;
-@dynamic mimeType;
+@dynamic dateLastAccessed;
 @dynamic article;
 @dynamic galleryImage;
 @dynamic section;

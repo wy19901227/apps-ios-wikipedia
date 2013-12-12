@@ -39,6 +39,7 @@
     </entity>
     <entity name="Image" representedClassName="Image" syncable="YES">
         <attribute name="data" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="dateLastAccessed" attributeType="Date" indexed="YES" syncable="YES"/>
         <attribute name="dateRetrieved" attributeType="Date" indexed="YES" syncable="YES"/>
         <attribute name="extension" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="fileName" attributeType="String" indexed="YES" syncable="YES"/>
@@ -75,7 +76,7 @@
         <element name="Domain" positionX="0" positionY="0" width="128" height="75"/>
         <element name="GalleryImage" positionX="0" positionY="0" width="128" height="90"/>
         <element name="History" positionX="0" positionY="0" width="128" height="105"/>
-        <element name="Image" positionX="0" positionY="0" width="128" height="223"/>
+        <element name="Image" positionX="0" positionY="0" width="128" height="238"/>
         <element name="Saved" positionX="0" positionY="0" width="128" height="75"/>
         <element name="Section" positionX="0" positionY="0" width="128" height="150"/>
         <element name="Site" positionX="0" positionY="0" width="128" height="75"/>
