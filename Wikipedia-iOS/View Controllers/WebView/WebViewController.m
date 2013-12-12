@@ -934,6 +934,8 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
                                                      @"action": @"mobileview",
                                                      @"prop": @"sections|text",
                                                      @"sections": @"0",
+                                                     @"onlyrequestedsections": @"1",
+                                                     @"sectionprop": @"toclevel|line|anchor",
                                                      @"page": pageTitle,
                                                      @"format": @"json"
                                                      }
@@ -996,14 +998,12 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
         // Get article section zero html
         NSArray *sections = weakOp.jsonRetrieved[@"mobileview"][@"sections"];
+        NSDictionary *section0Dict = (sections.count == 1) ? sections[0] : nil;
 
-        __block NSString *section0HTML = @"";
-        [sections enumerateObjectsUsingBlock:^(NSDictionary *dict, NSUInteger idx, BOOL *stop){
-            if ([dict[@"id"] isEqual: @0]) {
-                section0HTML = (dict[@"text"]) ? dict[@"text"] : @"";
-                *stop = YES;
-            }
-        }];
+        NSString *section0HTML = @"";
+        if (section0Dict && [section0Dict[@"id"] isEqual: @0] && section0Dict[@"text"]) {
+            section0HTML = section0Dict[@"text"];
+        }
 
         // Add sections for article
         Section *section0 = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_];
@@ -1011,6 +1011,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         section0.title = @"";
         section0.dateRetrieved = [NSDate date];
         section0.html = section0HTML;
+        section0.anchor = @"";
         article.section = [NSSet setWithObjects:section0, nil];
         
         // Add history for article
@@ -1075,6 +1076,8 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
                                                      @"action": @"mobileview",
                                                      @"prop": @"sections|text",
                                                      @"sections": @"1-",
+                                                     @"onlyrequestedsections": @"1",
+                                                     @"sectionprop": @"toclevel|line|anchor",
                                                      @"page": pageTitle,
                                                      @"format": @"json"
                                                      }
@@ -1105,6 +1108,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
                 thisSection.html = section[@"text"];
                 thisSection.tocLevel = section[@"toclevel"];
                 thisSection.dateRetrieved = [NSDate date];
+                thisSection.anchor = (section[@"anchor"]) ? section[@"anchor"] : @"";
                 [article addSectionObject:thisSection];
             }
         }

@@ -49,6 +49,7 @@
         <relationship name="article" maxCount="1" deletionRule="Nullify" destinationEntity="Article" inverseName="saved" inverseEntity="Article" syncable="YES"/>
     </entity>
     <entity name="Section" representedClassName="Section" syncable="YES">
+        <attribute name="anchor" attributeType="String" syncable="YES"/>
         <attribute name="dateRetrieved" attributeType="Date" indexed="YES" syncable="YES"/>
         <attribute name="html" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" indexed="YES" syncable="YES"/>
@@ -64,6 +65,6 @@
         <element name="History" positionX="0" positionY="0" width="128" height="105"/>
         <element name="Image" positionX="0" positionY="0" width="128" height="238"/>
         <element name="Saved" positionX="0" positionY="0" width="128" height="75"/>
-        <element name="Section" positionX="0" positionY="0" width="128" height="150"/>
+        <element name="Section" positionX="0" positionY="0" width="128" height="163"/>
     </elements>
 </model>

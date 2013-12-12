@@ -83,6 +83,7 @@
     section0.html = @"<b>Potato Chips section 0 html!</b>";
     section0.tocLevel = @1;
     section0.dateRetrieved = [NSDate date];
+    section0.anchor = @"potato_anchor_0";
 
     Section *section1 = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:dataContext];
     section1.index = @1;
@@ -90,6 +91,7 @@
     section1.html = @"<b>Potato Chips section 1 html!</b>";
     section1.tocLevel = @1;
     section1.dateRetrieved = [NSDate date];
+    section1.anchor = @"potato_anchor_1";
 
     article.section = [NSSet setWithObjects:section0, section1, nil];
 

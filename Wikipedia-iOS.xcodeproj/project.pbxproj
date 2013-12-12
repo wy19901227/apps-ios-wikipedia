@@ -71,8 +71,8 @@
 		04A70FC71859666400E24515 /* Image.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FC51859666400E24515 /* Image.m */; };
 		04A70FCA1859666F00E24515 /* Saved.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FC91859666F00E24515 /* Saved.m */; };
 		04A70FCB1859666F00E24515 /* Saved.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FC91859666F00E24515 /* Saved.m */; };
-		04A70FCE1859667B00E24515 /* Section.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FCD1859667B00E24515 /* Section.m */; };
-		04A70FCF1859667B00E24515 /* Section.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FCD1859667B00E24515 /* Section.m */; };
+		04A70FD2185A712000E24515 /* Section.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FD1185A712000E24515 /* Section.m */; };
+		04A70FD3185A712000E24515 /* Section.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FD1185A712000E24515 /* Section.m */; };
 		04C43A9D183440B0006C643B /* MWCrumbyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43A9C183440B0006C643B /* MWCrumbyTest.m */; };
 		04C43A9E183440B0006C643B /* MWCrumbyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43A9C183440B0006C643B /* MWCrumbyTest.m */; };
 		04C43AA4183440C1006C643B /* MWNetworkActivityIndicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43AA1183440C1006C643B /* MWNetworkActivityIndicatorManager.m */; };
@@ -182,8 +182,8 @@
 		04A70FC51859666400E24515 /* Image.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Image.m; sourceTree = "<group>"; };
 		04A70FC81859666F00E24515 /* Saved.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Saved.h; sourceTree = "<group>"; };
 		04A70FC91859666F00E24515 /* Saved.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Saved.m; sourceTree = "<group>"; };
-		04A70FCC1859667B00E24515 /* Section.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Section.h; sourceTree = "<group>"; };
-		04A70FCD1859667B00E24515 /* Section.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Section.m; sourceTree = "<group>"; };
+		04A70FD0185A712000E24515 /* Section.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Section.h; sourceTree = "<group>"; };
+		04A70FD1185A712000E24515 /* Section.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Section.m; sourceTree = "<group>"; };
 		04C43A9B183440B0006C643B /* MWCrumbyTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWCrumbyTest.h; sourceTree = "<group>"; };
 		04C43A9C183440B0006C643B /* MWCrumbyTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MWCrumbyTest.m; sourceTree = "<group>"; };
 		04C43AA0183440C1006C643B /* MWNetworkActivityIndicatorManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWNetworkActivityIndicatorManager.h; sourceTree = "<group>"; };
@@ -386,9 +386,9 @@
 		04EA7779184E4CED00D2F3C9 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				04A70FD0185A712000E24515 /* Section.h */,
+				04A70FD1185A712000E24515 /* Section.m */,
 				04FD6C78184EBFCD002CA02F /* ArticleData.xcdatamodeld */,
-				04A70FCC1859667B00E24515 /* Section.h */,
-				04A70FCD1859667B00E24515 /* Section.m */,
 				04A70FC81859666F00E24515 /* Saved.h */,
 				04A70FC91859666F00E24515 /* Saved.m */,
 				04A70FC41859666400E24515 /* Image.h */,
@@ -658,7 +658,7 @@
 				04478641185146210050563B /* HistoryTableHeadingLabel.m in Sources */,
 				04A70FC21859665900E24515 /* History.m in Sources */,
 				044786841856678A0050563B /* AlertLabel.m in Sources */,
-				04A70FCE1859667B00E24515 /* Section.m in Sources */,
+				04A70FD2185A712000E24515 /* Section.m in Sources */,
 				04C43A9D183440B0006C643B /* MWCrumbyTest.m in Sources */,
 				04478635185145090050563B /* SearchBarLogoView.m in Sources */,
 				D4991445181D51DE00E6073C /* main.m in Sources */,
@@ -702,7 +702,7 @@
 				04478630185145090050563B /* HistoryResultCell.m in Sources */,
 				040E5C851846AC13007AFE6F /* ArticleDataContextSingleton.m in Sources */,
 				04A70FC71859666400E24515 /* Image.m in Sources */,
-				04A70FCF1859667B00E24515 /* Section.m in Sources */,
+				04A70FD3185A712000E24515 /* Section.m in Sources */,
 				040E5C4D184564D0007AFE6F /* ArticleDataModel.m in Sources */,
 				D474CC11182AE033002BDE45 /* SiteTests.m in Sources */,
 				D4EE00BA182443FC0090790F /* MWPageTitle.m in Sources */,
