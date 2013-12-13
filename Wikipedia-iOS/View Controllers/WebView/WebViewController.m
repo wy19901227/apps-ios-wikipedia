@@ -382,7 +382,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         self.unsafeToScroll = YES;
 
         // Save scroll location
-        Article *article = [self getArticleForTitle:self.currentArticleTitle];
+        Article *article = [articleDataContext_ getArticleForTitle:self.currentArticleTitle];
         article.lastScrollX = @(scrollView.contentOffset.x);
         article.lastScrollY = @(scrollView.contentOffset.y);
         NSError *error = nil;
@@ -462,26 +462,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 -(NSString *)cleanTitle:(NSString *)title
 {
     return [title stringByReplacingOccurrencesOfString:@"_" withString:@" "];
-}
-
--(Article *)getArticleForTitle:(NSString *)title
-{
-    Article *article = (Article *)[articleDataContext_ getEntityForName: @"Article" withPredicateFormat: @"\
-                       title ==[c] %@ \
-                       AND \
-                       site.name == %@ \
-                       AND \
-                       domain.name == %@",
-                       title,
-                       [SessionSingleton sharedInstance].site,
-                       [SessionSingleton sharedInstance].domain
-    ];
-    if (!article) {
-        article = [NSEntityDescription insertNewObjectForEntityForName:@"Article" inManagedObjectContext:articleDataContext_];
-        article.title = title;
-        article.dateCreated = [NSDate date];
-    }
-    return article;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -571,7 +551,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         NSMutableData *thumbData = weakThumbnailOp.dataRetrieved;
         dispatch_async(dispatch_get_main_queue(), ^(){
 
-            Article *article = [self getArticleForTitle:title];
+            Article *article = [articleDataContext_ getArticleForTitle:title];
             
             Image *thumb = [NSEntityDescription insertNewObjectForEntityForName:@"Image" inManagedObjectContext:articleDataContext_];
             thumb.data = thumbData;
@@ -908,7 +888,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 - (void)retrieveArticleForPageTitle:(NSString *)pageTitle discoveryMethod:(NSString *)discoveryMethod
 {
-    Article *article = [self getArticleForTitle:pageTitle];
+    Article *article = [articleDataContext_ getArticleForTitle:pageTitle];
 
     // If article with sections just show them
     if (article.section.count > 0) {
