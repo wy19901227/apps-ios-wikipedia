@@ -73,6 +73,8 @@
 		04A70FCB1859666F00E24515 /* Saved.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FC91859666F00E24515 /* Saved.m */; };
 		04A70FD2185A712000E24515 /* Section.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FD1185A712000E24515 /* Section.m */; };
 		04A70FD3185A712000E24515 /* Section.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FD1185A712000E24515 /* Section.m */; };
+		04A70FD7185BB6C300E24515 /* URLCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FD6185BB6C300E24515 /* URLCache.m */; };
+		04A70FD8185BB6C300E24515 /* URLCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FD6185BB6C300E24515 /* URLCache.m */; };
 		04C43A9D183440B0006C643B /* MWCrumbyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43A9C183440B0006C643B /* MWCrumbyTest.m */; };
 		04C43A9E183440B0006C643B /* MWCrumbyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43A9C183440B0006C643B /* MWCrumbyTest.m */; };
 		04C43AA4183440C1006C643B /* MWNetworkActivityIndicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43AA1183440C1006C643B /* MWNetworkActivityIndicatorManager.m */; };
@@ -184,6 +186,8 @@
 		04A70FC91859666F00E24515 /* Saved.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Saved.m; sourceTree = "<group>"; };
 		04A70FD0185A712000E24515 /* Section.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Section.h; sourceTree = "<group>"; };
 		04A70FD1185A712000E24515 /* Section.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Section.m; sourceTree = "<group>"; };
+		04A70FD5185BB6C300E24515 /* URLCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = URLCache.h; sourceTree = "<group>"; };
+		04A70FD6185BB6C300E24515 /* URLCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = URLCache.m; sourceTree = "<group>"; };
 		04C43A9B183440B0006C643B /* MWCrumbyTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWCrumbyTest.h; sourceTree = "<group>"; };
 		04C43A9C183440B0006C643B /* MWCrumbyTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MWCrumbyTest.m; sourceTree = "<group>"; };
 		04C43AA0183440C1006C643B /* MWNetworkActivityIndicatorManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWNetworkActivityIndicatorManager.h; sourceTree = "<group>"; };
@@ -325,6 +329,15 @@
 			path = Images;
 			sourceTree = "<group>";
 		};
+		04A70FD4185BB6C300E24515 /* Web Image Interception */ = {
+			isa = PBXGroup;
+			children = (
+				04A70FD5185BB6C300E24515 /* URLCache.h */,
+				04A70FD6185BB6C300E24515 /* URLCache.m */,
+			);
+			path = "Web Image Interception";
+			sourceTree = "<group>";
+		};
 		04C43A9A183440B0006C643B /* mw-crumbtest */ = {
 			isa = PBXGroup;
 			children = (
@@ -445,6 +458,7 @@
 				D4991447181D51DE00E6073C /* AppDelegate.h */,
 				D4991448181D51DE00E6073C /* AppDelegate.m */,
 				D499144A181D51DE00E6073C /* Main_iPhone.storyboard */,
+				04A70FD4185BB6C300E24515 /* Web Image Interception */,
 				0447866C1852B5010050563B /* Session */,
 				0466F44C183A30CC00EA1FD7 /* Images */,
 				040E5C50184673F2007AFE6F /* Data */,
@@ -647,6 +661,7 @@
 				0447867C1852BBFE0050563B /* NSManagedObjectContext+SimpleFetch.m in Sources */,
 				04142A8F184F974E006EF779 /* NSDate-Utilities.m in Sources */,
 				04C43AC2183442FC006C643B /* NSURLRequest+DictionaryRequest.m in Sources */,
+				04A70FD7185BB6C300E24515 /* URLCache.m in Sources */,
 				044786881856E4DB0050563B /* UIWebView+Reveal.m in Sources */,
 				04C43ABE183442FC006C643B /* NSRunLoop+TimeOutAndFlag.m in Sources */,
 				04C43AA6183440C1006C643B /* MWNetworkOp.m in Sources */,
@@ -696,6 +711,7 @@
 				D4EE00BD1824459D0090790F /* PageTitleTests.m in Sources */,
 				04C43AB61834423C006C643B /* NetworkOpCrumbyTests.m in Sources */,
 				044786701852B5010050563B /* SessionSingleton.m in Sources */,
+				04A70FD8185BB6C300E24515 /* URLCache.m in Sources */,
 				04478634185145090050563B /* HistoryViewController.m in Sources */,
 				04C43AC1183442FC006C643B /* NSString+Extras.m in Sources */,
 				04FD6C7B184EBFCD002CA02F /* ArticleData.xcdatamodeld in Sources */,

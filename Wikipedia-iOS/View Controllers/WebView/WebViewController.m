@@ -491,25 +491,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     cell.textLabel.attributedText = [self getAttributedTitle:title];
     
     NSString *thumbURL = self.searchResultsOrdered[indexPath.row][@"thumbnail"][@"source"];
-    NSNumber *thumbWidth = self.searchResultsOrdered[indexPath.row][@"thumbnail"][@"width"];
-    NSNumber *thumbHeight = self.searchResultsOrdered[indexPath.row][@"thumbnail"][@"height"];
-
-    // Check for db record for thumb. If found use it rather than downloading it again!
-    Image *thumbnailFromDB = (Image *)[articleDataContext_.mainContext getEntityForName: @"Image" withPredicateFormat:@"sourceUrl == %@", thumbURL];
-
-    if(thumbnailFromDB){
-
-//TODO: update thumbnailFromDB.dateLastAccessed here! Probably on background thread. Not sure best way to ensure just single object will be updated...
-
-        // Yay! Cached thumbnail found! Use it!
-        // Needs to be synchronous!
-        UIImage *image = [UIImage imageWithData:thumbnailFromDB.data];
-        cell.imageView.image = image;
-        cell.useField = YES;
-        return cell;
-    }
-
-    // If execution reaches this point a cached core data thumb was not found.
 
     // Set thumbnail placeholder
     cell.imageView.image = [UIImage imageNamed:@"logo-search-placeholder.png"];
@@ -545,33 +526,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             UIImage *image = [UIImage imageWithData:weakThumbnailOp.dataRetrieved];
             cell.imageView.image = image;
             cell.useField = YES;
-        });
-
-        // Save thumbnail to core data article.image record for later use. This can be async.
-        NSMutableData *thumbData = weakThumbnailOp.dataRetrieved;
-        dispatch_async(dispatch_get_main_queue(), ^(){
-
-            Article *article = [articleDataContext_.mainContext getArticleForTitle:title];
-            
-            Image *thumb = [NSEntityDescription insertNewObjectForEntityForName:@"Image" inManagedObjectContext:articleDataContext_.mainContext];
-            thumb.data = thumbData;
-            thumb.fileName = [thumbURL lastPathComponent];
-            thumb.extension = [thumbURL pathExtension];
-            thumb.imageDescription = nil;
-            thumb.sourceUrl = thumbURL;
-            thumb.dateRetrieved = [NSDate date];
-            thumb.dateLastAccessed = [NSDate date];
-            thumb.width = thumbWidth;
-            thumb.height = thumbHeight;
-            thumb.mimeType = @"image/jpeg";
-            
-            article.thumbnailImage = thumb;
-
-            article.site = [SessionSingleton sharedInstance].site;     //self.currentSite;
-            article.domain = [SessionSingleton sharedInstance].domain; //self.currentDomain;
-
-            NSError *error = nil;
-            [articleDataContext_.mainContext save:&error];
         });
     };
     [thumbnailQ_ addOperation:thumbnailOp];
@@ -893,12 +847,35 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     // If article with sections just show them
     if (article.section.count > 0) {
         [self displayArticle:article];
+
+        
+//TODO: add code here attempting to downloading thumbnail for article if article.thumbnailImage is unset at this point.
+
+// Note: If no thumb is able to be downloaded even after this, the history controller,
+// upon confirming that article.thumbnailImage remains unset, could be made to
+// show a section image from the article instead (would just show it, *not* save
+// any association).
+
+
         return;
     }else{
         // Discard the empty article created in mainContext by getArticleForTitle.
         [articleDataContext_.mainContext deleteObject:article];
+
         // Needed is an article created in the *worker* context since that's what's updated below.
         article = [articleDataContext_.workerContext getArticleForTitle:pageTitle];
+    }
+
+    // Associate thumbnail with article.
+    // If search result for this pageTitle had a thumbnail url associated with it, see if
+    // a core data image object exists with a matching sourceURL. If so make the article
+    // thumbnailImage property point to that core data image object. This associates the
+    // search result thumbnail with the article.
+    NSArray *result = [self.searchResultsOrdered filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"(title == %@) AND (thumbnail.source.length > 0)", pageTitle]];
+    if (result.count == 1) {
+        NSString *thumbURL = result[0][@"thumbnail"][@"source"];
+        Image *thumb = (Image *)[articleDataContext_.workerContext getEntityForName: @"Image" withPredicateFormat:@"sourceUrl == %@", thumbURL];
+        if (thumb) article.thumbnailImage = thumb;
     }
 
     // If no sections core data article may have been created when thumbnails were retrieved (before any sections are fetched)
