@@ -324,6 +324,13 @@
 			path = Queues;
 			sourceTree = "<group>";
 		};
+		04293002186030B0002A13FC /* SavedPages */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = SavedPages;
+			sourceTree = "<group>";
+		};
 		0447861F185145090050563B /* History */ = {
 			isa = PBXGroup;
 			children = (
@@ -420,6 +427,7 @@
 			isa = PBXGroup;
 			children = (
 				0447861F185145090050563B /* History */,
+				04293002186030B0002A13FC /* SavedPages */,
 				04292FE1185FB9D7002A13FC /* SearchNav */,
 				04292FEE185FBA70002A13FC /* SearchResults */,
 				04478625185145090050563B /* WebView */,

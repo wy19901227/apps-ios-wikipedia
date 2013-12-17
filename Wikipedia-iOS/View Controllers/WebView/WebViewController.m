@@ -80,6 +80,10 @@
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(historyToggle) name:@"HistoryToggle" object:nil];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(saveCurrentPage) name:@"SavePage" object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(savedPagesToggle) name:@"SavedPagesToggle" object:nil];
+
     self.alertLabel.text = @"";
 
     articleDataContext_ = [ArticleDataContextSingleton sharedInstance];
@@ -208,6 +212,33 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     [self performSegueWithIdentifier:@"ShowHistorySegue" sender:self];
 }
 
+#pragma Saved Pages
+
+-(void)saveCurrentPage
+{
+    [articleDataContext_.workerContext performBlock:^(){
+        Article *article = [articleDataContext_.workerContext getArticleForTitle:[self getCurrentArticleTitle]];
+
+        //NSLog(@"SAVE PAGE FOR %@ COUNT = %d", article.title, article.saved.count);
+        if (article && (article.saved.count == 0)) {
+            NSLog(@"SAVED PAGE %@", article.title);
+            // Save!
+            Saved *saved = [NSEntityDescription insertNewObjectForEntityForName:@"Saved" inManagedObjectContext:articleDataContext_.workerContext];
+            saved.dateSaved = [NSDate date];
+            [article addSavedObject:saved];
+            
+            NSError *error = nil;
+            [articleDataContext_.workerContext save:&error];
+            NSLog(@"SAVE PAGE ERROR = %@", error);
+        }
+    }];
+}
+
+-(void)savedPagesToggle
+{
+    NSLog(@"TOGGLE SAVED PAGES");
+}
+
 #pragma mark Web view scroll offset recording
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
@@ -305,11 +336,12 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
         NSString *cleanTitle = [self cleanTitle:title];
 
-        // Hide the keyboard.
-        [self.searchNavController resignSearchFieldFirstResponder];
-
         // Don't try to load nothing. Core data takes exception with such nonsense.
         if (cleanTitle == nil) return;
+        if (cleanTitle.length == 0) return;
+
+        // Hide the keyboard.
+        [self.searchNavController resignSearchFieldFirstResponder];
         
         // Don't reload an article if it's already showing! The exception is if the article
         // being shown is the first article being shown. In that case, lastViewedArticleTitle
