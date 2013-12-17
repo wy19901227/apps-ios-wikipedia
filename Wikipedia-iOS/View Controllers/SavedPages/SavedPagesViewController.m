@@ -97,14 +97,14 @@
     //XCTAssert(error == nil, @"Could not fetch.");
     for (Saved *savedPage in savedPagesEntities) {
         NSLog(@"SAVED:\n\t\
-            article: %@\n\t\
-            date: %@\n\t\
-            image: %@",
-            savedPage.article.title,
-            savedPage.dateSaved,
-            savedPage.article.thumbnailImage.fileName
-        );
-        [pages addObject:savedPage];
+              article: %@\n\t\
+              date: %@\n\t\
+              image: %@",
+              savedPage.article.title,
+              savedPage.dateSaved,
+              savedPage.article.thumbnailImage.fileName
+              );
+        [pages addObject:savedPage.objectID];
     }
     
     [self.savedPagesDataArray addObject:[@{@"data": pages} mutableCopy]];
@@ -132,15 +132,19 @@
     
     NSDictionary *dict = self.savedPagesDataArray[indexPath.section];
     NSArray *array = [dict objectForKey:@"data"];
-    
-    Saved *savedEntry = (Saved *)array[indexPath.row];
+
+    __block Saved *savedEntry = nil;
+    [articleDataContext_.mainContext performBlockAndWait:^(){
+        NSManagedObjectID *savedEntryId = (NSManagedObjectID *)array[indexPath.row];
+        savedEntry = (Saved *)[articleDataContext_.mainContext objectWithID:savedEntryId];
+    }];
     
     NSString *title = [savedEntry.article.title stringByReplacingOccurrencesOfString:@"_" withString:@" "];
     
     cell.textLabel.text = title;
     cell.textLabel.textColor = SAVED_PAGES_TEXT_COLOR;
     
-cell.methodImageView.image = nil;
+    cell.methodImageView.image = nil;
 
     Image *thumbnailFromDB = savedEntry.article.thumbnailImage;
     if(thumbnailFromDB){
@@ -174,8 +178,12 @@ cell.methodImageView.image = nil;
     NSDictionary *dict = self.savedPagesDataArray[indexPath.section];
     NSArray *array = dict[@"data"];
     selectedCell = array[indexPath.row];
-    
-    Saved *savedEntry = (Saved *)array[indexPath.row];
+
+    __block Saved *savedEntry = nil;
+    [articleDataContext_.mainContext performBlockAndWait:^(){
+        NSManagedObjectID *savedEntryId = (NSManagedObjectID *)array[indexPath.row];
+        savedEntry = (Saved *)[articleDataContext_.mainContext objectWithID:savedEntryId];
+    }];
 
     [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
     
@@ -202,6 +210,51 @@ cell.methodImageView.image = nil;
         }
     }
     return nil;
+}
+
+#pragma mark - Delete
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    return YES;
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        [self deleteSavedPageForIndexPath:indexPath];
+    }
+}
+
+-(void)deleteSavedPageForIndexPath:(NSIndexPath *)indexPath
+{
+    [articleDataContext_.mainContext performBlock:^(){
+        NSManagedObjectID *savedEntryId = (NSManagedObjectID *)self.savedPagesDataArray[indexPath.section][@"data"][indexPath.row];
+        Saved *savedEntry = (Saved *)[articleDataContext_.mainContext objectWithID:savedEntryId];
+        
+        if (savedEntry) {
+            BOOL isLastItem = [self isLastItem:indexPath];
+            [self.savedPagesDataArray[indexPath.section][@"data"] removeObject:savedEntryId];
+            if (isLastItem) {
+                // Fix for funny animation on last item deletion.
+                [self.tableView reloadData];
+            }else{
+                [self.tableView beginUpdates];
+                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.tableView endUpdates];
+            }
+            NSError *error = nil;
+            [articleDataContext_.mainContext deleteObject:savedEntry];
+            [articleDataContext_.mainContext save:&error];
+            //NSLog(@"DELETE SAVED PAGE ERROR = %@", error);
+        }
+    }];
+}
+
+-(BOOL)isLastItem:(NSIndexPath *)indexPath
+{
+    NSDictionary *dict = self.savedPagesDataArray[indexPath.section];
+    NSArray *array = dict[@"data"];
+    //NSLog(@"indexPath.row = %d last array position = %d", indexPath.row, array.count - 1);
+    return (indexPath.row == (array.count - 1)) ? YES :NO;
 }
 
 @end

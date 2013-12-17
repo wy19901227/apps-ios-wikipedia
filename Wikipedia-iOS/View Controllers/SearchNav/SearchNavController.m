@@ -155,8 +155,8 @@
     if (sender.state == UIGestureRecognizerStateBegan) {
         CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
         animation.autoreverses = YES;
-        animation.duration = 0.3;
-        animation.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(1.4, 1.4, 1)];
+        animation.duration = 0.15;
+        animation.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(2.4, 2.4, 1)];
         [self.searchField.rightView.layer addAnimation:animation forKey:nil];
 
         [[NSNotificationCenter defaultCenter] postNotificationName:@"SavePage" object:self userInfo:nil];
