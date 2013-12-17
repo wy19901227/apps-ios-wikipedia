@@ -5,6 +5,35 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
     </dependencies>
     <scenes>
+        <!--Saved Pages View Controller-->
+        <scene sceneID="IrT-ak-0hr">
+            <objects>
+                <tableViewController storyboardIdentifier="SavedPagesViewController" id="5JY-JE-rua" customClass="SavedPagesViewController" sceneMemberID="viewController">
+                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="Ua7-PJ-YVJ">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <prototypes>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SavedPagesCell" id="eeE-af-P9f">
+                                <rect key="frame" x="0.0" y="86" width="320" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="eeE-af-P9f" id="a63-Yx-epa">
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="5JY-JE-rua" id="uK7-PQ-fjg"/>
+                            <outlet property="delegate" destination="5JY-JE-rua" id="JQJ-Dt-Ny9"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" id="Tl4-Rx-ds8"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="PDQ-kS-sDG" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="758" y="741"/>
+        </scene>
         <!--History View Controller-->
         <scene sceneID="MQq-lR-zdc">
             <objects>
@@ -14,7 +43,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="exH-Vc-J0k">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="HistoryCell" id="exH-Vc-J0k">
                                 <rect key="frame" x="0.0" y="86" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="exH-Vc-J0k" id="NcO-gl-2EB">
@@ -32,7 +61,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dIj-5a-go1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="921" y="409"/>
+            <point key="canvasLocation" x="925" y="441"/>
         </scene>
         <!--Search Results Controller-->
         <scene sceneID="Jmf-xS-W4M">
@@ -138,6 +167,7 @@
                         <outlet property="alertView" destination="arg-wQ-gQS" id="bds-1g-Ynr"/>
                         <outlet property="webView" destination="WeL-Mj-Zsh" id="iQJ-zA-CLH"/>
                         <segue destination="0U8-c6-wgE" kind="push" identifier="ShowHistorySegue" id="ajd-Ao-Blc"/>
+                        <segue destination="5JY-JE-rua" kind="push" identifier="ShowSavedPagesSegue" id="LQ6-al-Ud5"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>

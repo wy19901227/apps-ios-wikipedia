@@ -237,6 +237,14 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 -(void)savedPagesToggle
 {
     NSLog(@"TOGGLE SAVED PAGES");
+    if(self.navigationController.topViewController != self){
+        // Hide if it's already showing.
+        [self.navigationController popToViewController:self animated:YES];
+        return;
+    }
+    
+    [self.searchNavController resignSearchFieldFirstResponder];
+    [self performSegueWithIdentifier:@"ShowSavedPagesSegue" sender:self];
 }
 
 #pragma mark Web view scroll offset recording
