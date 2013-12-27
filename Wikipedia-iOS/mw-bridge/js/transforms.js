@@ -1,3 +1,4 @@
+
 ( function() {
  
     var Transforms = function () {};
@@ -10,6 +11,7 @@
     }
 
     function moveInfobox( leadContent ) {
+
         // Move infobox to the bottom of the lead section
         var infobox = leadContent.querySelector( "table.infobox" );
         if ( infobox ) {

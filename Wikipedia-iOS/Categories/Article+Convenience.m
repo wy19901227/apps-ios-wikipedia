@@ -7,7 +7,7 @@
 
 -(NSArray *)getSectionImagesUsingContext:(NSManagedObjectContext *)context
 {
-    NSPredicate * predicate = [NSPredicate predicateWithFormat:@"section.article == %@", self];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"section.article == %@ AND (image.width > %@ OR image.height > %@)", self, @(99), @(99)];
     
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entity = [NSEntityDescription entityForName: @"SectionImage"
@@ -27,6 +27,28 @@
         NSLog(@"error = %@", error);
     }
     return sectionImages;
+}
+
+-(NSArray *)getSectionsUsingContext:(NSManagedObjectContext *)context
+{
+    NSPredicate * predicate = [NSPredicate predicateWithFormat:@"article == %@", self];
+    
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entity = [NSEntityDescription entityForName: @"Section"
+                                              inManagedObjectContext: context];
+    [fetchRequest setEntity:entity];
+    [fetchRequest setPredicate:predicate];
+    
+    // Sort by section.
+    NSSortDescriptor *sectionSort = [[NSSortDescriptor alloc] initWithKey:@"index" ascending:YES selector:nil];
+    [fetchRequest setSortDescriptors:@[sectionSort]];
+    
+    NSError *error = nil;
+    NSArray *sections = [context executeFetchRequest:fetchRequest error:&error];
+    if (error) {
+        NSLog(@"error = %@", error);
+    }
+    return sections;
 }
 
 -(UIImage *)getThumbnailUsingContext:(NSManagedObjectContext *)context

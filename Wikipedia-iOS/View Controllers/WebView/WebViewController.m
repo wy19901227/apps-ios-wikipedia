@@ -26,6 +26,8 @@
 #import "SearchResultsController.h"
 #import "MainMenuTableViewController.h"
 #import "TFHpple.h"
+#import "TOCViewController.h"
+#import "UIWebView+ElementLocation.h"
 
 @interface WebViewController (){
 
@@ -107,6 +109,50 @@
 
     // Observe chages to the search box search term.
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(searchStringChanged) name:@"SearchStringChanged" object:nil];
+    
+    // Add gesture for showing table of contents.
+    UITapGestureRecognizer *twoFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tocToggle)];
+    twoFingerTap.numberOfTouchesRequired = 2;
+    twoFingerTap.numberOfTapsRequired = 1;
+    [self.webView addGestureRecognizer:twoFingerTap];
+}
+
+#pragma mark Table of contents
+
+-(void)tocToggle
+{
+    for (UIViewController *childVC in self.childViewControllers) {
+        if([childVC isMemberOfClass:[TOCViewController class]]){
+            TOCViewController *vc = (TOCViewController *)childVC;
+            [vc hideTOC];
+            return;
+        }
+    }
+
+    TOCViewController *tocVC = [self.navigationController.storyboard instantiateViewControllerWithIdentifier:@"TOCViewController"];
+    [self addChildViewController:tocVC];
+    
+    [self.view addSubview:tocVC.view];
+    
+    [tocVC didMoveToParentViewController:self];
+
+    //[self debugScrollLeadSanFranciscoArticleImageToTopLeft];
+}
+
+-(BOOL)shouldAutomaticallyForwardAppearanceMethods
+{
+    // This method is called to determine whether to
+    // automatically forward appearance-related containment
+    //  callbacks to child view controllers.
+    return YES;
+    
+}
+-(BOOL)shouldAutomaticallyForwardRotationMethods
+{
+    // This method is called to determine whether to
+    // automatically forward rotation-related containment
+    // callbacks to child view controllers.
+    return YES;
 }
 
 #pragma mark Search terms changes
@@ -290,6 +336,9 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         // to a saved position! Super annoying otherwise.
         self.unsafeToScroll = YES;
 
+        //[self printLiveContentLocationTestingOutputToConsole];
+        //NSLog(@"%@", NSStringFromCGPoint(scrollView.contentOffset));
+
         [articleDataContext_.workerContext performBlock:^(){
             // Save scroll location
             NSManagedObjectID *articleID = [articleDataContext_.workerContext getArticleIDForTitle:[self getCurrentArticleTitle]];
@@ -300,6 +349,34 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             [articleDataContext_.workerContext save:&error];
         }];
     }
+}
+
+#pragma mark Web view html content live location retrieval
+
+-(void)printLiveContentLocationTestingOutputToConsole
+{
+    // Test with the top image (presently) on the San Francisco article.
+    // (would test p.x and p.y against CGFLOAT_MAX to ensure good value was retrieved)
+    CGPoint p = [self.webView getScreenCoordsForHtmlImageWithSrc:@"//upload.wikimedia.org/wikipedia/commons/thumb/d/da/SF_From_Marin_Highlands3.jpg/280px-SF_From_Marin_Highlands3.jpg"];
+    NSLog(@"p = %@", NSStringFromCGPoint(p));
+
+    CGPoint p2 = [self.webView getWebViewCoordsForHtmlImageWithSrc:@"//upload.wikimedia.org/wikipedia/commons/thumb/d/da/SF_From_Marin_Highlands3.jpg/280px-SF_From_Marin_Highlands3.jpg"];
+    NSLog(@"p2 = %@", NSStringFromCGPoint(p2));
+
+    // Also test location of second section on page.
+    // (would test r with CGRectIsNull(r) to ensure good values were retrieved)
+    CGRect r = [self.webView getScreenRectForHtmlElementWithId:@"content_block_1"];
+    NSLog(@"r = %@", NSStringFromCGRect(r));
+
+    CGRect r2 = [self.webView getWebViewRectForHtmlElementWithId:@"content_block_1"];
+    NSLog(@"r2 = %@", NSStringFromCGRect(r2));
+}
+
+-(void)debugScrollLeadSanFranciscoArticleImageToTopLeft
+{
+    // Awesome! Now works regarless of pinch-zoom scale!
+    CGPoint p = [self.webView getWebViewCoordsForHtmlImageWithSrc:@"//upload.wikimedia.org/wikipedia/commons/thumb/d/da/SF_From_Marin_Highlands3.jpg/280px-SF_From_Marin_Highlands3.jpg"];
+    [self.webView.scrollView setContentOffset:p animated:YES];
 }
 
 #pragma mark Image section associations
@@ -657,15 +734,8 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 //TODO: Fix this. It causes fade out even when no connection, which blanks out current article.
 //            [self.webView reveal];
 
-            if(sections.count > 1){
-                // Show loading more sections message so user can see more is on the way
-                self.alertLabel.text = SEARCH_LOADING_MSG_SECTION_REMAINING;
-            }else{
-                // Show article loaded message
-                self.alertLabel.text = SEARCH_LOADING_MSG_ARTICLE_LOADED;
-                // Then hide the message (hidden has been overriden to fade out slowly)
-                self.alertLabel.hidden = YES;
-            }
+            // Show loading more sections message so user can see more is on the way
+            self.alertLabel.text = SEARCH_LOADING_MSG_SECTION_REMAINING;
         }];
     };
     
@@ -697,16 +767,18 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         [self networkActivityIndicatorPop];
         if(weakRemainingSectionsOp.isCancelled){
             //NSLog(@"completionBlock bailed (because op was cancelled) for %@", pageTitle);
+            self.alertLabel.hidden = YES;
             return;
         }
         
         // Get article sections text (faster joining array elements than appending a string)
         NSDictionary *sections = weakRemainingSectionsOp.jsonRetrieved[@"mobileview"][@"sections"];
+
         NSMutableArray *sectionText = [@[] mutableCopy];
         for (NSDictionary *section in sections) {
             if (![section[@"id"] isEqual: @0]) {
 
-                NSString *sectionHTMLWithID = [self surroundHTML:section[@"text"] withDivForSection:section[@"index"]];
+                NSString *sectionHTMLWithID = [self surroundHTML:section[@"text"] withDivForSection:section[@"id"]];
 
                 [sectionText addObject:sectionHTMLWithID];
 
