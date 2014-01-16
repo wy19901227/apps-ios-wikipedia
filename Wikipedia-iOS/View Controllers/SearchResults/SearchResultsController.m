@@ -9,8 +9,8 @@
 #import "NSURLRequest+DictionaryRequest.h"
 #import "SearchResultCell.h"
 #import "SearchBarTextField.h"
-#import "AlertLabel.h"
 #import "SessionSingleton.h"
+#import "UIViewController+Alert.h"
 
 @interface SearchResultsController (){
     CGFloat scrollViewDragBeganVerticalOffset_;
@@ -85,7 +85,7 @@
     [[QueuesSingleton sharedInstance].searchQ cancelAllOperations];
 
     // Show "Searching..." message.
-    self.webViewController.alertLabel.text = SEARCH_LOADING_MSG_SEARCHING;
+    [self showAlert:SEARCH_LOADING_MSG_SEARCHING];
 
     MWNetworkOp *searchOp = [[MWNetworkOp alloc] init];
     searchOp.delegate = self;
@@ -101,11 +101,11 @@
     __weak MWNetworkOp *weakSearchOp = searchOp;
     searchOp.aboutToStart = ^{
         //NSLog(@"search op aboutToStart for %@", searchTerm);
-        [self networkActivityIndicatorPush];
+        [[MWNetworkActivityIndicatorManager sharedManager] push];
     };
     
     searchOp.completionBlock = ^(){
-        [self networkActivityIndicatorPop];
+        [[MWNetworkActivityIndicatorManager sharedManager] pop];
         if(weakSearchOp.isCancelled){
             //NSLog(@"search op completionBlock bailed (because op was cancelled) for %@", searchTerm);
             return;
@@ -119,12 +119,12 @@
             // the time the block is dequeued)
             NSString *errorMsg = weakSearchOp.error.localizedDescription;
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-                self.webViewController.alertLabel.text = errorMsg;
+                [self showAlert:errorMsg];
             }];
             return;
         }else{
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-                self.webViewController.alertLabel.text = @"";
+                [self showAlert:@""];
             }];
         }
         
@@ -162,7 +162,7 @@
     searchThumbURLsOp.delegate = self;
 
     searchThumbURLsOp.aboutToStart = ^{
-        [self networkActivityIndicatorPush];
+        [[MWNetworkActivityIndicatorManager sharedManager] push];
         NSArray *searchResults = (NSArray *)weakSearchOp.jsonRetrieved;
         NSArray *titles = searchResults[1];
         NSString *barDelimitedTitles = [titles componentsJoinedByString:@"|"];
@@ -180,7 +180,7 @@
     };
     
     searchThumbURLsOp.completionBlock = ^(){
-        [self networkActivityIndicatorPop];
+        [[MWNetworkActivityIndicatorManager sharedManager] pop];
         if(weakSearchThumbURLsOp.isCancelled){
             //NSLog(@"search thumb urls op completionBlock bailed (because op was cancelled) for %@", searchTerm);
             return;
@@ -303,10 +303,10 @@
     __weak MWNetworkOp *weakThumbnailOp = thumbnailOp;
     thumbnailOp.aboutToStart = ^{
         //NSLog(@"thumbnail op aboutToStart with request %@", weakThumbnailOp.request);
-        [self networkActivityIndicatorPush];
+        [[MWNetworkActivityIndicatorManager sharedManager] push];
     };
     thumbnailOp.completionBlock = ^(){
-        [self networkActivityIndicatorPop];
+        [[MWNetworkActivityIndicatorManager sharedManager] pop];
         if(weakThumbnailOp.isCancelled){
             //NSLog(@"thumbnail op completionBlock bailed (because op was cancelled) for %@", searchTerm);
             return;
@@ -366,24 +366,6 @@
 -(void)popToWebViewController
 {
     [self.navigationController popToViewController:self.webViewController animated:NO];
-}
-
-#pragma mark Network activity indicator methods
-
--(void)networkActivityIndicatorPush
-{
-    dispatch_async(dispatch_get_main_queue(), ^(){
-        // Show status bar spinner
-        [[MWNetworkActivityIndicatorManager sharedManager] show];
-    });
-}
-
--(void)networkActivityIndicatorPop
-{
-    dispatch_async(dispatch_get_main_queue(), ^(){
-        // Hide status bar spinner
-        [[MWNetworkActivityIndicatorManager sharedManager] hide];
-    });
 }
 
 #pragma mark Memory

@@ -19,19 +19,25 @@
 #import "NSDate-Utilities.h"
 #import "SessionSingleton.h"
 #import "NSManagedObjectContext+SimpleFetch.h"
-#import "AlertLabel.h"
 #import "UIWebView+Reveal.h"
 #import "SearchNavController.h"
 #import "QueuesSingleton.h"
 #import "SearchResultsController.h"
 #import "MainMenuTableViewController.h"
-#import "TFHpple.h"
 #import "TOCViewController.h"
 #import "UIWebView+ElementLocation.h"
 #import "SectionEditorViewController.h"
+#import "Section+ImageRecords.h"
+#import "UIViewController+Alert.h"
 
 #define WEB_VIEW_SCALE_WHEN_TOC_VISIBLE (UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? 0.45f : 0.70f)
 #define TOC_TOGGLE_ANIMATION_DURATION 0.35f
+
+typedef enum {
+    DISPLAY_LEAD_SECTION = 0,
+    DISPLAY_APPEND_NON_LEAD_SECTIONS = 1,
+    DISPLAY_ALL_SECTIONS = 2
+} DisplayMode;
 
 @interface WebViewController (){
 
@@ -57,24 +63,6 @@
 @implementation WebViewController {
     CGFloat scrollViewDragBeganVerticalOffset_;
     ArticleDataContextSingleton *articleDataContext_;
-}
-
-#pragma mark Network activity indicator methods
-
--(void)networkActivityIndicatorPush
-{
-    dispatch_async(dispatch_get_main_queue(), ^(){
-        // Show status bar spinner
-        [[MWNetworkActivityIndicatorManager sharedManager] show];
-    });
-}
-
--(void)networkActivityIndicatorPop
-{
-    dispatch_async(dispatch_get_main_queue(), ^(){
-        // Hide status bar spinner
-        [[MWNetworkActivityIndicatorManager sharedManager] hide];
-    });
 }
 
 #pragma mark View lifecycle methods
@@ -113,7 +101,7 @@
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(searchFieldBecameFirstResponder) name:@"SearchFieldBecameFirstResponder" object:nil];
 
-    self.alertLabel.text = @"";
+    [self showAlert:@""];
 
     articleDataContext_ = [ArticleDataContextSingleton sharedInstance];
     
@@ -233,7 +221,7 @@
                     self.webView.transform = CGAffineTransformIdentity;
                     self.webViewLeftConstraint.constant = 0;
                     self.bottomBarViewBottomConstraint.constant = 0;
-                    [self.view layoutIfNeeded];
+                    [self.view.superview layoutIfNeeded];
                 } completion:^(BOOL done){
                     [tocVC.view removeFromSuperview];
                     [tocVC removeFromParentViewController];
@@ -252,7 +240,7 @@
                 [self.view addSubview:tocVC.view];
                 
                 [self constrainTOCView:tocVC.view];
-                [self.view layoutIfNeeded];
+                [self.view.superview layoutIfNeeded];
                 
                 [tocVC didMoveToParentViewController:self];
                 
@@ -261,7 +249,7 @@
                     self.bottomBarViewBottomConstraint.constant = -self.bottomBarViewHeightConstraint.constant;
                     self.webView.transform = xf;
                     self.webViewLeftConstraint.constant = self.view.frame.size.width * (1.0f - WEB_VIEW_SCALE_WHEN_TOC_VISIBLE);
-                    [self.view layoutIfNeeded];
+                    [self.view.superview layoutIfNeeded];
                 }];
             }
         }
@@ -448,7 +436,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     // Ensure the web VC is the top VC.
     [self.navigationController popToViewController:self animated:YES];
 
-    self.alertLabel.hidden = YES;
+    [self showAlert:@""];
 }
 
 -(void)mainMenuToggle
@@ -477,7 +465,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         return;
     }
     
-    //self.searchNavController.searchField.text = @"";
     [self.searchNavController resignSearchFieldFirstResponder];
     [self performSegueWithIdentifier:@"ShowHistorySegue" sender:self];
 }
@@ -595,109 +582,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     [self.webView.scrollView setContentOffset:p animated:YES];
 }
 
-#pragma mark Image section associations
-
--(void)createSectionImageRecordsForSectionHtml:(NSManagedObjectID *)sectionID onContext:(NSManagedObjectContext *)context
-{
-    // Parse the section html extracting the image urls (in order)
-    // See: http://www.raywenderlich.com/14172/how-to-parse-html-on-ios
-    // for TFHpple details.
-    
-    // createSectionImageRecordsForSectionHtml needs to be called *after* article
-    // record created but before section html sent across bridge.
-
-    [context performBlockAndWait:^(){
-        Section *section = (Section *)[context objectWithID:sectionID];
-        
-        NSData *sectionHtmlData = [section.html dataUsingEncoding:NSUTF8StringEncoding];
-        TFHpple *sectionParser = [TFHpple hppleWithHTMLData:sectionHtmlData];
-        //NSString *imageXpathQuery = @"//img[@src]";
-        NSString *imageXpathQuery = @"//img[@src][not(ancestor::table[@class='navbox'])]";
-        // ^ the navbox exclusion prevents images from the hidden navbox table from appearing
-        // in the last section's TOC cell.
-
-        NSArray *imageNodes = [sectionParser searchWithXPathQuery:imageXpathQuery];
-        NSUInteger imageIndexInSection = 0;
-
-        for (TFHppleElement *imageNode in imageNodes) {
-
-            NSString *height = imageNode.attributes[@"height"];
-            NSString *width = imageNode.attributes[@"width"];
-
-            if (
-                height.integerValue < THUMBNAIL_MINIMUM_SIZE_TO_CACHE.width
-                ||
-                width.integerValue < THUMBNAIL_MINIMUM_SIZE_TO_CACHE.height
-                )
-            {
-                //NSLog(@"SKIPPING - IMAGE TOO SMALL");
-                continue;
-            }
-            
-            NSString *alt = imageNode.attributes[@"alt"];
-            NSString *src = imageNode.attributes[@"src"];
-
-            Image *image = (Image *)[context getEntityForName: @"Image" withPredicateFormat:@"sourceUrl == %@", src];
-            
-            if (image) {
-                // If Image record already exists, update its attributes.
-                image.alt = alt;
-                image.height = @(height.integerValue);
-                image.width = @(width.integerValue);
-            }else{
-                // If no Image record, create one setting its "data" attribute to nil. This allows the record to be
-                // created so it can be associated with the section in which this , then when the URLCache intercepts the request for this image
-                image = [NSEntityDescription insertNewObjectForEntityForName:@"Image" inManagedObjectContext:context];
-
-                /*
-                 Moved imageData into own entity:
-                    "For small to modest sized BLOBs (and CLOBs), you should create a separate
-                    entity for the data and create a to-one relationship in place of the attribute."
-                    See: http://stackoverflow.com/a/9288796/135557
-                 
-                 This allows core data to lazily load the image blob data only when it's needed.
-                 */
-                image.imageData = [NSEntityDescription insertNewObjectForEntityForName:@"ImageData" inManagedObjectContext:context];
-
-                image.imageData.data = [[NSData alloc] init];
-                image.dataSize = @(image.imageData.data.length);
-                image.fileName = [src lastPathComponent];
-                image.fileNameNoSizePrefix = [image.fileName getWikiImageFileNameWithoutSizePrefix];
-                image.extension = [src pathExtension];
-                image.imageDescription = nil;
-                image.sourceUrl = src;
-                image.dateRetrieved = [NSDate date];
-                image.dateLastAccessed = [NSDate date];
-                image.width = @(width.integerValue);
-                image.height = @(height.integerValue);
-                image.mimeType = [image.extension getImageMimeTypeForExtension];
-            }
-            
-            // If imageSection doesn't already exist with the same index and image, create sectionImage record
-            // associating the image record (from line above) with section record and setting its index to the
-            // order from img tag parsing.
-            SectionImage *sectionImage = (SectionImage *)[context getEntityForName: @"SectionImage"
-                                                                       withPredicateFormat: @"section == %@ AND index == %@ AND image.sourceUrl == %@",
-                                      section, @(imageIndexInSection), src
-                                      ];
-            if (!sectionImage) {
-                sectionImage = [NSEntityDescription insertNewObjectForEntityForName:@"SectionImage" inManagedObjectContext:context];
-                sectionImage.image = image;
-                sectionImage.index = @(imageIndexInSection);
-                sectionImage.section = section;
-            }
-            imageIndexInSection ++;
-        }
-
-        NSError *error = nil;
-        [context save:&error];
-        if (error) {
-            NSLog(@"\n\nerror = %@\n\n", error);
-            NSLog(@"\n\nerror = %@\n\n", error.localizedDescription);
-        }
-    }];
-}
-
 #pragma mark Web view scroll offset - using it!
 
 -(void)webViewFinishedLoading
@@ -789,7 +673,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     [self setLastViewedArticleTitle:cleanTitle];
     
     // Show loading message
-    self.alertLabel.text = SEARCH_LOADING_MSG_SECTION_ZERO;
+    [self showAlert:SEARCH_LOADING_MSG_SECTION_ZERO];
     
     [self retrieveArticleForPageTitle:cleanTitle discoveryMethod:discoveryMethod];
     
@@ -804,7 +688,9 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
     // If article with sections just show them
     if (article.section.count > 0) {
-        [self displayArticle:article];
+        [self displayArticle:articleID mode:DISPLAY_ALL_SECTIONS];
+        [self showAlert:SEARCH_LOADING_MSG_ARTICLE_LOADED];
+        [self showAlert:@""];
         return;
     }
 
@@ -850,10 +736,10 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     __weak MWNetworkOp *weakOp = firstSectionOp;
     firstSectionOp.aboutToStart = ^{
         //NSLog(@"aboutToStart for %@", pageTitle);
-        [self networkActivityIndicatorPush];
+        [[MWNetworkActivityIndicatorManager sharedManager] push];
     };
     firstSectionOp.completionBlock = ^(){
-        [self networkActivityIndicatorPop];
+        [[MWNetworkActivityIndicatorManager sharedManager] pop];
         // The completion block happens on non-main thread, so must get article from articleID again.
         // Because "you can only use a context on a thread when the context was created on that thread"
         // this must happen on workerContext as well (see: http://stackoverflow.com/a/6356201/135557)
@@ -865,7 +751,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             // the time the block is dequeued)
             NSString *errorMsg = weakOp.error.localizedDescription;
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-                self.alertLabel.text = errorMsg;
+                [self showAlert:errorMsg];
             }];
 
             // Remove the article so it doesn't get saved.
@@ -898,7 +784,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             // Send html across bridge to web view
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
                 // Show the api's "Page not found" message as first element of cleared page.
-                self.alertLabel.text = errorDict[@"info"];
+                [self showAlert:errorDict[@"info"]];
             }];
             
             return;
@@ -948,32 +834,14 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         // Update the back and forward buttons enabled state now that there's a new history entry.
         [self updateBottomBarButtonsEnabledState];
 
-        [self createSectionImageRecordsForSectionHtml:section0.objectID onContext:articleDataContext_.workerContext];
-
         if (error) {
             NSLog(@"error = %@", error);
             NSLog(@"error = %@", error.localizedDescription);
         }
 
-        // Send html across bridge to web view
-        [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-
-            // See comments inside resetBridge.
-            [self resetBridge];
-
-            NSString *section0HTMLWithTitle = [self addTitle:article.title toHTML:section0HTML];
-            NSString *section0HTMLWithID = [self surroundHTML:section0HTMLWithTitle withDivForSection:@(0)];
-
-            // Add the first section html
-            [self.bridge sendMessage:@"append" withPayload:@{@"html": section0HTMLWithID}];
-
-            // Show the web view again. (Had faded it out to prevent flickery transition to new html.)
-//TODO: Fix this. It causes fade out even when no connection, which blanks out current article.
-//            [self.webView reveal];
-
-            // Show loading more sections message so user can see more is on the way
-            self.alertLabel.text = SEARCH_LOADING_MSG_SECTION_REMAINING;
-        }];
+        [self displayArticle:articleID mode:DISPLAY_LEAD_SECTION];
+        [self showAlert:SEARCH_LOADING_MSG_SECTION_REMAINING];
+        
     };
     
     // Retrieve remaining sections op (dependent on first section op)
@@ -998,13 +866,13 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     __weak MWNetworkOp *weakRemainingSectionsOp = remainingSectionsOp;
     remainingSectionsOp.aboutToStart = ^{
         //NSLog(@"aboutToStart for %@", pageTitle);
-        [self networkActivityIndicatorPush];
+        [[MWNetworkActivityIndicatorManager sharedManager] push];
     };
     remainingSectionsOp.completionBlock = ^(){
-        [self networkActivityIndicatorPop];
+        [[MWNetworkActivityIndicatorManager sharedManager] pop];
         if(weakRemainingSectionsOp.isCancelled){
             //NSLog(@"completionBlock bailed (because op was cancelled) for %@", pageTitle);
-            self.alertLabel.hidden = YES;
+            [self showAlert:@""];
             return;
         }
 
@@ -1038,27 +906,10 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
         NSError *error = nil;
         [articleDataContext_.workerContext save:&error];
-
-        for (Section *section in article.section) {
-            if (![section.index isEqual: @0]) {
-                [self createSectionImageRecordsForSectionHtml:section.objectID onContext:articleDataContext_.workerContext];
-            }
-        }
-
-        // Join article sections text
-        NSString *joint = @""; //@"<div style=\"background-color:#ffffff;height:55px;\"></div>";
-        NSString *htmlStr = [sectionText componentsJoinedByString:joint];
         
-        // Send html across bridge to web view
-        [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-            // Show article loaded message
-            self.alertLabel.text = SEARCH_LOADING_MSG_ARTICLE_LOADED;
-            // Then hide the message (hidden has been overriden to fade out slowly)
-            self.alertLabel.hidden = YES;
-            
-            // Add the remaining sections beneath the first section
-            [self.bridge sendMessage:@"append" withPayload:@{@"html": htmlStr}];
-        }];
+        [self displayArticle:articleID mode:DISPLAY_APPEND_NON_LEAD_SECTIONS];
+        [self showAlert:SEARCH_LOADING_MSG_ARTICLE_LOADED];
+        [self showAlert:@""];
     };
     
     [[QueuesSingleton sharedInstance].articleRetrievalQ addOperation:remainingSectionsOp];
@@ -1104,17 +955,23 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 #pragma mark Display article from core data
 
-- (void)displayArticle:(Article *)article
+- (void)displayArticle:(NSManagedObjectID *)articleID mode:(DisplayMode)mode
 {
     // Get sorted sections for this article (sorts the article.section NSSet into sortedSections)
     NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES];
+
+    Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
+
     NSArray *sortedSections = [article.section sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
-    NSMutableArray *sectionText = [@[] mutableCopy];
+    NSMutableArray *sectionTextArray = [@[] mutableCopy];
     
     for (Section *section in sortedSections) {
+        if (mode == DISPLAY_APPEND_NON_LEAD_SECTIONS) {
+            if (section.index.integerValue == 0) continue;
+        }
         if (section.html){
 
-            [self createSectionImageRecordsForSectionHtml:section.objectID onContext:articleDataContext_.mainContext];
+            [section createImageRecordsForHtmlOnContext:articleDataContext_.workerContext];
 
             NSString *sectionHTML = section.html;
             if ([section.index isEqualToNumber:@(0)]) {
@@ -1123,27 +980,29 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
             NSString *sectionHTMLWithID = [self surroundHTML:sectionHTML withDivForSection:section.index];
 
-            [sectionText addObject:sectionHTMLWithID];
+            [sectionTextArray addObject:sectionHTMLWithID];
         }
+        if (mode == DISPLAY_LEAD_SECTION) break;
     }
 
-    // See comments inside resetBridge.
-    [self resetBridge];
+    // Pull the scroll offset out so the article object doesn't have to be passed into the block below.
+    CGPoint scrollOffset = CGPointMake(article.lastScrollX.floatValue, article.lastScrollY.floatValue);
 
-    self.scrollOffset = CGPointMake(article.lastScrollX.floatValue, article.lastScrollY.floatValue);
-
-    // Join article sections text
-    NSString *joint = @""; //@"<div style=\"background-color:#ffffff;height:55px;\"></div>";
-    NSString *htmlStr = [sectionText componentsJoinedByString:joint];
-
-    // Send html across bridge to web view
-    // Show article loaded message
-    self.alertLabel.text = SEARCH_LOADING_MSG_ARTICLE_LOADED;
-    // Then hide the message (hidden has been overriden to fade out slowly)
-    self.alertLabel.hidden = YES;
-
-    // Display all sections
-    [self.bridge sendMessage:@"append" withPayload:@{@"html": htmlStr}];        
+    [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+        if (mode != DISPLAY_APPEND_NON_LEAD_SECTIONS) {
+            // See comments inside resetBridge.
+            [self resetBridge];
+        }
+        
+        self.scrollOffset = scrollOffset;
+        
+        // Join article sections text
+        NSString *joint = @""; //@"<div style=\"background-color:#ffffff;height:55px;\"></div>";
+        NSString *htmlStr = [sectionTextArray componentsJoinedByString:joint];
+        
+        // Display all sections
+        [self.bridge sendMessage:@"append" withPayload:@{@"html": htmlStr}];
+    }];
 }
 
 #pragma mark Bottom bar button methods

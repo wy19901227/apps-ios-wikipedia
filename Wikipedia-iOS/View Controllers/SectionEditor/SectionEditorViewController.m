@@ -6,6 +6,8 @@
 #import "ArticleDataContextSingleton.h"
 #import "ArticleCoreDataObjects.h"
 #import "Defines.h"
+#import "Section+Editing.h"
+#import "UIViewController+Alert.h"
 
 #define EDIT_TEXT_VIEW_FONT @"AmericanTypewriter"
 #define EDIT_TEXT_VIEW_FONT_SIZE 14.0f
@@ -73,9 +75,11 @@
 
 -(void)loadLatestWikiTextForSectionFromServer
 {
+    [self showAlert:@"Loading wiki text..."];
     Section *section = (Section *)[articleDataContext_.mainContext objectWithID:self.sectionID];
     [section getWikiTextThen:^(NSString *wikiText){
-
+        [self showAlert:@"Wiki text loaded."];
+        [self showAlert:@""];
         self.editTextView.attributedText = [self getAttributedString:wikiText];
         [self adjustScrollInset];
         //[self performSelector:@selector(setCursor:) withObject:self.editTextView afterDelay:0.6];
@@ -116,13 +120,16 @@
 
 - (IBAction)savePushed:(id)sender
 {
-    NSLog(@"save pushed");
+    [self showAlert:@"Saving..."];
+    Section *section = (Section *)[articleDataContext_.mainContext objectWithID:self.sectionID];
+    [section saveWikiText:self.editTextView.text then:^(NSDictionary *result){
+        [self showAlert:result[@"edit"][@"result"]];
+        [self showAlert:@""];
+    }];
 }
 
 - (IBAction)cancelPushed:(id)sender
 {
-    NSLog(@"cancel pushed");
-    
     [self.view removeFromSuperview];
     [self removeFromParentViewController];
 }
