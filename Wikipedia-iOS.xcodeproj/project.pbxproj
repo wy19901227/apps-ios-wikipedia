@@ -95,6 +95,10 @@
 		04A70FD8185BB6C300E24515 /* URLCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A70FD6185BB6C300E24515 /* URLCache.m */; };
 		04A81E8618871EB000EEBADB /* Section+ImageRecords.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A81E8518871EB000EEBADB /* Section+ImageRecords.m */; };
 		04A81E8718871EB000EEBADB /* Section+ImageRecords.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A81E8518871EB000EEBADB /* Section+ImageRecords.m */; };
+		04AE1C701891B302002D5487 /* NSObject+Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = 04AE1C6F1891B302002D5487 /* NSObject+Extras.m */; };
+		04AE1C711891B302002D5487 /* NSObject+Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = 04AE1C6F1891B302002D5487 /* NSObject+Extras.m */; };
+		04AE1C741891BB32002D5487 /* Article.m in Sources */ = {isa = PBXBuildFile; fileRef = 04AE1C731891BB32002D5487 /* Article.m */; };
+		04AE1C751891BB32002D5487 /* Article.m in Sources */ = {isa = PBXBuildFile; fileRef = 04AE1C731891BB32002D5487 /* Article.m */; };
 		04C43A9D183440B0006C643B /* MWCrumbyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43A9C183440B0006C643B /* MWCrumbyTest.m */; };
 		04C43A9E183440B0006C643B /* MWCrumbyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43A9C183440B0006C643B /* MWCrumbyTest.m */; };
 		04C43AA4183440C1006C643B /* MWNetworkActivityIndicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43AA1183440C1006C643B /* MWNetworkActivityIndicatorManager.m */; };
@@ -113,8 +117,6 @@
 		04C43AC2183442FC006C643B /* NSURLRequest+DictionaryRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43ABD183442FC006C643B /* NSURLRequest+DictionaryRequest.m */; };
 		04C43AC3183442FC006C643B /* NSURLRequest+DictionaryRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43ABD183442FC006C643B /* NSURLRequest+DictionaryRequest.m */; };
 		04C43AC5183446F2006C643B /* NetworkOpTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C43AC4183446F2006C643B /* NetworkOpTests.m */; };
-		04CF1CAF187BD3FE00E9516F /* Article.m in Sources */ = {isa = PBXBuildFile; fileRef = 04CF1CAE187BD3FE00E9516F /* Article.m */; };
-		04CF1CB0187BD3FE00E9516F /* Article.m in Sources */ = {isa = PBXBuildFile; fileRef = 04CF1CAE187BD3FE00E9516F /* Article.m */; };
 		04CF1CB6187C8F4400E9516F /* Languages in Resources */ = {isa = PBXBuildFile; fileRef = 04CF1CB5187C8F4400E9516F /* Languages */; };
 		04CF1CB7187C8F4400E9516F /* Languages in Resources */ = {isa = PBXBuildFile; fileRef = 04CF1CB5187C8F4400E9516F /* Languages */; };
 		04D149DD18877343006B4104 /* AlertLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D149DA18877343006B4104 /* AlertLabel.m */; };
@@ -277,6 +279,10 @@
 		04A70FD6185BB6C300E24515 /* URLCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = URLCache.m; sourceTree = "<group>"; };
 		04A81E8418871EB000EEBADB /* Section+ImageRecords.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Section+ImageRecords.h"; sourceTree = "<group>"; };
 		04A81E8518871EB000EEBADB /* Section+ImageRecords.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Section+ImageRecords.m"; sourceTree = "<group>"; };
+		04AE1C6E1891B302002D5487 /* NSObject+Extras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+Extras.h"; sourceTree = "<group>"; };
+		04AE1C6F1891B302002D5487 /* NSObject+Extras.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+Extras.m"; sourceTree = "<group>"; };
+		04AE1C721891BB32002D5487 /* Article.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Article.h; sourceTree = "<group>"; };
+		04AE1C731891BB32002D5487 /* Article.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Article.m; sourceTree = "<group>"; };
 		04C43A9B183440B0006C643B /* MWCrumbyTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWCrumbyTest.h; sourceTree = "<group>"; };
 		04C43A9C183440B0006C643B /* MWCrumbyTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MWCrumbyTest.m; sourceTree = "<group>"; };
 		04C43AA0183440C1006C643B /* MWNetworkActivityIndicatorManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWNetworkActivityIndicatorManager.h; sourceTree = "<group>"; };
@@ -294,8 +300,6 @@
 		04C43ABC183442FC006C643B /* NSURLRequest+DictionaryRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLRequest+DictionaryRequest.h"; sourceTree = "<group>"; };
 		04C43ABD183442FC006C643B /* NSURLRequest+DictionaryRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURLRequest+DictionaryRequest.m"; sourceTree = "<group>"; };
 		04C43AC4183446F2006C643B /* NetworkOpTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetworkOpTests.m; sourceTree = "<group>"; };
-		04CF1CAD187BD3FE00E9516F /* Article.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Article.h; sourceTree = "<group>"; };
-		04CF1CAE187BD3FE00E9516F /* Article.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Article.m; sourceTree = "<group>"; };
 		04CF1CB5187C8F4400E9516F /* Languages */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Languages; sourceTree = "<group>"; };
 		04D149D918877343006B4104 /* AlertLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlertLabel.h; sourceTree = "<group>"; };
 		04D149DA18877343006B4104 /* AlertLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AlertLabel.m; sourceTree = "<group>"; };
@@ -602,6 +606,8 @@
 				04C43AB9183442FC006C643B /* NSRunLoop+TimeOutAndFlag.m */,
 				04C43ABA183442FC006C643B /* NSString+Extras.h */,
 				04C43ABB183442FC006C643B /* NSString+Extras.m */,
+				04AE1C6E1891B302002D5487 /* NSObject+Extras.h */,
+				04AE1C6F1891B302002D5487 /* NSObject+Extras.m */,
 				04C43ABC183442FC006C643B /* NSURLRequest+DictionaryRequest.h */,
 				04C43ABD183442FC006C643B /* NSURLRequest+DictionaryRequest.m */,
 				04A81E8418871EB000EEBADB /* Section+ImageRecords.h */,
@@ -680,8 +686,8 @@
 				040E533A1885FB4E00AFBFE9 /* ImageData.h */,
 				040E533B1885FB4E00AFBFE9 /* ImageData.m */,
 				04FD6C78184EBFCD002CA02F /* ArticleData.xcdatamodeld */,
-				04CF1CAD187BD3FE00E9516F /* Article.h */,
-				04CF1CAE187BD3FE00E9516F /* Article.m */,
+				04AE1C721891BB32002D5487 /* Article.h */,
+				04AE1C731891BB32002D5487 /* Article.m */,
 				04D34DD71863F70A00610A87 /* Section.h */,
 				04D34DD81863F70A00610A87 /* Section.m */,
 				04D34DCF1863F6E600610A87 /* SectionImage.h */,
@@ -959,9 +965,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				04CF1CAF187BD3FE00E9516F /* Article.m in Sources */,
 				04D149EC18888A0D006B4104 /* DownloadNonLeadSectionsOp.m in Sources */,
 				04D34DBD1863F6A400610A87 /* GalleryImage.m in Sources */,
+				04AE1C701891B302002D5487 /* NSObject+Extras.m in Sources */,
 				04C43AA4183440C1006C643B /* MWNetworkActivityIndicatorManager.m in Sources */,
 				0447863D185145090050563B /* WebViewController.m in Sources */,
 				D474CC15182AE196002BDE45 /* MWSite.m in Sources */,
@@ -977,6 +983,7 @@
 				0447866F1852B5010050563B /* SessionSingleton.m in Sources */,
 				04D34DD11863F6E600610A87 /* SectionImage.m in Sources */,
 				0447867C1852BBFE0050563B /* NSManagedObjectContext+SimpleFetch.m in Sources */,
+				04AE1C741891BB32002D5487 /* Article.m in Sources */,
 				044BD6A21883302C00FFE4BE /* Image.m in Sources */,
 				04293000185FC2C7002A13FC /* QueuesSingleton.m in Sources */,
 				04D34DC91863F6CC00610A87 /* Saved.m in Sources */,
@@ -1037,6 +1044,7 @@
 				D4991467181D51DF00E6073C /* Wikipedia_iOSTests.m in Sources */,
 				04D34DAC1863D2D600610A87 /* TFHpple.m in Sources */,
 				0429301118604899002A13FC /* SavedPagesViewController.m in Sources */,
+				04AE1C711891B302002D5487 /* NSObject+Extras.m in Sources */,
 				04D34D9E186236D400610A87 /* MainMenuResultsCell.m in Sources */,
 				04C43AC3183442FC006C643B /* NSURLRequest+DictionaryRequest.m in Sources */,
 				04C43A9E183440B0006C643B /* MWCrumbyTest.m in Sources */,
@@ -1055,6 +1063,7 @@
 				04C43ABF183442FC006C643B /* NSRunLoop+TimeOutAndFlag.m in Sources */,
 				D4EE00BD1824459D0090790F /* PageTitleTests.m in Sources */,
 				04292FE7185FB9D7002A13FC /* SearchNavController.m in Sources */,
+				04AE1C751891BB32002D5487 /* Article.m in Sources */,
 				04C43AB61834423C006C643B /* NetworkOpCrumbyTests.m in Sources */,
 				04F0E2EB186EDC1A00468738 /* UIWebView+ElementLocation.m in Sources */,
 				044786701852B5010050563B /* SessionSingleton.m in Sources */,
@@ -1080,7 +1089,6 @@
 				04292FF3185FBA70002A13FC /* SearchResultCell.m in Sources */,
 				04478642185146210050563B /* HistoryTableHeadingLabel.m in Sources */,
 				04D34DE21868E21F00610A87 /* Article+Convenience.m in Sources */,
-				04CF1CB0187BD3FE00E9516F /* Article.m in Sources */,
 				04292FED185FBA3D002A13FC /* SearchBarTextField.m in Sources */,
 				044BD6A31883302C00FFE4BE /* Image.m in Sources */,
 				D4DE203118283FF200148CA2 /* CommunicationBridgeTests.m in Sources */,
