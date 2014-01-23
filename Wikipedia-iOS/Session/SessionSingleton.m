@@ -26,18 +26,12 @@
 
 -(void)setDomain:(NSString *)domain
 {
-
-//domain = @"test";
-
     [[NSUserDefaults standardUserDefaults] setObject:domain forKey:@"Domain"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 -(NSString *)domain
 {
-
-//return @"test";
-
     return [[NSUserDefaults standardUserDefaults] objectForKey:@"Domain"];
 }
 

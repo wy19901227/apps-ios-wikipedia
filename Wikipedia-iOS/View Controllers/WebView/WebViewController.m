@@ -9,14 +9,9 @@
 #import "Defines.h"
 #import "WebViewController.h"
 #import "CommunicationBridge.h"
-#import "NSURLRequest+DictionaryRequest.h"
-#import "MWNetworkActivityIndicatorManager.h"
 #import "NSString+Extras.h"
-#import "SearchBarTextField.h"
 #import "ArticleCoreDataObjects.h"
 #import "ArticleDataContextSingleton.h"
-#import "HistoryViewController.h"
-#import "NSDate-Utilities.h"
 #import "SessionSingleton.h"
 #import "NSManagedObjectContext+SimpleFetch.h"
 #import "UIWebView+Reveal.h"
@@ -660,21 +655,23 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
     __block NSManagedObjectID *articleID = [articleDataContext_.mainContext getArticleIDForTitle: pageTitle
                                                                                           domain: domain];
-    
+    BOOL needsRefresh = NO;
+
     if (articleID) {
         Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
         
-        // If article with sections just show them
-        if (article.section.count > 0) {
+        // If article with sections just show them (unless needsRefresh is YES)
+        if (article.section.count > 0 && !article.needsRefresh.boolValue) {
             [self displayArticle:articleID mode:DISPLAY_ALL_SECTIONS];
             [self showAlert:SEARCH_LOADING_MSG_ARTICLE_LOADED];
             [self showAlert:@""];
             return;
         }
+        needsRefresh = article.needsRefresh.boolValue;
     }
 
     // Retrieve first section op
-    DownloadLeadSectionOp *firstSectionOp = [[DownloadLeadSectionOp alloc] initForPageTitle:pageTitle domain:[SessionSingleton sharedInstance].currentArticleDomain completionBlock:^(NSArray *sectionsRetrieved){
+    DownloadLeadSectionOp *firstSectionOp = [[DownloadLeadSectionOp alloc] initForPageTitle:pageTitle domain:[SessionSingleton sharedInstance].currentArticleDomain completionBlock:^(NSDictionary *dataRetrieved){
 
         Article *article = nil;
         
@@ -692,6 +689,25 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         }else{
             article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
         }
+
+        if (needsRefresh) {
+            // If and article needs refreshing remove its sections so they get reloaded too.
+            for (Section *thisSection in [article.section copy]) {
+                [articleDataContext_.workerContext deleteObject:thisSection];
+            }
+        }
+
+        // If "needsRefresh", an existing article's data is being retrieved again, so these need
+        // to be updated whether a new article record is being inserted or not as data may have
+        // changed since the article record was first created.
+        article.languagecount = dataRetrieved[@"languagecount"];
+        article.lastmodified = dataRetrieved[@"lastmodified"];
+        article.lastmodifiedby = dataRetrieved[@"lastmodifiedby"];
+        article.redirected = dataRetrieved[@"redirected"];
+        //NSDateFormatter *anotherDateFormatter = [[NSDateFormatter alloc] init];
+        //[anotherDateFormatter setDateStyle:NSDateFormatterLongStyle];
+        //[anotherDateFormatter setTimeStyle:NSDateFormatterShortStyle];
+        //NSLog(@"formatted lastmodified = %@", [anotherDateFormatter stringFromDate:article.lastmodified]);
 
         // Associate thumbnail with article.
         // If search result for this pageTitle had a thumbnail url associated with it, see if
@@ -712,7 +728,18 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         article.lastScrollY = @0.0f;
 
         // Get article section zero html
-        NSDictionary *section0Dict = (sectionsRetrieved.count == 1) ? sectionsRetrieved[0] : nil;
+        NSArray *sectionsRetrieved = dataRetrieved[@"sections"];
+        NSDictionary *section0Dict = (sectionsRetrieved.count >= 1) ? sectionsRetrieved[0] : nil;
+
+        // If there was only one section then we have what we need so no refresh
+        // is needed. Otherwise leave needsRefresh set to YES until subsequent sections
+        // have been retrieved. Reminder: "onlyrequestedsections" is not used
+        // by the mobileview query so that sectionsRetrieved.count will
+        // reflect the article's total number of sections here ("sections"
+        // was set to "0" though so only the first section entry actually has
+        // any html). This fixes the bug which caused subsequent sections to never
+        // be retrieved if the article was navigated away from before they had loaded.
+        article.needsRefresh = (sectionsRetrieved.count == 1) ? @NO : @YES;
 
         NSString *section0HTML = @"";
         if (section0Dict && [section0Dict[@"id"] isEqual: @0] && section0Dict[@"text"]) {
@@ -727,14 +754,18 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         section0.html = section0HTML;
         section0.anchor = @"";
         article.section = [NSSet setWithObjects:section0, nil];
-        
-        // Add history for article
-        History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:articleDataContext_.workerContext];
-        history0.dateVisited = [NSDate date];
-        //history0.dateVisited = [NSDate dateWithDaysBeforeNow:31];
-        history0.discoveryMethod = discoveryMethod;
-        [article addHistoryObject:history0];
-        
+
+        // Don't add multiple history items for the same article or back-forward button
+        // behavior becomes a confusing mess.
+        if(article.history.count == 0){
+            // Add history for article
+            History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:articleDataContext_.workerContext];
+            history0.dateVisited = [NSDate date];
+            //history0.dateVisited = [NSDate dateWithDaysBeforeNow:31];
+            history0.discoveryMethod = discoveryMethod;
+            [article addHistoryObject:history0];
+        }
+
         // Save the article!
         NSError *error = nil;
         [articleDataContext_.workerContext save:&error];
@@ -777,7 +808,10 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         // Because "you can only use a context on a thread when the context was created on that thread"
         // this must happen on workerContext as well (see: http://stackoverflow.com/a/6356201/135557)
         Article *article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
-        
+
+        //Non-lead sections have been retreived so set needsRefresh to NO.
+        article.needsRefresh = @NO;
+
         NSMutableArray *sectionText = [@[] mutableCopy];
         for (NSDictionary *section in sectionsRetrieved) {
             if (![section[@"id"] isEqual: @0]) {
