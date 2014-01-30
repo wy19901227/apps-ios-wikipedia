@@ -191,40 +191,98 @@
         
     } errorBlock:^(NSError *error){
         NSString *errorMsg = error.localizedDescription;
-        [self showAlert:errorMsg];
         
-        if (error.code == WIKITEXT_UPLOAD_ERROR_NEEDS_CAPTCHA) {
-            // If the server said a captcha was required, present the captcha image.
-            NSString *captchaUrl = error.userInfo[@"captchaUrl"];
-            NSString *captchaId = error.userInfo[@"captchaId"];
-            if (articleID) {
-                [articleDataContext_.mainContext performBlockAndWait:^(){
-                    Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
-                    if (article) {
-                        self.showCaptchaContainer = YES;
-                        [self updateCaptchaContainerConstraint];
-                        [UIView animateWithDuration:0.2f animations:^{
-                            [self.view layoutIfNeeded];
-                        } completion:^(BOOL done){
+        [self showAlert:errorMsg];
+
+        switch (error.code) {
+            case WIKITEXT_UPLOAD_ERROR_NEEDS_CAPTCHA:
+                {
+                    // If the server said a captcha was required, present the captcha image.
+                    NSString *captchaUrl = error.userInfo[@"captchaUrl"];
+                    NSString *captchaId = error.userInfo[@"captchaId"];
+                    if (articleID) {
+                        [articleDataContext_.mainContext performBlockAndWait:^(){
+                            Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
+                            if (article) {
+                                self.showCaptchaContainer = YES;
+                                [self updateCaptchaContainerConstraint];
+                                [UIView animateWithDuration:0.2f animations:^{
+                                    [self.view layoutIfNeeded];
+                                } completion:^(BOOL done){
+                                }];
+                                
+                                NSURL *captchaImageUrl = [NSURL URLWithString:
+                                                          [NSString stringWithFormat:@"https://%@.m.%@%@", article.domain, article.site, captchaUrl]
+                                                          ];
+                                
+                                UIImage *captchaImage = [UIImage imageWithData:[NSData dataWithContentsOfURL:captchaImageUrl]];
+                                
+                                self.captchaTextBox.text = @"";
+                                self.captchaImageView.image = captchaImage;
+                                self.captchaId = captchaId;
+                            }
                         }];
-
-                        NSURL *captchaImageUrl = [NSURL URLWithString:
-                                                    [NSString stringWithFormat:@"https://%@.m.%@%@", article.domain, article.site, captchaUrl]
-                                                 ];
-                        
-                        UIImage *captchaImage = [UIImage imageWithData:[NSData dataWithContentsOfURL:captchaImageUrl]];
-
-                        self.captchaTextBox.text = @"";
-                        self.captchaImageView.image = captchaImage;
-                        self.captchaId = captchaId;
                     }
-                }];
-            }
-        }
+                }
+                break;
+            
+            case WIKITEXT_UPLOAD_ERROR_ABUSEFILTER_DISALLOWED:
+            case WIKITEXT_UPLOAD_ERROR_ABUSEFILTER_WARNING:
+            case WIKITEXT_UPLOAD_ERROR_ABUSEFILTER_OTHER:
+                {
+                    NSString *warningHtml = error.userInfo[@"warning"];
+                    NSLog(@"the warning = %@", warningHtml);
 
+                    [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+                        [self.captchaTextBox resignFirstResponder];
+                        [self.editTextView resignFirstResponder];
+                    }];
+                    
+                    NSString *restyledWarningHtml = [self restyleAbuseFilterWarningHtml:warningHtml];
+                    [self showHTMLAlert: restyledWarningHtml
+                          dismissalText: @"Make changes to my Edit"
+                         dismissalImage: [UIImage imageNamed:@"edit-white.png"]
+                     ];
+                }
+                break;
+ 
+        default:
+            break;
+        }
     }];
 
     [[QueuesSingleton sharedInstance].sectionWikiTextQ addOperation:uploadWikiTextOp];
+}
+
+-(NSString *)restyleAbuseFilterWarningHtml:(NSString *)warningHtml
+{
+    // Abuse filter warnings have html :( Re-style as best we can...
+    return [NSString stringWithFormat:
+        @"\
+        <html>\
+        <head>\
+        <style>\
+            *, div[style]{\
+                background-color:transparent!important;\
+                border-color:transparent!important;\
+                width:auto!important;\
+                font:auto!important;\
+                font-family:sans-serif!important;\
+                font-size:14px!important;\
+                text-align:left!important;\
+            }\
+            td[style]{background-color:transparent!important;border-style:none!important;}\
+            IMG{zoom:0.5;margin:20px}\
+        </style>\
+        </head>\
+        <body style='padding:25px;'>\
+        <div>\
+            %@\
+        </div>\
+        </body>\
+        </html>\
+        ",
+    warningHtml];
 }
 
 -(void)updateCaptchaContainerConstraint
