@@ -1,8 +1,14 @@
 //  Created by Monte Hurd on 12/6/13.
 
 #import <Foundation/Foundation.h>
+#import "KeychainCredentials.h"
+
+@class KeychainCredentials;
 
 @interface SessionSingleton : NSObject
+
+@property (strong, nonatomic) KeychainCredentials *keychainCredentials;
+//@property (strong, nonatomic) NSString *editToken;
 
 // These 5 persist across app restarts.
 @property (strong, nonatomic) NSString *site;

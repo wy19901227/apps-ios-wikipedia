@@ -3,11 +3,13 @@
 #import "MainMenuTableViewController.h"
 #import "MainMenuSectionHeadingLabel.h"
 #import "SessionSingleton.h"
+#import "LoginViewController.h"
 
 // Section indexes.
-#define SECTION_MENU_OPTIONS 0
-#define SECTION_ARTICLE_OPTIONS 1
-#define SECTION_SEARCH_LANGUAGE_OPTIONS 2
+#define SECTION_LOGIN_OPTIONS 0
+#define SECTION_MENU_OPTIONS 1
+#define SECTION_ARTICLE_OPTIONS 2
+#define SECTION_SEARCH_LANGUAGE_OPTIONS 3
 
 // Row indexes.
 #define ROW_SAVED_PAGES 1
@@ -85,6 +87,13 @@
     }else{
         self.hidePagesSection = NO;
     }
+    
+    
+[self addToTableDataLoginOptionsWithTitle:@"🎭  Login" key:@"login"];
+[self addToTableDataLoginOptionsWithTitle:@"🎭  Logout" key:@"logout"];
+
+    
+    
 }
 
 #pragma mark - Table section and row accessors
@@ -101,12 +110,50 @@
 
 #pragma mark - Table data
 
+
+-(void)addToTableDataLoginOptionsWithTitle:(NSString *)title key:(NSString *)key
+{
+    [[self sectionDict:SECTION_LOGIN_OPTIONS][@"rows"] addObject:
+     [@{
+        @"key": key,
+        @"title": title,
+        @"label": @"",
+        } mutableCopy]
+     ];
+}
+
+
 -(void)loadTableData
 {
     NSString *currentArticleTitle = [SessionSingleton sharedInstance].currentArticleTitle;
 
     self.tableData = [@[
+
+
+
+                            [@{
+                               @"key": @"menuOptions",
+                               @"title": @"Account",
+                               @"label": @"",
+                               @"subTitle": @"",
+                               @"rows": [@[
+                                       
+
+//                                       [@{
+//                                          @"key": @"login",
+//                                          @"title": @"🎭  Login",
+//                                          @"label": @""
+//                                          } mutableCopy]
+
+                                       
+                                       ] mutableCopy]
+                               } mutableCopy]
                             
+                            
+                            ,
+
+
+                        
                             
                             [@{
                                @"key": @"menuOptions",
@@ -319,7 +366,16 @@
     NSString *selectedRowKey = rowDict[@"key"];
     //NSLog(@"menu item selection key = %@", selectedKey);
     
-    if ([selectedRowKey isEqualToString:@"history"]) {
+    if ([selectedRowKey isEqualToString:@"login"]) {
+
+
+
+LoginViewController * loginViewController = [self.navigationController.storyboard instantiateViewControllerWithIdentifier:@"LoginViewController"];
+[self.navigationController pushViewController:loginViewController animated:YES];
+
+
+
+    }else if ([selectedRowKey isEqualToString:@"history"]) {
         [self.navigationController popViewControllerAnimated:NO];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"HistoryToggle" object:self userInfo:nil];
     }else if ([selectedRowKey isEqualToString:@"savedPages"]) {

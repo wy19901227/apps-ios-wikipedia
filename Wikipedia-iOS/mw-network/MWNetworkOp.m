@@ -87,13 +87,13 @@
     // "Dependent" for MWNetworkOp means dependent on its success!
     // This is so failures cascade automatically.
     for (id obj in self.dependencies) {
-        if ([obj isMemberOfClass:[NSOperation class]]){
+/*        if ([obj isMemberOfClass:[NSOperation class]]){
             NSOperation *op = (NSOperation *)obj;
             if ([op isCancelled]) {
                 [self finishWithError:@"Start method aborted early because parent NSOperation had been cancelled."];
                 return;
             }
-        }else if ([obj isMemberOfClass:[MWNetworkOp class]]){
+        }else */ if ([obj isKindOfClass:[MWNetworkOp class]]){
             MWNetworkOp *op = (MWNetworkOp *)obj;
             if (op.error || [op isCancelled]) {
                 [self finishWithError:@"Start method aborted early because parent MWNetworkOp had been cancelled or had an error."];

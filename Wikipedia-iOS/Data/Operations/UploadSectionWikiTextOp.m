@@ -19,9 +19,16 @@
 {
     self = [super init];
     if (self) {
+
+//NSString *editToken = [[NSUserDefaults standardUserDefaults] objectForKey:@"EditToken"];
+//NSString *editToken = [SessionSingleton sharedInstance].editToken;
+NSString *editToken = [SessionSingleton sharedInstance].keychainCredentials.editToken;
+
+if (!editToken) editToken  = @"+\\";
+    
         NSMutableDictionary *parameters = [@{
                                              @"action": @"edit",
-                                             @"token": @"+\\",
+                                             @"token": editToken,
                                              @"text": wikiText,
                                              @"section": section,
                                              @"title": title,
