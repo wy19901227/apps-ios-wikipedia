@@ -75,6 +75,10 @@
         [[UIApplication sharedApplication] delegate].window.tintColor = [UIColor whiteColor];
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
         
+
+//[[UINavigationBar appearance] setBarTintColor:[UIColor blackColor]];
+
+        
         // Set the blinky-cursor color for text boxes
         [[UITextField appearance] setTintColor:[UIColor colorWithWhite:0.0f alpha:0.35f]];
         [[UITextView appearance] setTintColor:[UIColor colorWithWhite:0.0f alpha:0.35f]];

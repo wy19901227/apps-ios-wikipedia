@@ -89,6 +89,9 @@
                 self.label.text = @"Edit";
             case NAVBAR_STYLE_LOGIN:
                 self.navBarSubViewsHorizontalVFLString = @"H:|[NAVBAR_BUTTON_X(50)][NAVBAR_VERTICAL_LINE_1(singlePixel)]-(10)-[NAVBAR_LABEL][NAVBAR_VERTICAL_LINE_2(singlePixel)][NAVBAR_BUTTON_CHECK(50)]|";
+
+self.navBarDayMode = NO;
+
                 break;
             case NAVBAR_STYLE_EDIT_WIKITEXT_WARNING:
                 self.label.text = @"Edit issues";
@@ -100,9 +103,18 @@
                 break;
             default: //NAVBAR_STYLE_SEARCH
                 self.navBarSubViewsHorizontalVFLString = @"H:|[NAVBAR_BUTTON_LOGO_W(65)][NAVBAR_VERTICAL_LINE_1(singlePixel)][NAVBAR_TEXT_FIELD]-(10)-|";
+
+self.navBarDayMode = YES;
+
                 break;
         }
         [self.view setNeedsUpdateConstraints];
+}
+
+-(void)clearTextFieldText
+{
+    self.textField.text = @"";
+    self.textField.rightView.hidden = YES;
 }
 
 -(void)setupNavbarContainerSubviews
@@ -119,10 +131,17 @@
     self.textField.font = SEARCH_FONT;
     self.textField.textColor = SEARCH_FONT_HIGHLIGHTED_COLOR;
     self.textField.tag = NAVBAR_TEXT_FIELD;
-    self.textField.clearButtonMode = UITextFieldViewModeAlways;
+    self.textField.clearButtonMode = UITextFieldViewModeNever;
     self.textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     [self.textField addTarget:self action:@selector(navItemTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self.navBarContainer addSubview:self.textField];
+ 
+    UIButton *clearButton = [[UIButton alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 26, 26)];
+    [clearButton setImage:[UIImage imageNamed:@"text_field_x_circle_gray.png"] forState:UIControlStateNormal];
+    [clearButton addTarget:self action:@selector(clearTextFieldText) forControlEvents:UIControlEventTouchUpInside];
+    
+    self.textField.rightView = clearButton;
+    self.textField.rightViewMode = UITextFieldViewModeWhileEditing;
 
     UIView *(^getLineView)() = ^UIView *() {
         UIView *view = [[UIView alloc] init];
@@ -211,11 +230,15 @@
     [self setupNavbarContainer];
     [self setupNavbarContainerSubviews];
 
+
+self.navBarDayMode = YES;
+
+
     [self.buttonW addTarget:self action:@selector(mainMenuToggle) forControlEvents:UIControlEventTouchUpInside];
 
     self.navBarStyle = NAVBAR_STYLE_SEARCH;
 
-    self.textField.attributedPlaceholder = [self getAttributedPlaceholderString];
+    self.textField.placeholder = SEARCH_FIELD_PLACEHOLDER_TEXT;
 
     [self.navigationBar addObserver:self forKeyPath:@"bounds" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial context:nil];
 
@@ -226,6 +249,190 @@
     
     self.navBarSubViewMetrics = [self getNavBarSubViewMetrics];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+ {
+     return (self.navBarDayMode) ? UIStatusBarStyleDefault : UIStatusBarStyleLightContent;
+ }
+
+-(void)setNavBarDayMode:(BOOL)navBarDayMode
+{
+    if (_navBarDayMode != navBarDayMode) {
+        _navBarDayMode = navBarDayMode;
+        
+
+        if (navBarDayMode) {    //Day
+            [self.navigationBar setBarTintColor:[UIColor whiteColor]];
+
+
+        }else{                  //Night
+            [self.navigationBar setBarTintColor:[UIColor blackColor]];
+
+
+        }
+
+    if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
+        [self setNeedsStatusBarAppearanceUpdate];
+    }
+
+
+
+
+
+
+        
+        for (id view in self.navBarContainer.subviews) {
+            [self makeView:view useDayMode:navBarDayMode];
+        }
+    }
+}
+
+
+
+- (UIImage *)getImageOfColor:(UIColor *)color usingImageMask:(UIImage *)maskImage
+{
+    CIImage *adjustedImage = [CIImage imageWithCGImage:maskImage.CGImage];
+
+    CIFilter *colorClampFilter = [CIFilter filterWithName:@"CIColorClamp"];
+    [colorClampFilter setValue: adjustedImage forKey:@"inputImage"];
+    [colorClampFilter setDefaults];
+    // From Apple's "Core Image Filter Reference":
+    // "At each pixel, color component values less than those in inputMinComponents will be increased to match those in inputMinComponents"
+    // So the next line is saying make any pixel which is not 100% clear become pure white.
+    [colorClampFilter setValue: [CIVector vectorWithX:1.0 Y:1.0 Z:1.0 W:0.0] forKey:@"inputMinComponents"];
+    adjustedImage = [colorClampFilter outputImage];
+
+    CIImage *backgroundImage = [CIImage imageWithColor:[CIColor colorWithCGColor:[UIColor clearColor].CGColor]];
+    CIImage *colorImage = [CIImage imageWithColor:[CIColor colorWithCGColor:color.CGColor]];
+    CIFilter *maskFilter = [CIFilter filterWithName:@"CIBlendWithMask"];
+    
+    [maskFilter setValue: colorImage forKey:@"inputImage"];
+    [maskFilter setValue: backgroundImage forKey:@"inputBackgroundImage"];
+    [maskFilter setValue: adjustedImage forKey:@"inputMaskImage"];
+    
+    [maskFilter setDefaults];
+    adjustedImage = [maskFilter outputImage];
+
+    //See: http://stackoverflow.com/a/15886422/135557
+    CGImageRef imageRef = [[CIContext contextWithOptions:nil] createCGImage:adjustedImage fromRect:adjustedImage.extent];
+    UIImage *outputImage = [UIImage imageWithCGImage:imageRef];
+    CGImageRelease(imageRef);
+    
+    return outputImage;
+}
+
+
+-(void)makeView:(UIView *)view useDayMode:(BOOL)dayMode
+{
+
+
+// Both the button's image and the text field's clear image need to use the ciimage filter for inverting colors
+
+
+
+
+    switch (view.tag) {
+        case NAVBAR_BUTTON_X:
+        case NAVBAR_BUTTON_PENCIL:
+        case NAVBAR_BUTTON_CHECK:
+        case NAVBAR_BUTTON_ARROW_LEFT:
+        case NAVBAR_BUTTON_ARROW_RIGHT:
+        case NAVBAR_BUTTON_LOGO_W:
+        case NAVBAR_BUTTON_EYE:
+{
+
+UIImage *buttonImage = ((UIButton *)view).imageView.image;
+UIImage *filteredImage = [self getImageOfColor:[UIColor brownColor] usingImageMask:buttonImage];
+((UIButton *)view).imageView.image = filteredImage;
+
+}
+
+            break;
+            
+        case NAVBAR_TEXT_FIELD:
+        
+            // Typed text.
+            ((UITextField *)view).textColor = (dayMode) ? [UIColor lightGrayColor] : [UIColor whiteColor];
+            
+            // Placeholder text.
+            ((NavBarTextField *)view).placeholderColor = (dayMode) ? [UIColor lightGrayColor] : [UIColor whiteColor];
+        
+            break;
+        case NAVBAR_LABEL:
+
+            ((UILabel *)view).textColor = (dayMode) ? [UIColor lightGrayColor] : [UIColor whiteColor];
+
+            break;
+        case NAVBAR_VERTICAL_LINE:
+                view.backgroundColor = (dayMode) ? [UIColor lightGrayColor] : [UIColor whiteColor];
+
+            break;
+        default:
+            break;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -(void)setupNavbarContainer
 {
@@ -239,14 +446,21 @@
 {
     [super updateViewConstraints];
     
-    CGFloat duration = 0.1f;
+    CGFloat duration = 0.3f;
 
-    [UIView animateWithDuration:duration delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
-        [self constrainNavBarContainer];
-        [self constrainNavBarContainerSubViews];
+    [self constrainNavBarContainer];
+    [self constrainNavBarContainerSubViews];
+
+    for (UIView *v in self.navBarContainer.subviews) v.alpha = 0.0f;
+
+    [UIView animateWithDuration:duration delay:0.0f options:UIViewAnimationOptionTransitionNone animations:^{
+        for (UIView *v in self.navBarContainer.subviews) v.alpha = 0.7f;
         [self.navBarContainer layoutIfNeeded];
     } completion:^(BOOL done){
-    
+        [UIView animateWithDuration:0.15 delay:0.1f options:UIViewAnimationOptionTransitionNone animations:^{
+            for (UIView *v in self.navBarContainer.subviews) v.alpha = 1.0f;
+        } completion:^(BOOL done){
+        }];
     }];
 }
 
@@ -312,6 +526,30 @@
           ]
          ];
     }
+
+    // Constrain the views not being presently shown so when they are shown they'll animate from
+    // the constrained position specified below.
+    for (UIView *view in [self.navBarContainer.subviews copy]) {
+        if (view.hidden) {
+            [self.navBarContainer addConstraint:
+             [NSLayoutConstraint constraintWithItem: view
+                                          attribute: NSLayoutAttributeRight
+                                          relatedBy: NSLayoutRelationEqual
+                                             toItem: self.navBarContainer
+                                          attribute: NSLayoutAttributeLeft
+                                         multiplier: 1.0
+                                           constant: 0.0
+              ]
+            ];
+            [self.navBarContainer addConstraints:
+             [NSLayoutConstraint constraintsWithVisualFormat: @"V:|-(topMargin)-[view]|"
+                                                     options: 0
+                                                     metrics: @{@"topMargin": @((view.tag == NAVBAR_VERTICAL_LINE) ? 5 : 0)}
+                                                       views: NSDictionaryOfVariableBindings(view)
+              ]
+             ];
+        }
+    }
 }
 
 #pragma mark Search term changed
@@ -326,11 +564,11 @@
     [self showSearchResultsController];
     
     if (trimmedSearchString.length == 0){
-        self.textField.clearButtonMode = UITextFieldViewModeNever;
+        self.textField.rightView.hidden = YES;
+        
         return;
     }
-    
-    self.textField.clearButtonMode = UITextFieldViewModeAlways;
+    self.textField.rightView.hidden = NO;
 }
 
 -(void)showSearchResultsController
@@ -347,21 +585,6 @@
         SearchResultsController *searchResultsVC = [self.storyboard instantiateViewControllerWithIdentifier:@"SearchResultsController"];
         [self pushViewController:searchResultsVC animated:YES];
     }
-}
-
--(NSAttributedString *)getAttributedPlaceholderString
-{
-    NSMutableAttributedString *str = [[NSMutableAttributedString alloc] initWithString:SEARCH_FIELD_PLACEHOLDER_TEXT];
-
-    [str addAttribute:NSFontAttributeName
-                value:SEARCH_FONT_HIGHLIGHTED
-                range:NSMakeRange(0, str.length)];
-
-    [str addAttribute:NSForegroundColorAttributeName
-                value:SEARCH_FIELD_PLACEHOLDER_TEXT_COLOR
-                range:NSMakeRange(0, str.length)];
-
-    return str;
 }
 
 -(void)mainMenuToggle
@@ -392,6 +615,8 @@
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:@"SearchFieldBecameFirstResponder" object:self userInfo:nil];
+    
+    if (self.textField.text.length == 0) self.textField.rightView.hidden = YES;
 }
 
 - (void)didReceiveMemoryWarning

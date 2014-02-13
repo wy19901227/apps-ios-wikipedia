@@ -26,7 +26,9 @@ typedef enum {
 @property (strong, nonatomic) NSString *currentSearchString;
 @property (strong, atomic) NSMutableArray *currentSearchResultsOrdered;
 
+@property (nonatomic) BOOL navBarDayMode;
 @property (nonatomic) NavBarStyle navBarStyle;
+
 -(id)getNavBarItem:(NavBarItemTag)tag;
 
 @end

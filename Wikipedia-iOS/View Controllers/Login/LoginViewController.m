@@ -28,9 +28,20 @@
 
     self.navigationItem.hidesBackButton = YES;
 
+    UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress)];
+    longPressRecognizer.minimumPressDuration = 1.0f;
+    [self.view addGestureRecognizer:longPressRecognizer];
+
     if ([self.scrollView respondsToSelector:@selector(keyboardDismissMode)]) {
         self.scrollView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     }
+}
+
+-(void)handleLongPress
+{
+    // Uncomment for presentation username/pwd auto entry
+    // self.usernameField.text = @"montehurd";
+    // self.passwordField.text = @"";
 }
 
 -(void)viewWillAppear:(BOOL)animated
