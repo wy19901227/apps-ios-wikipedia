@@ -8,6 +8,7 @@
 #import "SessionSingleton.h"
 #import "UIViewController+Alert.h"
 #import "NSHTTPCookieStorage+CloneCookie.h"
+#import "AccountCreationViewController.h"
 
 #define NAV ((NavController *)self.navigationController)
 
@@ -27,6 +28,9 @@
     // Do any additional setup after loading the view.
 
     self.navigationItem.hidesBackButton = YES;
+    [self.createAccountButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+    [self.createAccountButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateSelected];
+    [self.createAccountButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
 
     UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress)];
     longPressRecognizer.minimumPressDuration = 1.0f;
@@ -34,6 +38,24 @@
 
     if ([self.scrollView respondsToSelector:@selector(keyboardDismissMode)]) {
         self.scrollView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
+    }
+}
+
+// Handle nav bar taps.
+- (void)navItemTappedNotification:(NSNotification *)notification
+{
+    NSDictionary *userInfo = [notification userInfo];
+    UIView *tappedItem = userInfo[@"tappedItem"];
+
+    switch (tappedItem.tag) {
+        case NAVBAR_BUTTON_CHECK:
+            [self save];
+            break;
+        case NAVBAR_BUTTON_X:
+            [self hide];
+            break;
+        default:
+            break;
     }
 }
 
@@ -48,28 +70,17 @@
 {
     [super viewWillAppear:animated];
     
-    [self configureNavBar];
+    NAV.navBarMode = NAVBAR_MODE_LOGIN;
+    ((UILabel *)[NAV getNavBarItem:NAVBAR_LABEL]).text = @"Sign In";
 }
 
 -(void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     [self.usernameField becomeFirstResponder];
-}
 
--(void)configureNavBar
-{
-    NAV.navBarMode = NAVBAR_MODE_LOGIN;
-    
-    [[NAV getNavBarItem:NAVBAR_BUTTON_CHECK] addTarget: self
-                                                action: @selector(save)
-                                      forControlEvents: UIControlEventTouchUpInside];
-    
-    [[NAV getNavBarItem:NAVBAR_BUTTON_X] addTarget: self
-                                            action: @selector(hide)
-                                  forControlEvents: UIControlEventTouchUpInside];
-    
-    ((UILabel *)[NAV getNavBarItem:NAVBAR_LABEL]).text = @"Sign In";
+    // Listen for nav bar taps.
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(navItemTappedNotification:) name:@"NavItemTapped" object:nil];
 }
 
 -(void)save
@@ -79,15 +90,6 @@
 
 -(void)hide
 {
-    // Remove these listeners before popping the VC or you get sadness and crashes.
-    [[NAV getNavBarItem:NAVBAR_BUTTON_CHECK] removeTarget: self
-                                                   action: @selector(save)
-                                         forControlEvents: UIControlEventTouchUpInside];
-    
-    [[NAV getNavBarItem:NAVBAR_BUTTON_X] removeTarget: self
-                                               action: @selector(cancel)
-                                     forControlEvents: UIControlEventTouchUpInside];
-    
     [self.navigationController popViewControllerAnimated:YES];
 }
 
@@ -95,6 +97,8 @@
 {
     [super viewWillDisappear:animated];
     
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"NavItemTapped" object:nil];
+
     NAV.navBarMode = NAVBAR_MODE_SEARCH;
 }
 
@@ -204,6 +208,12 @@
     [[NSHTTPCookieStorage sharedHTTPCookieStorage] recreateCookie: @"centralauth_Session"
                                             usingCookieAsTemplate: @"centralauth_User"
      ];
+}
+
+- (IBAction)createAccountButtonPushed:(id)sender
+{
+    AccountCreationViewController *createAcctVC = [self.navigationController.storyboard instantiateViewControllerWithIdentifier:@"AccountCreationViewController"];
+    [self.navigationController pushViewController:createAcctVC animated:YES];
 }
 
 @end
