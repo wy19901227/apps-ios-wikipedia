@@ -139,6 +139,8 @@
 		0466F450183A30CC00EA1FD7 /* logo-search-placeholder@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0466F44E183A30CC00EA1FD7 /* logo-search-placeholder@2x.png */; };
 		04735E6018A5B42D00C89C30 /* LoginTokenOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 04735E5F18A5B42D00C89C30 /* LoginTokenOp.m */; };
 		04735E6118A5B42D00C89C30 /* LoginTokenOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 04735E5F18A5B42D00C89C30 /* LoginTokenOp.m */; };
+		0476967C18BBFC9400071963 /* AccountCreationOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 0476967B18BBFC9400071963 /* AccountCreationOp.m */; };
+		0476967D18BBFC9400071963 /* AccountCreationOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 0476967B18BBFC9400071963 /* AccountCreationOp.m */; };
 		047801BE18AE987900DBB747 /* UIButton+ColorMask.m in Sources */ = {isa = PBXBuildFile; fileRef = 047801BD18AE987900DBB747 /* UIButton+ColorMask.m */; };
 		047801BF18AE987900DBB747 /* UIButton+ColorMask.m in Sources */ = {isa = PBXBuildFile; fileRef = 047801BD18AE987900DBB747 /* UIButton+ColorMask.m */; };
 		047E74141860509000916964 /* SavedPagesResultPrototypeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 047E74131860509000916964 /* SavedPagesResultPrototypeView.xib */; };
@@ -234,6 +236,8 @@
 		04D75825189248E900CE2040 /* DownloadLangLinksOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D75823189248E900CE2040 /* DownloadLangLinksOp.m */; };
 		04D75828189301B100CE2040 /* ArticleLanguagesSectionHeadingLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D75827189301B100CE2040 /* ArticleLanguagesSectionHeadingLabel.m */; };
 		04D75829189301B100CE2040 /* ArticleLanguagesSectionHeadingLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D75827189301B100CE2040 /* ArticleLanguagesSectionHeadingLabel.m */; };
+		04DB0BE618BC2E1E00B4BCF3 /* CaptchaResetOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 04DB0BE518BC2E1E00B4BCF3 /* CaptchaResetOp.m */; };
+		04DB0BE718BC2E1E00B4BCF3 /* CaptchaResetOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 04DB0BE518BC2E1E00B4BCF3 /* CaptchaResetOp.m */; };
 		04F0E2EA186EDC1A00468738 /* UIWebView+ElementLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F0E2E9186EDC1A00468738 /* UIWebView+ElementLocation.m */; };
 		04F0E2EB186EDC1A00468738 /* UIWebView+ElementLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F0E2E9186EDC1A00468738 /* UIWebView+ElementLocation.m */; };
 		04F0E2EE186FB2D100468738 /* TOCSectionCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F0E2ED186FB2D100468738 /* TOCSectionCellView.m */; };
@@ -392,6 +396,8 @@
 		0466F44E183A30CC00EA1FD7 /* logo-search-placeholder@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-search-placeholder@2x.png"; sourceTree = "<group>"; };
 		04735E5E18A5B42D00C89C30 /* LoginTokenOp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginTokenOp.h; sourceTree = "<group>"; };
 		04735E5F18A5B42D00C89C30 /* LoginTokenOp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoginTokenOp.m; sourceTree = "<group>"; };
+		0476967A18BBFC9400071963 /* AccountCreationOp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccountCreationOp.h; sourceTree = "<group>"; };
+		0476967B18BBFC9400071963 /* AccountCreationOp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AccountCreationOp.m; sourceTree = "<group>"; };
 		047801BC18AE987900DBB747 /* UIButton+ColorMask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIButton+ColorMask.h"; sourceTree = "<group>"; };
 		047801BD18AE987900DBB747 /* UIButton+ColorMask.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIButton+ColorMask.m"; sourceTree = "<group>"; };
 		047E74131860509000916964 /* SavedPagesResultPrototypeView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SavedPagesResultPrototypeView.xib; sourceTree = "<group>"; };
@@ -483,6 +489,8 @@
 		04D75823189248E900CE2040 /* DownloadLangLinksOp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DownloadLangLinksOp.m; sourceTree = "<group>"; };
 		04D75826189301B100CE2040 /* ArticleLanguagesSectionHeadingLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArticleLanguagesSectionHeadingLabel.h; sourceTree = "<group>"; };
 		04D75827189301B100CE2040 /* ArticleLanguagesSectionHeadingLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArticleLanguagesSectionHeadingLabel.m; sourceTree = "<group>"; };
+		04DB0BE418BC2E1E00B4BCF3 /* CaptchaResetOp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CaptchaResetOp.h; sourceTree = "<group>"; };
+		04DB0BE518BC2E1E00B4BCF3 /* CaptchaResetOp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CaptchaResetOp.m; sourceTree = "<group>"; };
 		04F0E2E8186EDC1A00468738 /* UIWebView+ElementLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIWebView+ElementLocation.h"; sourceTree = "<group>"; };
 		04F0E2E9186EDC1A00468738 /* UIWebView+ElementLocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIWebView+ElementLocation.m"; sourceTree = "<group>"; };
 		04F0E2EC186FB2D000468738 /* TOCSectionCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TOCSectionCellView.h; sourceTree = "<group>"; };
@@ -871,6 +879,10 @@
 		04D149E5188889CA006B4104 /* Operations */ = {
 			isa = PBXGroup;
 			children = (
+				0476967A18BBFC9400071963 /* AccountCreationOp.h */,
+				0476967B18BBFC9400071963 /* AccountCreationOp.m */,
+				04DB0BE418BC2E1E00B4BCF3 /* CaptchaResetOp.h */,
+				04DB0BE518BC2E1E00B4BCF3 /* CaptchaResetOp.m */,
 				04992BBE18B687AF00A6C22B /* SearchOp.h */,
 				04992BBF18B687AF00A6C22B /* SearchOp.m */,
 				04992BC218B6971F00A6C22B /* SearchThumbUrlsOp.h */,
@@ -1340,6 +1352,7 @@
 				04C43AC2183442FC006C643B /* NSURLRequest+DictionaryRequest.m in Sources */,
 				0402E10F18A3ABA900C3B679 /* NavBarContainerView.m in Sources */,
 				040E533C1885FB4E00AFBFE9 /* ImageData.m in Sources */,
+				04DB0BE618BC2E1E00B4BCF3 /* CaptchaResetOp.m in Sources */,
 				0415581C18ADFA5D00B81A59 /* UIImage+ColorMask.m in Sources */,
 				04A70FD7185BB6C300E24515 /* URLCache.m in Sources */,
 				04992BC018B687AF00A6C22B /* SearchOp.m in Sources */,
@@ -1385,6 +1398,7 @@
 				D4991445181D51DE00E6073C /* main.m in Sources */,
 				04C43AC0183442FC006C643B /* NSString+Extras.m in Sources */,
 				0447862F185145090050563B /* HistoryResultCell.m in Sources */,
+				0476967C18BBFC9400071963 /* AccountCreationOp.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1405,6 +1419,7 @@
 				04D7582118923D3A00CE2040 /* ArticleLanguagesCell.m in Sources */,
 				04D34DAC1863D2D600610A87 /* TFHpple.m in Sources */,
 				0429301118604899002A13FC /* SavedPagesViewController.m in Sources */,
+				04DB0BE718BC2E1E00B4BCF3 /* CaptchaResetOp.m in Sources */,
 				04AE1C711891B302002D5487 /* NSObject+Extras.m in Sources */,
 				04D34D9E186236D400610A87 /* MainMenuResultsCell.m in Sources */,
 				04D75825189248E900CE2040 /* DownloadLangLinksOp.m in Sources */,
@@ -1458,6 +1473,7 @@
 				04D34DCA1863F6CC00610A87 /* Saved.m in Sources */,
 				047801BF18AE987900DBB747 /* UIButton+ColorMask.m in Sources */,
 				040E5C4D184564D0007AFE6F /* ArticleDataModel.m in Sources */,
+				0476967D18BBFC9400071963 /* AccountCreationOp.m in Sources */,
 				D474CC11182AE033002BDE45 /* SiteTests.m in Sources */,
 				0400EB0418AAEEC60043ECE2 /* UINavigationController+SearchNavStack.m in Sources */,
 				D4EE00BA182443FC0090790F /* MWPageTitle.m in Sources */,

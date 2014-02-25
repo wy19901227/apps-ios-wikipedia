@@ -2,10 +2,22 @@
 
 #import "AccountCreationViewController.h"
 #import "NavController.h"
+#import "QueuesSingleton.h"
+#import "SessionSingleton.h"
+#import "UIViewController+Alert.h"
+#import "AccountCreationOp.h"
+#import "CaptchaResetOp.h"
 
 #define NAV ((NavController *)self.navigationController)
 
 @interface AccountCreationViewController ()
+
+@property (nonatomic) BOOL showCaptchaContainer;
+@property (strong, nonatomic) CaptchaViewController *captchaViewController;
+
+@property (strong, nonatomic) NSString *captchaId;
+@property (strong, nonatomic) NSString *captchaUrl;
+@property (strong, nonatomic) NSString *token;
 
 @end
 
@@ -15,6 +27,10 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+
+    self.captchaId = @"";
+    self.captchaUrl = @"";
+    self.token = @"";
     
     self.navigationItem.hidesBackButton = YES;
 }
@@ -23,6 +39,8 @@
 {
     [super viewWillAppear:animated];
     
+    self.showCaptchaContainer = NO;
+
     NAV.navBarMode = NAVBAR_MODE_CREATE_ACCOUNT;
     ((UILabel *)[NAV getNavBarItem:NAVBAR_LABEL]).text = @"Create Account";
 }
@@ -33,6 +51,34 @@
     
     // Listen for nav bar taps.
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(navItemTappedNotification:) name:@"NavItemTapped" object:nil];
+    
+    
+
+
+
+
+/*
+TODO: 
+- actually confirm that password text box entries match each other!
+- update that placeholder captcha alert msg
+- is the delay i see when create acct interface loads caused by sync captcha image retrieval?
+*/
+
+    
+self.usernameField.text = @"acct_creation_test_007";
+self.passwordField.text = @"test123";
+self.passwordRepeatField.text = @"test123";
+self.realnameField.text = @"monte hurd";
+self.emailField.text = @"mhurd@wikimedia.org";
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }
 
 -(void)viewWillDisappear:(BOOL)animated
@@ -42,6 +88,95 @@
     NAV.navBarMode = NAVBAR_MODE_SEARCH;
 
     [super viewWillDisappear:animated];
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+	if ([segue.identifier isEqualToString: @"AccountCreation_Captcha_Embed"]) {
+		self.captchaViewController = (CaptchaViewController *) [segue destinationViewController];
+	}
+}
+
+-(void)setShowCaptchaContainer:(BOOL)showCaptchaContainer
+{
+    self.captchaContainer.hidden = !showCaptchaContainer;
+    if (_showCaptchaContainer != showCaptchaContainer) {
+        _showCaptchaContainer = showCaptchaContainer;
+        if (showCaptchaContainer){
+            [self.captchaViewController.captchaTextBox performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.4f];
+        }
+    }
+}
+
+-(void)setCaptchaUrl:(NSString *)captchaUrl
+{
+    if (![_captchaUrl isEqualToString:captchaUrl]) {
+        _captchaUrl = captchaUrl;
+        [self refreshCaptchaImage];
+    }
+}
+
+-(void)refreshCaptchaImage
+{
+    dispatch_async(dispatch_get_main_queue(), ^(){
+        NSURL *captchaImageUrl = [NSURL URLWithString:
+                                  [NSString stringWithFormat:@"https://%@.m.%@%@",
+                                   [SessionSingleton sharedInstance].domain,
+                                   [SessionSingleton sharedInstance].site,
+                                   self.captchaUrl
+                                   ]
+                                  ];
+        
+        UIImage *captchaImage = [UIImage imageWithData:[NSData dataWithContentsOfURL:captchaImageUrl]];
+        self.captchaViewController.captchaTextBox.text = @"";
+        self.captchaViewController.captchaImageView.image = captchaImage;
+    });
+    
+}
+
+- (void)reloadCaptchaPushed:(id)sender
+{
+    self.captchaViewController.captchaTextBox.text = @"";
+
+    [self showAlert:@"Obtaining new captcha."];
+    [self showAlert:@""];
+
+    CaptchaResetOp *captchaResetOp =
+    [[CaptchaResetOp alloc] initWithDomain: [SessionSingleton sharedInstance].domain
+                           completionBlock: ^(NSDictionary *result){
+                               
+                               self.captchaId = result[@"index"];
+                               
+                               NSString *oldCaptchaUrl = self.captchaUrl;
+                               
+                               NSError *error = nil;
+                               NSRegularExpression *regex =
+                               [NSRegularExpression regularExpressionWithPattern: @"wpCaptchaId=([^&]*)"
+                                                                         options: NSRegularExpressionCaseInsensitive
+                                                                           error: &error];
+                               if (!error) {
+                                   NSString *newCaptchaUrl =
+                                   [regex stringByReplacingMatchesInString: oldCaptchaUrl
+                                                                   options: 0
+                                                                     range: NSMakeRange(0, [oldCaptchaUrl length])
+                                                              withTemplate: [NSString stringWithFormat:@"wpCaptchaId=%@", self.captchaId]];
+                                   
+                                   self.captchaUrl = newCaptchaUrl;
+                               }
+                               
+                           } cancelledBlock: ^(NSError *error){
+                               
+                               [self showAlert:@""];
+                               
+                           } errorBlock: ^(NSError *error){
+                               [self showAlert:error.localizedDescription];
+                               
+                           }];
+    
+    captchaResetOp.delegate = self;
+
+    [[QueuesSingleton sharedInstance].accountCreationQ cancelAllOperations];
+    [[QueuesSingleton sharedInstance].accountCreationQ addOperation:captchaResetOp];
 }
 
 // Handle nav bar taps.
@@ -64,7 +199,57 @@
 
 -(void)save
 {
-    NSLog(@"SAVE");
+    static BOOL isAleadySaving = NO;
+    if (isAleadySaving) return;
+    isAleadySaving = YES;
+
+    [self showAlert:@"Saving..."];
+
+    AccountCreationOp *accountCreationOp =
+    [[AccountCreationOp alloc] initWithDomain: [SessionSingleton sharedInstance].domain
+                                     userName: self.usernameField.text
+                                     password: self.passwordField.text
+                                     realName: self.realnameField.text
+                                        email: self.emailField.text
+                                        token: self.token
+                                    captchaId: self.captchaId
+                                  captchaWord: self.captchaViewController.captchaTextBox.text
+     
+                              completionBlock: ^(NSString *result){
+                                  
+                                  //NSLog(@"AccountCreationOp result = %@", result);
+                                  
+                                  dispatch_async(dispatch_get_main_queue(), ^(){
+                                      [self showAlert:result];
+                                      [self showAlert:@""];
+                                      [self performSelector:@selector(hide) withObject:nil afterDelay:1.0f];
+                                      isAleadySaving = NO;
+                                  });
+                                  
+                              } cancelledBlock: ^(NSError *error){
+                                  
+                                  [self showAlert:@""];
+                                  isAleadySaving = NO;
+                                  
+                              } errorBlock: ^(NSError *error){
+                                  [self showAlert:error.localizedDescription];
+                                  
+                                  if (error.code == ACCOUNT_CREATION_ERROR_NEEDS_TOKEN) {
+                                      self.captchaId = error.userInfo[@"captchaId"];
+                                      self.token = error.userInfo[@"token"];
+                                      
+                                      dispatch_async(dispatch_get_main_queue(), ^(){
+                                          self.captchaUrl = error.userInfo[@"captchaUrl"];
+                                          self.showCaptchaContainer = YES;
+                                      });
+                                  }
+                                  isAleadySaving = NO;
+                              }];
+
+    accountCreationOp.delegate = self;
+
+    [[QueuesSingleton sharedInstance].accountCreationQ cancelAllOperations];
+    [[QueuesSingleton sharedInstance].accountCreationQ addOperation:accountCreationOp];
 }
 
 -(void)hide

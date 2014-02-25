@@ -159,7 +159,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8Qz-4P-2EZ" userLabel="Scroll Container">
-                                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="320" height="718"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="User name" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="5cT-2Y-0Ie">
@@ -169,7 +169,7 @@
                                                     <constraint firstAttribute="width" constant="280" id="Gao-rE-xbM"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                <textInputTraits key="textInputTraits"/>
+                                                <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="next"/>
                                             </textField>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Password" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="PCr-0J-fBj">
                                                 <rect key="frame" x="20" y="77" width="280" height="30"/>
@@ -178,7 +178,7 @@
                                                     <constraint firstAttribute="width" constant="280" id="wXk-6q-xpB"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                <textInputTraits key="textInputTraits"/>
+                                                <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="next" secureTextEntry="YES"/>
                                             </textField>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Re-type password" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="UgH-77-lyp">
                                                 <rect key="frame" x="20" y="115" width="280" height="30"/>
@@ -187,7 +187,7 @@
                                                     <constraint firstAttribute="width" constant="280" id="LPp-qZ-fid"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                <textInputTraits key="textInputTraits"/>
+                                                <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="next" secureTextEntry="YES"/>
                                             </textField>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Email address" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="rKI-nq-3p7">
                                                 <rect key="frame" x="20" y="153" width="280" height="30"/>
@@ -196,7 +196,7 @@
                                                     <constraint firstAttribute="width" constant="280" id="0vZ-Pg-ajS"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                <textInputTraits key="textInputTraits"/>
+                                                <textInputTraits key="textInputTraits" autocorrectionType="no" keyboardType="emailAddress" returnKeyType="next"/>
                                             </textField>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Real name (optional)" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Oun-t6-8P1">
                                                 <rect key="frame" x="20" y="191" width="280" height="30"/>
@@ -205,20 +205,34 @@
                                                     <constraint firstAttribute="width" constant="280" id="vZo-bR-BtD"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                <textInputTraits key="textInputTraits"/>
+                                                <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="next"/>
                                             </textField>
+                                            <containerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nkJ-ZP-8yL">
+                                                <rect key="frame" x="20" y="229" width="280" height="163"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="163" id="S8T-dk-ANv"/>
+                                                    <constraint firstAttribute="width" constant="280" id="bC9-aK-J8r"/>
+                                                </constraints>
+                                                <connections>
+                                                    <segue destination="sIA-fC-CW8" kind="embed" identifier="AccountCreation_Captcha_Embed" id="HJg-5s-ewq"/>
+                                                </connections>
+                                            </containerView>
                                         </subviews>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstItem="5cT-2Y-0Ie" firstAttribute="top" secondItem="8Qz-4P-2EZ" secondAttribute="top" constant="39" id="81C-La-e2s"/>
+                                            <constraint firstAttribute="centerX" secondItem="nkJ-ZP-8yL" secondAttribute="centerX" id="A96-6a-F0d"/>
                                             <constraint firstAttribute="centerX" secondItem="rKI-nq-3p7" secondAttribute="centerX" id="Agw-sD-hRr"/>
                                             <constraint firstAttribute="centerX" secondItem="PCr-0J-fBj" secondAttribute="centerX" id="B7L-q8-1ED"/>
                                             <constraint firstAttribute="centerX" secondItem="5cT-2Y-0Ie" secondAttribute="centerX" id="ESN-yX-pbi"/>
                                             <constraint firstItem="Oun-t6-8P1" firstAttribute="top" secondItem="rKI-nq-3p7" secondAttribute="bottom" constant="8" id="FNF-we-pWc"/>
                                             <constraint firstItem="rKI-nq-3p7" firstAttribute="top" secondItem="UgH-77-lyp" secondAttribute="bottom" constant="8" id="KDf-Fg-G0z"/>
-                                            <constraint firstAttribute="bottom" secondItem="Oun-t6-8P1" secondAttribute="bottom" constant="347" id="KQs-aC-HHM"/>
+                                            <constraint firstAttribute="bottom" secondItem="nkJ-ZP-8yL" secondAttribute="bottom" constant="326" id="P54-yf-Kc2"/>
                                             <constraint firstAttribute="centerX" secondItem="Oun-t6-8P1" secondAttribute="centerX" id="VXq-SY-jUx"/>
                                             <constraint firstItem="PCr-0J-fBj" firstAttribute="top" secondItem="5cT-2Y-0Ie" secondAttribute="bottom" constant="8" id="fIt-vm-nHd"/>
+                                            <constraint firstItem="nkJ-ZP-8yL" firstAttribute="top" secondItem="Oun-t6-8P1" secondAttribute="bottom" constant="8" symbolic="YES" id="h7E-Ze-SdJ"/>
                                             <constraint firstItem="UgH-77-lyp" firstAttribute="top" secondItem="PCr-0J-fBj" secondAttribute="bottom" constant="8" id="qtp-Rg-T4I"/>
                                             <constraint firstAttribute="centerX" secondItem="UgH-77-lyp" secondAttribute="centerX" id="vkt-wI-2J0"/>
                                         </constraints>
@@ -242,6 +256,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="captchaContainer" destination="nkJ-ZP-8yL" id="EVl-1d-gsg"/>
                         <outlet property="emailField" destination="rKI-nq-3p7" id="FdI-zs-zky"/>
                         <outlet property="passwordField" destination="PCr-0J-fBj" id="8aR-Qi-zWN"/>
                         <outlet property="passwordRepeatField" destination="UgH-77-lyp" id="2o9-29-ToR"/>
@@ -251,7 +266,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ysT-81-Q5N" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-256" y="1511"/>
+            <point key="canvasLocation" x="-80" y="1953"/>
         </scene>
         <!--Login View Controller-->
         <scene sceneID="fEN-6l-kyQ">
@@ -451,7 +466,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eHF-WC-RSd" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="990" y="1957"/>
+            <point key="canvasLocation" x="548" y="2296"/>
         </scene>
         <!--Saved Pages View Controller-->
         <scene sceneID="IrT-ak-0hr">
@@ -733,4 +748,7 @@
         <simulatedOrientationMetrics key="orientation"/>
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
+    <inferredMetricsTieBreakers>
+        <segue reference="HJg-5s-ewq"/>
+    </inferredMetricsTieBreakers>
 </document>
