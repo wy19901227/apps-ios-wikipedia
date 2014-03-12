@@ -75,4 +75,9 @@
 "navbar-title-mode-edit-wikitext-preview" = "Previewing";
 "navbar-title-mode-edit-wikitext-captcha" = "Quick Verification needed";
 
+"edit-summary-choice-fixed-typos-grammar" = "Fixed Typos/ Grammar";
+"edit-summary-choice-linked-words" = "Linked Words";
+"edit-summary-choice-add-remove-info" = "Added/ Removed Information";
+"edit-summary-description" = "A specific summary for important changes helps co-editors quickly review your edits. Or you could select from the tags below.";
+"edit-summary-field-placeholder-text" = "How did you improve the article?";
 
