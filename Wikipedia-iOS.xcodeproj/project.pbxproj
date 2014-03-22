@@ -99,6 +99,8 @@
 		043F18EE18DA3D9B00D8489A /* button_cc_black.png in Resources */ = {isa = PBXBuildFile; fileRef = 043F18EB18DA3D9B00D8489A /* button_cc_black.png */; };
 		043F18EF18DA3D9B00D8489A /* button_cc_black@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 043F18EC18DA3D9B00D8489A /* button_cc_black@2x.png */; };
 		043F18F018DA3D9B00D8489A /* button_cc_black@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 043F18EC18DA3D9B00D8489A /* button_cc_black@2x.png */; };
+		043F18F818DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 043F18F718DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.m */; };
+		043F18F918DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 043F18F718DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.m */; };
 		0447862F185145090050563B /* HistoryResultCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 04478621185145090050563B /* HistoryResultCell.m */; };
 		04478630185145090050563B /* HistoryResultCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 04478621185145090050563B /* HistoryResultCell.m */; };
 		04478631185145090050563B /* HistoryResultPrototypeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 04478622185145090050563B /* HistoryResultPrototypeView.xib */; };
@@ -391,6 +393,8 @@
 		043F18E818D9885F00D8489A /* TitleSubtitleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TitleSubtitleView.m; sourceTree = "<group>"; };
 		043F18EB18DA3D9B00D8489A /* button_cc_black.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_cc_black.png; sourceTree = "<group>"; };
 		043F18EC18DA3D9B00D8489A /* button_cc_black@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_cc_black@2x.png"; sourceTree = "<group>"; };
+		043F18F618DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrelloDesignBoardCurrentOniOSCardsOp.h; sourceTree = "<group>"; };
+		043F18F718DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TrelloDesignBoardCurrentOniOSCardsOp.m; sourceTree = "<group>"; };
 		04478620185145090050563B /* HistoryResultCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HistoryResultCell.h; sourceTree = "<group>"; };
 		04478621185145090050563B /* HistoryResultCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HistoryResultCell.m; sourceTree = "<group>"; };
 		04478622185145090050563B /* HistoryResultPrototypeView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HistoryResultPrototypeView.xib; sourceTree = "<group>"; };
@@ -1112,6 +1116,8 @@
 				C9928B8518AD5C6A00FCCA9A /* DownloadWikipediaZeroMessageOp.m */,
 				C958EE3218CE73E600148D13 /* DownloadTitlesForRandomArticlesOp.h */,
 				C958EE3318CE73E600148D13 /* DownloadTitlesForRandomArticlesOp.m */,
+				043F18F618DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.h */,
+				043F18F718DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.m */,
 			);
 			path = Operations;
 			sourceTree = "<group>";
@@ -1657,6 +1663,7 @@
 				04D75828189301B100CE2040 /* ArticleLanguagesSectionHeadingLabel.m in Sources */,
 				0460990A18899A9800B1F2BC /* DownloadSectionWikiTextOp.m in Sources */,
 				04C43ABE183442FC006C643B /* NSRunLoop+TimeOutAndFlag.m in Sources */,
+				043F18F818DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.m in Sources */,
 				043C668A18BE9A8E00580E9B /* PreviewWikiTextOp.m in Sources */,
 				04C43AA6183440C1006C643B /* MWNetworkOp.m in Sources */,
 				040E5C841846AC13007AFE6F /* ArticleDataContextSingleton.m in Sources */,
@@ -1744,6 +1751,7 @@
 				D4EE00BD1824459D0090790F /* PageTitleTests.m in Sources */,
 				04AE1C751891BB32002D5487 /* Article.m in Sources */,
 				04C43AB61834423C006C643B /* NetworkOpCrumbyTests.m in Sources */,
+				043F18F918DE5B5D00D8489A /* TrelloDesignBoardCurrentOniOSCardsOp.m in Sources */,
 				043F18EA18D9885F00D8489A /* TitleSubtitleView.m in Sources */,
 				0463639418A5CCEB0049EE4F /* EditTokenOp.m in Sources */,
 				04F0E2EB186EDC1A00468738 /* UIWebView+ElementLocation.m in Sources */,
