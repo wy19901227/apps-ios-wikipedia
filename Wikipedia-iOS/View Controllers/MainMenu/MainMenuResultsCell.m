@@ -26,7 +26,12 @@
     //self.textLabel.layer.borderColor = [UIColor redColor].CGColor;
     //self.backgroundColor = [UIColor greenColor];
 
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+
     self.textLabel.numberOfLines = 2;
+
+    // Makes iOS 6 not use gross rounded cell borders.
+    self.backgroundView = [[UIView alloc] init];
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder

@@ -11,7 +11,7 @@
         //self.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.0];
         self.numberOfLines = 2;
         self.lineBreakMode = NSLineBreakByWordWrapping;
-        self.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:20.0];
+        self.font = [UIFont boldSystemFontOfSize:19.0];
         self.backgroundColor = [UIColor clearColor];
         self.textColor = [UIColor colorWithWhite:0.0 alpha:0.7];
         self.useDottedLine = NO;

@@ -325,7 +325,7 @@
     self.label.text = @"";
     self.label.translatesAutoresizingMaskIntoConstraints = NO;
     self.label.tag = NAVBAR_LABEL;
-    self.label.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:15.0];
+    self.label.font = [UIFont boldSystemFontOfSize:15.0];
     self.label.textColor = [UIColor darkGrayColor];
     self.label.backgroundColor = [UIColor clearColor];
     self.label.userInteractionEnabled = YES;

@@ -3,5 +3,6 @@
 @interface MainMenuResultsCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *textLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *thumbnailImageView;
 
 @end
