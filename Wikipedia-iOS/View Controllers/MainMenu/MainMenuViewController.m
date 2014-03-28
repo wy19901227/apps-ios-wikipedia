@@ -420,7 +420,8 @@ typedef enum {
                                                          dispatch_async(dispatch_get_main_queue(), ^(){
                                                              [NAV loadArticleWithTitle: title
                                                                                 domain: [SessionSingleton sharedInstance].domain
-                                                                              animated: YES];
+                                                                              animated: YES
+                                                                       discoveryMethod: DISCOVERY_METHOD_RANDOM];
                                                          });
                                                      }
                                                  } cancelledBlock: ^(NSError *errorCancel) {

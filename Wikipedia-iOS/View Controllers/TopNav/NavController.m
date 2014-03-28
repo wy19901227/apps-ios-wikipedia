@@ -710,13 +710,18 @@
     [view setNeedsDisplay];
 }
 
--(void)loadArticleWithTitle:(NSString *)title domain:(NSString *)domain animated:(BOOL)animated
+-(void)loadArticleWithTitle: (NSString *)title
+                     domain: (NSString *)domain
+                   animated: (BOOL)animated
+            discoveryMethod: (ArticleDiscoveryMethod)discoveryMethod
 {
     WebViewController *webVC = [self searchNavStackForViewControllerOfClass:[WebViewController class]];
     if (webVC){
         [SessionSingleton sharedInstance].currentArticleTitle = title;
         [SessionSingleton sharedInstance].currentArticleDomain = domain;
-        [webVC reloadCurrentArticle];
+        [webVC navigateToPage: title
+                       domain: domain
+              discoveryMethod: discoveryMethod];
         [self popToViewController:webVC animated:animated];
     }
 }

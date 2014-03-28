@@ -39,10 +39,6 @@
 #define TOC_TOGGLE_ANIMATION_DURATION 0.35f
 #define NAV ((NavController *)self.navigationController)
 
-#define DISCOVERY_METHOD_SEARCH @"search"
-#define DISCOVERY_METHOD_RANDOM @"random"
-#define DISCOVERY_METHOD_LINK   @"link"
-
 typedef enum {
     DISPLAY_LEAD_SECTION = 0,
     DISPLAY_APPEND_NON_LEAD_SECTIONS = 1,
@@ -214,7 +210,10 @@ typedef enum {
     languagesTableVC.selectionBlock = ^(NSDictionary *selectedLangInfo){
         [self.navigationController.view.layer addAnimation:transition forKey:nil];
         // Don't animate - so the transistion set above will be used.
-        [NAV loadArticleWithTitle:selectedLangInfo[@"*"] domain:selectedLangInfo[@"code"] animated:NO];
+        [NAV loadArticleWithTitle: selectedLangInfo[@"*"]
+                           domain: selectedLangInfo[@"code"]
+                         animated: NO
+                  discoveryMethod: DISCOVERY_METHOD_SEARCH];
     };
     
     [self.navigationController.view.layer addAnimation:transition forKey:nil];
@@ -608,7 +607,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 #pragma mark Article loading ops
 
-- (void)navigateToPage:(NSString *)title domain:(NSString *)domain discoveryMethod:(NSString *)discoveryMethod
+- (void)navigateToPage:(NSString *)title domain:(NSString *)domain discoveryMethod:(ArticleDiscoveryMethod)discoveryMethod
 {
     NSString *cleanTitle = [self cleanTitle:title];
     
@@ -621,13 +620,15 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     // Show loading message
     [self showAlert:NSLocalizedString(@"search-loading-section-zero", nil)];
     
-    [self retrieveArticleForPageTitle:cleanTitle domain:domain discoveryMethod:discoveryMethod];
+    [self retrieveArticleForPageTitle:cleanTitle domain:domain discoveryMethod:[self getStringForDiscoveryMethod:discoveryMethod]];
 }
 
 -(void)reloadCurrentArticle{
     NSString *title = [SessionSingleton sharedInstance].currentArticleTitle;
     NSString *domain = [SessionSingleton sharedInstance].currentArticleDomain;
-    [self navigateToPage:title domain:domain discoveryMethod:DISCOVERY_METHOD_SEARCH];
+    [self navigateToPage: title
+                  domain: domain
+         discoveryMethod: DISCOVERY_METHOD_SEARCH];
 }
 
 -(void)reloadCurrentArticleInvalidatingCache
@@ -862,6 +863,22 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     
     [[QueuesSingleton sharedInstance].articleRetrievalQ addOperation:remainingSectionsOp];
     [[QueuesSingleton sharedInstance].articleRetrievalQ addOperation:firstSectionOp];
+}
+
+-(NSString *)getStringForDiscoveryMethod:(ArticleDiscoveryMethod)method
+{
+    switch (method) {
+        case DISCOVERY_METHOD_RANDOM:
+            return @"random";
+            break;
+        case DISCOVERY_METHOD_LINK:
+            return @"link";
+            break;
+        case DISCOVERY_METHOD_SEARCH:
+        default:
+            return @"search";
+            break;
+    }
 }
 
 #pragma mark Progress report
