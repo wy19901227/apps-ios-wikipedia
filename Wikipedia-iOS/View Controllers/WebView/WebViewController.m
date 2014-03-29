@@ -27,6 +27,7 @@
 #import "UIViewController+SearchChildViewControllers.h"
 #import "NSManagedObjectContext+SimpleFetch.h"
 #import "UIViewController+HideKeyboard.h"
+#import "UIWebView+HideScrollGradient.h"
 #import "UIWebView+ElementLocation.h"
 #import "UIViewController+Alert.h"
 #import "Section+ImageRecords.h"
@@ -135,6 +136,8 @@ typedef enum {
     self.webView.scrollView.delegate = self;
 
     self.webView.backgroundColor = [UIColor colorWithRed:0.98 green:0.98 blue:0.98 alpha:1.0];
+
+    [self.webView hideScrollGradient];
 
     [self reloadCurrentArticle];
     
