@@ -46,6 +46,7 @@
 "wikitext-upload-captcha-error" = "CAPTCHA verification error.";
 "wikitext-upload-captcha-needed" = "Need CAPTCHA verification.";
 "wikitext-upload-save" = "Saving...";
+"wikitext-upload-token-failed" = "Unable to obtain edit token.";
 
 "wikitext-upload-save-sign-in" = "Sign in and save";
 "wikitext-upload-save-sign-in-benefits" = "So co-editors can connect with you & you can see what articles you edited";

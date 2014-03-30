@@ -4,10 +4,11 @@
 
 @interface EditTokenOp : MWNetworkOp
 
-- (id)initWithDomain: (NSString *)domain
-     completionBlock: (void (^)(NSDictionary *))completionBlock
-      cancelledBlock: (void (^)(NSError *))cancelledBlock
-          errorBlock: (void (^)(NSError *))errorBlock
+- (id)initForPageTitle: (NSString *)title
+                domain: (NSString *)domain
+       completionBlock: (void (^)(NSString *))completionBlock
+        cancelledBlock: (void (^)(NSError *))cancelledBlock
+            errorBlock: (void (^)(NSError *))errorBlock
 ;
 
 @end

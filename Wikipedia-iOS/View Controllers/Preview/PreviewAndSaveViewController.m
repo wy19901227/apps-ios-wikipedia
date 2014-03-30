@@ -422,12 +422,14 @@ typedef enum {
     }];
 
     EditTokenOp *editTokenOp =
-    [[EditTokenOp alloc] initWithDomain: section.article.domain
-                        completionBlock: ^(NSDictionary *result){
+    [[EditTokenOp alloc] initForPageTitle: section.article.title
+                                   domain: section.article.domain
+                          completionBlock: ^(NSString *editToken){
                             //NSLog(@"editTokenOp result = %@", result);
                             //NSLog(@"editTokenOp result tokens = %@", result[@"tokens"][@"edittoken"]);
                             
-                            NSString *editToken = result[@"tokens"][@"edittoken"];
+//                            NSString *editToken = result[@"tokens"][@"edittoken"];
+                            
                             NSMutableDictionary *editTokens = [SessionSingleton sharedInstance].keychainCredentials.editTokens;
                             editTokens[[SessionSingleton sharedInstance].domain] = editToken;
                             [SessionSingleton sharedInstance].keychainCredentials.editTokens = editTokens;

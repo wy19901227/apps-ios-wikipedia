@@ -45,6 +45,7 @@
 "wikitext-upload-captcha-error" = "Alert text shown when section wikitext upload captcha fails";
 "wikitext-upload-captcha-needed" = "Alert text shown when section wikitext upload captcha is required";
 "wikitext-upload-save" = "Alert text shown when changes to section wikitext are being saved";
+"wikitext-upload-token-failed" = "Alert text shown when unable to obtain edit token for the section being edited";
 
 "wikitext-upload-save-sign-in" = "Button text for prompting user to sign in before saving wikitext";
 "wikitext-upload-save-sign-in-benefits" = "Button sub-text informing user of sign in benefits";
