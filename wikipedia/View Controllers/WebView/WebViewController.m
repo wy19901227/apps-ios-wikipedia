@@ -32,6 +32,7 @@
 #import "Section+ImageRecords.h"
 #import "NSString+Extras.h"
 
+#import "ZeroStatusLabel.h"
 //#import "UIView+Debugging.h"
 
 #define TOC_TOGGLE_ANIMATION_DURATION 0.3f
@@ -81,6 +82,9 @@ typedef enum {
 - (IBAction)backButtonPushed:(id)sender;
 - (IBAction)forwardButtonPushed:(id)sender;
 - (IBAction)languageButtonPushed:(id)sender;
+
+@property (nonatomic) BOOL showZeroStatusLabel;
+@property (strong, nonatomic) IBOutlet ZeroStatusLabel *zeroStatusLabel;
 
 @end
 
@@ -158,6 +162,9 @@ typedef enum {
     // UIWebView has a bug which causes a black bar to appear at
     // bottom of the web view if toc quickly dragged on and offscreen.
     self.webView.opaque = NO;
+
+
+    self.showZeroStatusLabel = NO;
 }
 
 -(void)viewDidAppear:(BOOL)animated
@@ -801,6 +808,37 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+    
+    
+    
+    self.showZeroStatusLabel = !self.showZeroStatusLabel;
+
+    if (self.showZeroStatusLabel) {
+        
+        
+        self.zeroStatusLabel.text = @"Free Wikipedia by This or That carrier.";
+        self.zeroStatusLabel.paddingEdgeInsets = UIEdgeInsetsMake(3, 10, 3, 10);
+     
+        
+    }else{
+        
+        self.zeroStatusLabel.text = @"";
+        self.zeroStatusLabel.paddingEdgeInsets = UIEdgeInsetsZero;
+
+//          self.zeroStatusLabel.text = @"Free Wikipedia by This or That carrier.";
+//          self.zeroStatusLabel.font = [UIFont systemFontOfSize:8];
+
+
+      
+    }
+
+
+
+
+    
+//}
+    
+    
 }
 
 -(NSString *)cleanTitle:(NSString *)title
