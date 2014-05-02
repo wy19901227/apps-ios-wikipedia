@@ -12,18 +12,21 @@
 
 - (id)initForPageTitle: (NSString *)title
                 domain: (NSString *)domain
-       completionBlock: (void (^)(NSDictionary *))completionBlock
+       completionBlock: (void (^)(NSMutableDictionary *))completionBlock
         cancelledBlock: (void (^)(NSError *))cancelledBlock
             errorBlock: (void (^)(NSError *))errorBlock
 {
     self = [super init];
     if (self) {
+
+//self.titleReflectingAnyRedirects = title;
+
         self.request = [NSURLRequest getRequestWithURL: [[SessionSingleton sharedInstance] urlForDomain:domain]
                                              parameters: @{
                                                            @"action": @"mobileview",
                                                            @"prop": @"sections|text|lastmodified|lastmodifiedby|languagecount",
                                                            @"sections": @"0",
-                                                           @"sectionprop": @"toclevel|line|anchor",
+                                                           @"sectionprop": @"toclevel|line|anchor|level|number|fromtitle|index",
                                                            @"page": title,
                                                            @"format": @"json"
                                                            }
@@ -60,7 +63,7 @@
                 return;
             }
             
-            //NSLog(@"weakSelf.jsonRetrieved = %@", weakSelf.jsonRetrieved);
+NSLog(@"weakSelf.jsonRetrieved = %@", weakSelf.jsonRetrieved);
             
             NSString *lastmodifiedDateString = weakSelf.jsonRetrieved[@"mobileview"][@"lastmodified"];
             NSDate *lastmodifiedDate = [lastmodifiedDateString getDateFromIso8601DateString];
@@ -77,16 +80,31 @@
             
             NSString *redirected = weakSelf.jsonRetrieved[@"mobileview"][@"redirected"];
             if (!redirected || [redirected isNull]) redirected = @"";
+
+
+
             
             NSArray *sections = weakSelf.jsonRetrieved[@"mobileview"][@"sections"];
+
+
+//NSString *titleReflectingAnyRedirects = title;
+//if(redirected.length > 0){
+//    titleReflectingAnyRedirects = redirected;
+//    // Now set redirected to the original title so it tells us something we don't already know.
+//    // ie: now that title is the redirected-to title, it makes no sense to have "redirected" just
+//    // be that same title, so set redirected to the redirected-from title.
+//    redirected = title;
+//}
+
             
             completionBlock(@{
                               @"sections": sections,
                               @"lastmodified": lastmodifiedDate,
                               @"lastmodifiedby": lastmodifiedby,
                               @"redirected": redirected,
-                              @"languagecount": languagecount
-                              });
+                              @"languagecount": languagecount//,
+//                              @"titleReflectingAnyRedirects" : titleReflectingAnyRedirects
+                              }.mutableCopy);
         };
     }
     return self;

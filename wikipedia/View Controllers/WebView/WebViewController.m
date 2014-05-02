@@ -30,6 +30,7 @@
 #import "UIView+RemoveConstraints.h"
 #import "UIViewController+Alert.h"
 #import "Section+ImageRecords.h"
+#import "Section+LeadSection.h"
 #import "NSString+Extras.h"
 
 #import "ZeroStatusLabel.h"
@@ -55,7 +56,7 @@ typedef enum {
 @property (nonatomic) BOOL unsafeToScroll;
 
 @property (nonatomic) NSInteger indexOfFirstOnscreenSectionBeforeRotate;
-@property (nonatomic) NSUInteger sectionToEditIndex;
+@property (nonatomic) NSUInteger sectionToEditId;
 
 @property (strong, nonatomic) NSDictionary *adjacentHistoryIDs;
 @property (strong, nonatomic) NSString *externalUrl;
@@ -100,7 +101,7 @@ typedef enum {
 {
     [super viewDidLoad];
 
-    self.sectionToEditIndex = 0;
+    self.sectionToEditId = 0;
 
     self.forwardButton.transform = CGAffineTransformMakeScale(-1.0, 1.0);
     self.indexOfFirstOnscreenSectionBeforeRotate = -1;
@@ -198,10 +199,12 @@ typedef enum {
                                                    domain: [SessionSingleton sharedInstance].currentArticleDomain];
     if (articleID) {
         Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
+
+NSLog(@"self.sectionToEditId = %d", self.sectionToEditId);
         
         Section *section =
         (Section *)[articleDataContext_.mainContext getEntityForName: @"Section"
-                                                 withPredicateFormat: @"article == %@ AND index == %@", article, @(self.sectionToEditIndex)];
+                                                 withPredicateFormat: @"article == %@ AND sectionId == %@", article, @(self.sectionToEditId)];
         
         sectionEditVC.sectionID = section.objectID;
     }
@@ -613,7 +616,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
     [self.bridge addListener:@"editClicked" withBlock:^(NSString *messageType, NSDictionary *payload) {
         [weakSelf tocHide];
-        weakSelf.sectionToEditIndex = [[payload[@"href"] stringByReplacingOccurrencesOfString:@"edit_section_" withString:@""] integerValue];
+        weakSelf.sectionToEditId = [[payload[@"href"] stringByReplacingOccurrencesOfString:@"edit_section_" withString:@""] integerValue];
 
         [weakSelf.self showSectionEditor];
     }];
@@ -904,18 +907,191 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         needsRefresh = article.needsRefresh.boolValue;
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Retrieve remaining sections op (dependent on first section op)
+    DownloadNonLeadSectionsOp *remainingSectionsOp =
+    [[DownloadNonLeadSectionsOp alloc] initForPageTitle:pageTitle domain:[SessionSingleton sharedInstance].currentArticleDomain completionBlock:^(NSArray *sectionsRetrieved){
+        
+        // Just in case the article wasn't created during the "parent" operation.
+        if (!articleID) return;
+        
+        // The completion block happens on non-main thread, so must get article from articleID again.
+        // Because "you can only use a context on a thread when the context was created on that thread"
+        // this must happen on workerContext as well (see: http://stackoverflow.com/a/6356201/135557)
+        Article *article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
+
+        //Non-lead sections have been retreived so set needsRefresh to NO.
+        article.needsRefresh = @NO;
+
+
+
+
+
+
+        NSMutableArray *sectionText = [@[] mutableCopy];
+        for (NSDictionary *section in sectionsRetrieved) {
+            if (![section[@"id"] isEqual: @0]) {
+                
+                NSString *sectionHTMLWithID = [self surroundHTML:section[@"text"] withDivForSection:section[@"id"]];
+                
+                [sectionText addObject:sectionHTMLWithID];
+                
+                // Add sections for article
+                Section *thisSection = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_.workerContext];
+
+                // Section index is a string because transclusion sections indexes will start with "T-".
+                if ([section[@"index"] isKindOfClass:[NSString class]]) {
+                    thisSection.index = section[@"index"];
+                }
+
+                thisSection.title = section[@"line"];
+
+                if ([section[@"level"] isKindOfClass:[NSString class]]) {
+                    thisSection.level = section[@"level"];
+                }
+
+                // Section number, from the api, can be 3.5.2 etc, so it's a string.
+                if ([section[@"number"] isKindOfClass:[NSString class]]) {
+                    thisSection.number = section[@"number"];
+                }
+
+                if (section[@"fromtitle"]) {
+                    thisSection.fromTitle = section[@"fromtitle"];
+                }
+
+                thisSection.sectionId = section[@"id"];
+
+                thisSection.html = section[@"text"];
+                thisSection.tocLevel = section[@"toclevel"];
+                thisSection.dateRetrieved = [NSDate date];
+                thisSection.anchor = (section[@"anchor"]) ? section[@"anchor"] : @"";
+
+                [article addSectionObject:thisSection];
+            }
+        }
+
+        NSError *error = nil;
+        [articleDataContext_.workerContext save:&error];
+        
+        [self displayArticle:articleID mode:DISPLAY_APPEND_NON_LEAD_SECTIONS];
+        [self showAlert:MWLocalizedString(@"search-loading-article-loaded", nil)];
+        [self fadeAlert];
+
+    } cancelledBlock:^(NSError *error){
+        [self fadeAlert];
+    } errorBlock:^(NSError *error){
+        NSString *errorMsg = error.localizedDescription;
+        [self showAlert:errorMsg];
+    }];
+
+    remainingSectionsOp.delegate = self;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Retrieve first section op
     DownloadLeadSectionOp *firstSectionOp =
-    [[DownloadLeadSectionOp alloc] initForPageTitle:pageTitle domain:[SessionSingleton sharedInstance].currentArticleDomain completionBlock:^(NSDictionary *dataRetrieved){
+    [[DownloadLeadSectionOp alloc] initForPageTitle:pageTitle domain:[SessionSingleton sharedInstance].currentArticleDomain completionBlock:^(NSMutableDictionary *dataRetrieved){
 
         Article *article = nil;
+
+
+
+
+
+
+
+
+NSString *redirectedTitle = [dataRetrieved[@"redirected"] copy];
+
+// Redirect if the pageTitle which triggered this call to "retrieveArticleForPageTitle"
+// differs from titleReflectingAnyRedirects.
+if (redirectedTitle.length > 0) {
+    NSString *newTitle = redirectedTitle.copy;
+    [self retrieveArticleForPageTitle:newTitle domain:domain discoveryMethod:discoveryMethod];
+    return;
+}
+
+//remainingSectionsOp.titleReflectingAnyRedirects = titleReflectingAnyRedirects;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
         if (!articleID) {
             article = [NSEntityDescription
                 insertNewObjectForEntityForName:@"Article"
                 inManagedObjectContext:articleDataContext_.workerContext
             ];
-            article.title = pageTitle;
+            
+article.title = pageTitle;
+
             article.dateCreated = [NSDate date];
             article.site = [SessionSingleton sharedInstance].site;
             article.domain = [SessionSingleton sharedInstance].currentArticleDomain;
@@ -938,6 +1114,11 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         article.languagecount = dataRetrieved[@"languagecount"];
         article.lastmodified = dataRetrieved[@"lastmodified"];
         article.lastmodifiedby = dataRetrieved[@"lastmodifiedby"];
+
+// Note: Because "retrieveArticleForPageTitle" recurses with the redirected-to title if
+// the lead section op determines a redirect occurred, the "redirected" value below will
+// probably never be set.
+
         article.redirected = dataRetrieved[@"redirected"];
         //NSDateFormatter *anotherDateFormatter = [[NSDateFormatter alloc] init];
         //[anotherDateFormatter setDateStyle:NSDateFormatterLongStyle];
@@ -984,11 +1165,16 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
         // Add sections for article
         Section *section0 = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_.workerContext];
-        section0.index = @0;
+// Section index is a string because transclusion sections indexes will start with "T-"
+        section0.index = @"0";
+section0.level = @"0";
+section0.number = @"0";
         section0.title = @"";
         section0.dateRetrieved = [NSDate date];
         section0.html = section0HTML;
         section0.anchor = @"";
+//section0.fromTitle = @"";
+section0.sectionId = @0;
         article.section = [NSSet setWithObjects:section0, nil];
 
         // Don't add multiple history items for the same article or back-forward button
@@ -1034,55 +1220,21 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
     firstSectionOp.delegate = self;
     
-    // Retrieve remaining sections op (dependent on first section op)
-    DownloadNonLeadSectionsOp *remainingSectionsOp = [[DownloadNonLeadSectionsOp alloc] initForPageTitle:pageTitle domain:[SessionSingleton sharedInstance].currentArticleDomain completionBlock:^(NSArray *sectionsRetrieved){
-        
-        // Just in case the article wasn't created during the "parent" operation.
-        if (!articleID) return;
-        
-        // The completion block happens on non-main thread, so must get article from articleID again.
-        // Because "you can only use a context on a thread when the context was created on that thread"
-        // this must happen on workerContext as well (see: http://stackoverflow.com/a/6356201/135557)
-        Article *article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
 
-        //Non-lead sections have been retreived so set needsRefresh to NO.
-        article.needsRefresh = @NO;
 
-        NSMutableArray *sectionText = [@[] mutableCopy];
-        for (NSDictionary *section in sectionsRetrieved) {
-            if (![section[@"id"] isEqual: @0]) {
-                
-                NSString *sectionHTMLWithID = [self surroundHTML:section[@"text"] withDivForSection:section[@"id"]];
-                
-                [sectionText addObject:sectionHTMLWithID];
-                
-                // Add sections for article
-                Section *thisSection = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_.workerContext];
-                thisSection.index = section[@"id"];
-                thisSection.title = section[@"line"];
-                thisSection.html = section[@"text"];
-                thisSection.tocLevel = section[@"toclevel"];
-                thisSection.dateRetrieved = [NSDate date];
-                thisSection.anchor = (section[@"anchor"]) ? section[@"anchor"] : @"";
-                [article addSectionObject:thisSection];
-            }
-        }
 
-        NSError *error = nil;
-        [articleDataContext_.workerContext save:&error];
-        
-        [self displayArticle:articleID mode:DISPLAY_APPEND_NON_LEAD_SECTIONS];
-        [self showAlert:MWLocalizedString(@"search-loading-article-loaded", nil)];
-        [self fadeAlert];
 
-    } cancelledBlock:^(NSError *error){
-        [self fadeAlert];
-    } errorBlock:^(NSError *error){
-        NSString *errorMsg = error.localizedDescription;
-        [self showAlert:errorMsg];
-    }];
 
-    remainingSectionsOp.delegate = self;
+
+
+
+
+
+
+
+
+
+
     
     // Retrieval of remaining sections depends on retrieving first section
     [remainingSectionsOp addDependency:firstSectionOp];
@@ -1121,7 +1273,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
 #pragma mark HTML added just before display
 
--(NSString *)surroundHTML:(NSString *)html withDivForSection:(NSNumber *)sectionIndex
+-(NSString *)surroundHTML:(NSString *)html withDivForSection:(NSNumber *)sectionId
 {
     // Just before section html is sent across the bridge to the web view, add section identifiers around
     // each section. This will make it easy to identify section offsets for the purpose of scrolling the
@@ -1134,7 +1286,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             </span>\
             %@\
         </div>\
-        ", sectionIndex, sectionIndex.integerValue, html];
+        ", sectionId, sectionId.integerValue, html];
 }
 
 -(NSString *)addTitle:(NSString *)title toHTML:(NSString *)html
@@ -1149,7 +1301,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 - (void)displayArticle:(NSManagedObjectID *)articleID mode:(DisplayMode)mode
 {
     // Get sorted sections for this article (sorts the article.section NSSet into sortedSections)
-    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES];
+    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"sectionId" ascending:YES];
 
     Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
 
@@ -1167,18 +1319,18 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
     
     for (Section *section in sortedSections) {
         if (mode == DISPLAY_APPEND_NON_LEAD_SECTIONS) {
-            if (section.index.integerValue == 0) continue;
+            if ([section isLeadSection]) continue;
         }
         if (section.html){
 
             [section createImageRecordsForHtmlOnContext:articleDataContext_.mainContext];
 
             NSString *sectionHTML = section.html;
-            if ([section.index isEqualToNumber:@(0)]) {
+            if ([section.sectionId isEqualToNumber:@(0)]) {
                 sectionHTML = [self addTitle:article.title toHTML:sectionHTML];
             }
 
-            NSString *sectionHTMLWithID = [self surroundHTML:sectionHTML withDivForSection:section.index];
+            NSString *sectionHTMLWithID = [self surroundHTML:sectionHTML withDivForSection:section.sectionId];
 
             [sectionTextArray addObject:sectionHTMLWithID];
         }

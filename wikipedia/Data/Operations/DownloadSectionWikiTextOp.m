@@ -11,12 +11,16 @@
 
 - (id)initForPageTitle: (NSString *)title
                 domain: (NSString *)domain
-               section: (NSNumber *)section
+               section: (NSString *)section
        completionBlock: (void (^)(NSString *))completionBlock
         cancelledBlock: (void (^)(NSError *))cancelledBlock
             errorBlock: (void (^)(NSError *))errorBlock
 {
     self = [super init];
+NSLog(@"\n\n\n\n\n");
+NSLog(@"RVSECTION = %@", section);
+NSLog(@"TITLE = %@", title);
+    
     if (self) {
         self.request = [NSURLRequest getRequestWithURL: [[SessionSingleton sharedInstance] urlForDomain:domain]
                                              parameters: @{

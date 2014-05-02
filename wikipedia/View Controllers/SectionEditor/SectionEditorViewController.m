@@ -180,10 +180,18 @@
 -(void)loadLatestWikiTextForSectionFromServer
 {
     [self showAlert:MWLocalizedString(@"wikitext-downloading", nil)];
+    
+NSLog(@"self.sectionID = %@", self.sectionID);
+
     Section *section = (Section *)[articleDataContext_.mainContext objectWithID:self.sectionID];
     NSString *domain = section.article.domain;
 
-    DownloadSectionWikiTextOp *downloadWikiTextOp = [[DownloadSectionWikiTextOp alloc] initForPageTitle:section.article.title domain:section.article.domain section:section.index completionBlock:^(NSString *revision){
+// If fromTitle was set, the section was transcluded, so use the title of the page
+// it was transcluded from.
+NSString *title = section.fromTitle ? section.fromTitle : section.article.title;
+NSLog(@"****** section.fromTitle = %@", section.fromTitle);
+
+    DownloadSectionWikiTextOp *downloadWikiTextOp = [[DownloadSectionWikiTextOp alloc] initForPageTitle:title domain:section.article.domain section:section.index completionBlock:^(NSString *revision){
         
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
             [self showAlert:MWLocalizedString(@"wikitext-download-success", nil)];

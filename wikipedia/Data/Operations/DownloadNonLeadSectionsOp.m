@@ -5,6 +5,7 @@
 #import "MWNetworkActivityIndicatorManager.h"
 #import "SessionSingleton.h"
 #import "NSURLRequest+DictionaryRequest.h"
+#import "NSString+Extras.h"
 
 @implementation DownloadNonLeadSectionsOp
 
@@ -16,13 +17,16 @@
 {
     self = [super init];
     if (self) {
+
+//self.titleReflectingAnyRedirects = nil;
+
         self.request = [NSURLRequest getRequestWithURL: [[SessionSingleton sharedInstance] urlForDomain:domain]
                                              parameters: @{
                                                            @"action": @"mobileview",
                                                            @"prop": @"sections|text",
                                                            @"sections": @"1-",
                                                            @"onlyrequestedsections": @"1",
-                                                           @"sectionprop": @"toclevel|line|anchor",
+                                                           @"sectionprop": @"toclevel|line|anchor|level|number|fromtitle|index",
                                                            @"page": title,
                                                            @"format": @"json"
                                                            }
@@ -55,8 +59,67 @@
             }
 
             NSArray *sections = weakSelf.jsonRetrieved[@"mobileview"][@"sections"];
-            
-            completionBlock(sections);
+
+//NSLog(@"weakSelf.titleReflectingAnyRedirects = %@", weakSelf.titleReflectingAnyRedirects);
+
+
+
+
+
+
+
+
+
+//NSLog(@"weakRemainingSectionsOp.titleReflectingAnyRedirects = %@", weakRemainingSectionsOp.titleReflectingAnyRedirects);
+
+//weakFirstSectionOp.titleReflectingAnyRedirects
+
+NSMutableArray *output = @[].mutableCopy;
+
+// The fromtitle tells us if a section was transcluded, but the api sometimes returns false instead
+// of just leaving it out if the section wasn't transcluded. It is also sometimes the name of the
+// current article, which is redundant. So here remove the fromtitle key/value in both of these
+// cases. That way the existense of a "fromtitle" can be relied on as a true transclusion indicator.
+
+// Note: the title checked below must be article.title, as it already reflects any redirect (which
+// the first section operation determined) not pageTitle as pageTitle doesn't reflect redirects.
+for (NSDictionary *section in sections) {
+    NSMutableDictionary *mutableSection = section.mutableCopy;
+    if ([mutableSection[@"fromtitle"] isKindOfClass:[NSString class]]) {
+        NSString *fromTitle = mutableSection[@"fromtitle"];
+        if (
+//            [[weakSelf.titleReflectingAnyRedirects cleanWikiTitle] isEqualToString:[fromTitle cleanWikiTitle]]
+            [[title cleanWikiTitle] isEqualToString:[fromTitle cleanWikiTitle]]
+
+//            ||
+//            [[article.redirected cleanWikiTitle] isEqualToString:[fromTitle cleanWikiTitle]]
+        ) {
+            [mutableSection removeObjectForKey:@"fromtitle"];
+        }
+    }else{
+        [mutableSection removeObjectForKey:@"fromtitle"];
+    }
+    
+    [output addObject:mutableSection];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            completionBlock(output);
         };
     }
     return self;

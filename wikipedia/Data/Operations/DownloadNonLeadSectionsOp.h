@@ -5,6 +5,8 @@
 
 @interface DownloadNonLeadSectionsOp : MWNetworkOp
 
+//@property (strong, nonatomic) NSString *titleReflectingAnyRedirects;
+
 - (id)initForPageTitle: (NSString *)title
                 domain: (NSString *)domain
        completionBlock: (void (^)(NSArray *))completionBlock

@@ -11,7 +11,7 @@
 
 - (id)initForPageTitle: (NSString *)title
                 domain: (NSString *)domain
-               section: (NSNumber *)section
+               section: (NSString *)section
               wikiText: (NSString *)wikiText
                summary: (NSString *)summary
              captchaId: (NSString *)captchaId
@@ -22,6 +22,11 @@
 {
     self = [super init];
     if (self) {
+    
+    
+    
+//section = [section stringByReplacingOccurrencesOfString:@"T-" withString:@""];
+    
     
         __weak UploadSectionWikiTextOp *weakSelf = self;
         self.aboutToStart = ^{
@@ -46,9 +51,30 @@
                 parameters[@"captchaid"] = captchaId;
                 parameters[@"captchaword"] = captchaWord;
             }
-            
-            //NSLog(@"parameters = %@", parameters);
-            
+
+
+
+
+
+
+
+
+
+
+
+NSLog(@"parameters = %@", parameters);
+//weakSelf.request = [NSURLRequest postRequestWithURL: [NSURL URLWithString:@"127.0.0.1"] parameters: parameters];
+//return;
+
+
+
+
+
+
+
+
+
+
             weakSelf.request = [NSURLRequest postRequestWithURL: [[SessionSingleton sharedInstance] urlForDomain:domain]
                                                      parameters: parameters];
         };
