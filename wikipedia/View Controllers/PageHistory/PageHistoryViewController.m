@@ -68,7 +68,7 @@
 
     switch (tappedItem.tag) {
         case NAVBAR_BUTTON_ARROW_LEFT:
-            [self.navigationController popViewControllerAnimated:YES];
+            [NAV popViewControllerAnimated:YES];
             
             break;
         default:

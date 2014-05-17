@@ -26,4 +26,8 @@
                    duration: (CGFloat)duration
                 thenHideTOC: (BOOL)hideTOC;
 
+-(void)tocToggle;
+
+@property (nonatomic) BOOL bottomMenuHidden;
+
 @end
