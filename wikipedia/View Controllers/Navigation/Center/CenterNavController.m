@@ -12,6 +12,9 @@
 #import "WebViewController.h"
 #import "SectionEditorViewController.h"
 
+#import "RootViewController.h"
+#import "TopMenuViewController.h"
+
 @interface CenterNavController (){
 
 }
@@ -39,6 +42,8 @@
                     animated: (BOOL)animated
 {
     self.isTransitioningBetweenViewControllers = YES;
+    
+    [ROOT.topMenuViewController updateTOCButtonVisibility];
 
     [self fadeAlert];
     [self showHTMLAlert:@"" bannerImage:nil bannerColor:nil];
@@ -49,6 +54,8 @@
                     animated: (BOOL)animated
 {
     self.isTransitioningBetweenViewControllers = NO;
+    
+    [ROOT updateTopAndBottomMenuVisibilityForViewController:viewController];
 }
 
 -(void)setIsTransitioningBetweenViewControllers:(BOOL)isTransitioningBetweenViewControllers

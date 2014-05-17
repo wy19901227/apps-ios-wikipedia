@@ -1,8 +1,8 @@
 //  Created by Monte Hurd on 12/16/13.
 //  Copyright (c) 2013 Wikimedia Foundation. Provided under MIT-style license; please copy and modify!
 
-#import "WikipediaAppUtils.h"
 #import "TopMenuTextField.h"
+#import "WikipediaAppUtils.h"
 #import "TopMenuViewController.h"
 #import "Defines.h"
 #import "UIView+Debugging.h"
@@ -35,9 +35,6 @@
 
 }
 
-// Container.
-@property (strong, nonatomic) IBOutlet UIView *navBarContainer;
-
 // Views which go into the container.
 @property (strong, nonatomic) TopMenuTextField *textField;
 @property (strong, nonatomic) UIView *verticalLine1;
@@ -47,6 +44,7 @@
 @property (strong, nonatomic) UIView *verticalLine5;
 @property (strong, nonatomic) UIView *verticalLine6;
 @property (strong, nonatomic) TopMenuButtonView *buttonW;
+@property (strong, nonatomic) TopMenuButtonView *buttonTOC;
 @property (strong, nonatomic) TopMenuButtonView *buttonPencil;
 @property (strong, nonatomic) TopMenuButtonView *buttonCheck;
 @property (strong, nonatomic) TopMenuButtonView *buttonX;
@@ -92,9 +90,6 @@
 -(void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
-//    UIImageView *navBarHairlineImageView = [self findHairlineImageViewUnder:self.navigationBar];
-//    navBarHairlineImageView.hidden = YES;
 }
 
 -(void)viewDidAppear:(BOOL)animated
@@ -116,25 +111,6 @@
 
     [super viewWillDisappear:animated];
 }
-
-/*
-#pragma mark iOS 7 hide nav bar hairline divider
-
-// From: http://stackoverflow.com/a/19227158
-
-- (UIImageView *)findHairlineImageViewUnder:(UIView *)view {
-    if ([view isKindOfClass:UIImageView.class] && view.bounds.size.height <= 1.0) {
-        return (UIImageView *)view;
-    }
-    for (UIView *subview in view.subviews) {
-        UIImageView *imageView = [self findHairlineImageViewUnder:subview];
-        if (imageView) {
-            return imageView;
-        }
-    }
-    return nil;
-}
-*/
 
 #pragma mark Constraints
 
@@ -186,11 +162,11 @@
       ]
      ];
     
-    CGFloat verticalLineTopMargin = 25;
+    CGFloat verticalLineTopMargin = 20;
     CGFloat topMargin = 20;
     
     if (NSFoundationVersionNumber <= NSFoundationVersionNumber_iOS_6_1) {
-        verticalLineTopMargin = 5;
+        verticalLineTopMargin = 0;
         topMargin = 0;
     }
     
@@ -268,8 +244,7 @@
     [clearButton addTarget:self action:@selector(clearTextFieldText) forControlEvents:UIControlEventTouchUpInside];
     
     self.textField.rightView = clearButton;
-    self.textField.rightViewMode = UITextFieldViewModeAlways;
-    self.textField.rightView.hidden = YES;
+    self.textField.rightViewMode = UITextFieldViewModeNever;
 
     UIView *(^getLineView)() = ^UIView *() {
         UIView *view = [[UIView alloc] init];
@@ -311,8 +286,7 @@
     self.buttonArrowLeft =  getButton(WIKIFONT_CHAR_ARROW_LEFT,     NAVBAR_BUTTON_ARROW_LEFT);
     self.buttonArrowRight = getButton(WIKIFONT_CHAR_ARROW_LEFT,     NAVBAR_BUTTON_ARROW_RIGHT);
     self.buttonW =          getButton(WIKIFONT_CHAR_W,              NAVBAR_BUTTON_LOGO_W);
-
-NSLog(@"self.buttonX = %@",  self.buttonX);
+    self.buttonTOC =        getButton(WIKIFONT_CHAR_STRIPE_TOC,     NAVBAR_BUTTON_TOC);
 
     // Mirror the left arrow.
     self.buttonArrowRight.transform = CGAffineTransformMakeScale(-1.0, 1.0);
@@ -324,6 +298,7 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
     [self.navBarContainer addSubview:self.buttonArrowLeft];
     [self.navBarContainer addSubview:self.buttonArrowRight];
     [self.navBarContainer addSubview:self.buttonW];
+    [self.navBarContainer addSubview:self.buttonTOC];
 
     self.label = [[UILabel alloc] init];
     self.label.text = @"";
@@ -359,6 +334,7 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
              @"NAVBAR_BUTTON_ARROW_LEFT": self.buttonArrowLeft,
              @"NAVBAR_BUTTON_ARROW_RIGHT": self.buttonArrowRight,
              @"NAVBAR_BUTTON_LOGO_W": self.buttonW,
+             @"NAVBAR_BUTTON_TOC": self.buttonTOC,
              @"NAVBAR_BUTTON_EYE": self.buttonEye,
              @"NAVBAR_TEXT_FIELD": self.textField,
              @"NAVBAR_LABEL": self.label,
@@ -378,19 +354,14 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
              };
 }
 
-//-(void)clearViewControllerTitles
-//{
-//    // Without this 3 little blue dots can appear on left of nav bar on iOS 7 during animations.
-//    [self.viewControllers makeObjectsPerformSelector:@selector(setTitle:) withObject:@""];
-//}
-
 -(void)setNavBarMode:(NavBarMode)navBarMode
 {
-//    [self clearViewControllerTitles];
-
-    PreviewAndSaveViewController *previewAndSaveVC = [ROOT.centerNavController searchNavStackForViewControllerOfClass:[PreviewAndSaveViewController class]];
+    if(_navBarMode == navBarMode) return;
 
     _navBarMode = navBarMode;
+
+    PreviewAndSaveViewController *previewAndSaveVC = [NAV searchNavStackForViewControllerOfClass:[PreviewAndSaveViewController class]];
+
     switch (navBarMode) {
         case NAVBAR_MODE_EDIT_WIKITEXT:
             self.label.text = MWLocalizedString(@"navbar-title-mode-edit-wikitext", nil);
@@ -460,9 +431,13 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
             self.navBarSubViewsHorizontalVFLString =
                 @"H:|[NAVBAR_BUTTON_ARROW_LEFT(50)][NAVBAR_VERTICAL_LINE_1(singlePixel)]-(10)-[NAVBAR_LABEL]-(10)-|";
             break;        
+        case NAVBAR_MODE_SEARCH_WITH_TOC:
+            self.navBarSubViewsHorizontalVFLString =
+                @"H:|[NAVBAR_BUTTON_LOGO_W(65)][NAVBAR_TEXT_FIELD]-(10)-[NAVBAR_BUTTON_TOC(50)]-(3)-|";
+            break;
         default: //NAVBAR_MODE_SEARCH
             self.navBarSubViewsHorizontalVFLString =
-                @"H:|[NAVBAR_BUTTON_LOGO_W(65)][NAVBAR_VERTICAL_LINE_1(singlePixel)][NAVBAR_TEXT_FIELD]-(10)-|";
+                @"H:|[NAVBAR_BUTTON_LOGO_W(65)][NAVBAR_TEXT_FIELD]-(10)-|";
             break;
     }
     [self.view setNeedsUpdateConstraints];
@@ -481,7 +456,7 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
     
     void(^postTapNotification)() = ^(){
 
-        if(ROOT.centerNavController.isTransitioningBetweenViewControllers) return;
+        if(NAV.isTransitioningBetweenViewControllers) return;
 
         [[NSNotificationCenter defaultCenter] postNotificationName: @"NavItemTapped"
                                                             object: self
@@ -514,6 +489,11 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
         case NAVBAR_BUTTON_LOGO_W:
             [self mainMenuToggle];
             break;
+        case NAVBAR_BUTTON_TOC:{
+            WebViewController *webVC = [NAV searchNavStackForViewControllerOfClass:[WebViewController class]];
+            [webVC tocToggle];
+        }
+            break;
         default:
             break;
     }
@@ -533,33 +513,33 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
 
 -(void)showSearchResultsController
 {
-    SearchResultsController *searchResultsVC = [ROOT.centerNavController searchNavStackForViewControllerOfClass:[SearchResultsController class]];
+    SearchResultsController *searchResultsVC = [NAV searchNavStackForViewControllerOfClass:[SearchResultsController class]];
 
     if(searchResultsVC){
-        if (ROOT.centerNavController.topViewController == searchResultsVC) {
+        if (NAV.topViewController == searchResultsVC) {
             [searchResultsVC refreshSearchResults];
         }else{
-            [ROOT.centerNavController popToViewController:searchResultsVC animated:NO];
+            [NAV popToViewController:searchResultsVC animated:NO];
         }
     }else{
         SearchResultsController *searchResultsVC = [self.storyboard instantiateViewControllerWithIdentifier:@"SearchResultsController"];
-        [ROOT.centerNavController pushViewController:searchResultsVC animated:NO];
+        [NAV pushViewController:searchResultsVC animated:NO];
     }
 }
 
 -(void)mainMenuToggle
 {
-    UIViewController *topVC = ROOT.centerNavController.topViewController;
+    UIViewController *topVC = NAV.topViewController;
 
     [topVC hideKeyboard];
     
-    MainMenuViewController *mainMenuTableVC = [ROOT.centerNavController searchNavStackForViewControllerOfClass:[MainMenuViewController class]];
+    MainMenuViewController *mainMenuTableVC = [NAV searchNavStackForViewControllerOfClass:[MainMenuViewController class]];
     
     if(mainMenuTableVC){
-        [ROOT.centerNavController popToRootViewControllerAnimated:YES];
+        [NAV popToRootViewControllerAnimated:YES];
     }else{
         MainMenuViewController *mainMenuTableVC = [self.storyboard instantiateViewControllerWithIdentifier:@"MainMenuViewController"];
-        [ROOT.centerNavController pushViewController:mainMenuTableVC animated:YES];
+        [NAV pushViewController:mainMenuTableVC animated:YES];
     }
 }
 
@@ -567,6 +547,7 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
+    self.textField.rightViewMode = UITextFieldViewModeAlways;
 
     if (self.textField.text.length == 0){
         // Remeber user's last search term. Must come before the
@@ -577,7 +558,7 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
     [[NSNotificationCenter defaultCenter] postNotificationName:@"SearchFieldBecameFirstResponder" object:self userInfo:nil];
     
     if (self.textField.text.length == 0){
-        self.textField.rightView.hidden = YES;
+        self.textField.rightViewMode = UITextFieldViewModeNever;
     }else{
         [self showSearchResultsController];
     }
@@ -586,13 +567,13 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
 -(void)clearTextFieldText
 {
     self.textField.text = @"";
-    self.textField.rightView.hidden = YES;
+    self.textField.rightViewMode = UITextFieldViewModeNever;
 
-    SearchResultsController *searchResultsVC = [ROOT.centerNavController searchNavStackForViewControllerOfClass:[SearchResultsController class]];
+    SearchResultsController *searchResultsVC = [NAV searchNavStackForViewControllerOfClass:[SearchResultsController class]];
     [searchResultsVC clearSearchResults];
     
-    if (ROOT.centerNavController.topViewController == searchResultsVC) {
-        [ROOT.centerNavController popViewControllerAnimated:NO];
+    if (NAV.topViewController == searchResultsVC) {
+        [NAV popViewControllerAnimated:NO];
     }
 }
 
@@ -608,16 +589,15 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
     [self showSearchResultsController];
 
     if (trimmedSearchString.length == 0){
-        self.textField.rightView.hidden = YES;
-        
+        self.textField.rightViewMode = UITextFieldViewModeNever;
         return;
     }
-    self.textField.rightView.hidden = NO;
+    self.textField.rightViewMode = UITextFieldViewModeAlways;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    [ROOT.centerNavController.topViewController hideKeyboard];
+    [NAV.topViewController hideKeyboard];
     return YES;
 }
 
@@ -630,7 +610,9 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
     // been told to hide while transistioning between view controllers. Without this, the first time a
     // search term is entered on iOS 6 they keyboard will immediately hide. That's bad.
 
-    return (ROOT.centerNavController.isTransitioningBetweenViewControllers) ? NO : YES;
+    self.textField.rightViewMode = UITextFieldViewModeNever;
+    
+    return (NAV.isTransitioningBetweenViewControllers) ? NO : YES;
 }
 
 #pragma mark Memory
@@ -647,25 +629,25 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
 
 -(void)setNavBarStyle:(NavBarStyle)navBarStyle
 {
-    if (_navBarStyle != navBarStyle) {
-        _navBarStyle = navBarStyle;
-
-        // Make the nav bar itself be light or dark.
-        NSDictionary *colors = [self getNavBarColorsForNavBarStyle:navBarStyle];
-
-        self.view.backgroundColor = colors[@"NAVBAR_COLOR"];
-        
-        // Make the status bar above the nav bar use light or dark text.
-        if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
-            [self setNeedsStatusBarAppearanceUpdate];
-        }
-
-        // Update the nav bar containers subviews to use light or dark appearance.
-        for (id view in self.navBarContainer.subviews) {
-            // Ignore layout guides.
-            if (![view conformsToProtocol:@protocol(UILayoutSupport)]) {
-                [self updateViewAppearance:view forNavBarStyle:self.navBarStyle];
-            }
+    if (_navBarStyle == navBarStyle) return;
+    
+    _navBarStyle = navBarStyle;
+    
+    // Make the nav bar itself be light or dark.
+    NSDictionary *colors = [self getNavBarColorsForNavBarStyle:navBarStyle];
+    
+    self.view.backgroundColor = colors[@"NAVBAR_COLOR"];
+    
+    // Make the status bar above the nav bar use light or dark text.
+    if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
+        [self setNeedsStatusBarAppearanceUpdate];
+    }
+    
+    // Update the nav bar containers subviews to use light or dark appearance.
+    for (id view in self.navBarContainer.subviews) {
+        // Ignore layout guides.
+        if (![view conformsToProtocol:@protocol(UILayoutSupport)]) {
+            [self updateViewAppearance:view forNavBarStyle:self.navBarStyle];
         }
     }
 }
@@ -750,6 +732,40 @@ NSLog(@"self.buttonX = %@",  self.buttonX);
             break;
     }
     [view setNeedsDisplay];
+}
+
+#pragma mark TOC button
+
+-(void)updateTOCButtonVisibility
+{
+    // Only flip between NAVBAR_MODE_SEARCH and NAVBAR_MODE_SEARCH_WITH_TOC if one
+    // of them is presently in use.
+    switch (self.navBarMode) {
+        case NAVBAR_MODE_SEARCH:
+        case NAVBAR_MODE_SEARCH_WITH_TOC:
+            break;
+        default:
+            return;
+            break;
+    }
+
+    if (
+        ![NAV.topViewController isMemberOfClass:[WebViewController class]]
+        ||
+        [[SessionSingleton sharedInstance] isCurrentArticleMain]
+    ) {
+        // Hide TOC button if web view isn't on top or if current article is the main page.
+        self.navBarMode = NAVBAR_MODE_SEARCH;
+    }else{
+        TopMenuTextField *searchTextField = [self getNavBarItem:NAVBAR_TEXT_FIELD];
+        NSString *currentArticleTitle = [SessionSingleton sharedInstance].currentArticleTitle;
+        self.navBarMode = (!searchTextField.isFirstResponder && currentArticleTitle && (currentArticleTitle.length > 0))
+                ?
+                NAVBAR_MODE_SEARCH_WITH_TOC
+                :
+                NAVBAR_MODE_SEARCH
+                ;
+    }
 }
 
 @end

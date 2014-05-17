@@ -264,7 +264,8 @@ typedef enum {
             [self fadeAlert];
 
             [self resetBridge];
-            [self.bridge sendMessage:@"append" withPayload:@{@"html": result}];
+            
+            [self.bridge sendMessage:@"append" withPayload:@{@"html": result ? result : @""}];
 
             isAleadyPreviewing = NO;
             

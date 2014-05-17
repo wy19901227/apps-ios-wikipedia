@@ -26,4 +26,6 @@
                    duration: (CGFloat)duration
                 thenHideTOC: (BOOL)hideTOC;
 
+-(void)tocToggle;
+
 @end

@@ -12,7 +12,6 @@
 #import "DownloadLeadSectionOp.h"
 #import "CommunicationBridge.h"
 #import "TOCViewController.h"
-#import "LanguagesTableVC.h"
 #import "SessionSingleton.h"
 #import "QueuesSingleton.h"
 #import "TopMenuTextField.h"
@@ -33,7 +32,7 @@
 #import "Section+LeadSection.h"
 #import "NSString+Extras.h"
 
-#import "ZeroStatusLabel.h"
+#import "PaddedLabel.h"
 //#import "UIView+Debugging.h"
 
 #import "DataMigrator.h"
@@ -43,6 +42,9 @@
 
 #import "RootViewController.h"
 #import "TopMenuViewController.h"
+#import "BottomMenuViewController.h"
+#import "TopMenuButtonView.h"
+#import "TopMenuLabel.h"
 
 #define TOC_TOGGLE_ANIMATION_DURATION @0.3f
 
@@ -70,11 +72,6 @@ typedef enum {
 
 @property (weak, nonatomic) IBOutlet UIView *bottomBarView;
 
-@property (weak, nonatomic) IBOutlet UIButton *backButton;
-@property (weak, nonatomic) IBOutlet UIButton *forwardButton;
-@property (weak, nonatomic) IBOutlet UIButton *tocButton;
-@property (weak, nonatomic) IBOutlet UIButton *langButton;
-
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *webViewLeftConstraint;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *webViewRightConstraint;
 
@@ -86,12 +83,9 @@ typedef enum {
 @property (strong, nonatomic) UISwipeGestureRecognizer *tocSwipeLeftRecognizer;
 @property (strong, nonatomic) UISwipeGestureRecognizer *tocSwipeRightRecognizer;
 
-- (IBAction)tocButtonPushed:(id)sender;
-- (IBAction)backButtonPushed:(id)sender;
-- (IBAction)forwardButtonPushed:(id)sender;
-- (IBAction)languageButtonPushed:(id)sender;
+@property (strong, nonatomic) IBOutlet PaddedLabel *zeroStatusLabel;
 
-@property (strong, nonatomic) IBOutlet ZeroStatusLabel *zeroStatusLabel;
+@property (nonatomic) BOOL unsafeToToggleTOC;
 
 @end
 
@@ -110,7 +104,6 @@ typedef enum {
 
     self.sectionToEditId = 0;
 
-    self.forwardButton.transform = CGAffineTransformMakeScale(-1.0, 1.0);
     self.indexOfFirstOnscreenSectionBeforeRotate = -1;
 
     [[NSNotificationCenter defaultCenter] addObserver: self
@@ -119,6 +112,7 @@ typedef enum {
                                                object: nil];
     
     self.unsafeToScroll = NO;
+    self.unsafeToToggleTOC = NO;
     self.scrollOffset = CGPointZero;
     
     [[NSNotificationCenter defaultCenter] addObserver: self
@@ -198,8 +192,6 @@ typedef enum {
 {
     [self tocHide];
     
-    ROOT.hideTopAndBottomMenus = NO;
-    
     [super viewWillDisappear:animated];
 }
 
@@ -259,34 +251,6 @@ typedef enum {
     [self tocConstrainView];
 }
 
-#pragma mark Languages
-
--(void)showLanguages
-{
-    LanguagesTableVC *languagesTableVC =
-        [self.navigationController.storyboard instantiateViewControllerWithIdentifier:@"LanguagesTableVC"];
-
-    languagesTableVC.downloadLanguagesForCurrentArticle = YES;
-    
-    CATransition *transition = [languagesTableVC getTransition];
-    
-    languagesTableVC.selectionBlock = ^(NSDictionary *selectedLangInfo){
-    
-        [self.navigationController.view.layer addAnimation:transition forKey:nil];
-        // Don't animate - so the transistion set above will be used.
-        [NAV loadArticleWithTitle: selectedLangInfo[@"*"]
-                           domain: selectedLangInfo[@"code"]
-                         animated: NO
-                  discoveryMethod: DISCOVERY_METHOD_SEARCH
-                invalidatingCache: NO];
-    };
-    
-    [self.navigationController.view.layer addAnimation:transition forKey:nil];
-
-    // Don't animate - so the transistion set above will be used.
-    [self.navigationController pushViewController:languagesTableVC animated:NO];
-}
-
 #pragma mark Angle from velocity vector
 
 -(CGFloat)getAngleInDegreesForVelocity:(CGPoint)velocity
@@ -320,6 +284,9 @@ typedef enum {
 
 -(void)tocHideWithDurationNextRunLoop:(NSNumber *)duration
 {
+    if(self.unsafeToToggleTOC)return;
+    self.unsafeToToggleTOC = YES;
+
     // Clear alerts
     [self fadeAlert];
     
@@ -337,11 +304,24 @@ typedef enum {
 
                          if(self.tocVC) [self tocViewControllerRemove];
 
+                         // If the top menu isn't hidden, reveal the bottom menu.
+                         if(!ROOT.topMenuHidden){
+                             if (NAV.topViewController == self) {
+                                 // Without the topViewController check, tap the edit pencil in iOS 6 and when the edit
+                                 // page loads the bottom menu doesn't go away.
+                                 ROOT.bottomMenuHidden = NO;
+                             }
+                         }
+                         self.unsafeToToggleTOC = NO;
                      }];
 }
 
 -(void)tocShowWithDuration:(NSNumber *)duration
 {
+    if([[SessionSingleton sharedInstance] isCurrentArticleMain]) return;
+
+    ROOT.bottomMenuHidden = YES;
+
     // iOS 6 can blank out the web view this isn't scheduled for next run loop.
     [[NSRunLoop currentRunLoop] performSelector: @selector(tocShowWithDurationNextRunLoop:)
                                          target: self
@@ -352,8 +332,9 @@ typedef enum {
 
 -(void)tocShowWithDurationNextRunLoop:(NSNumber *)duration
 {
-    if(!self.tocButton.enabled) return;
-    
+    if(self.unsafeToToggleTOC)return;
+    self.unsafeToToggleTOC = YES;
+
     // Clear alerts
     [self fadeAlert];
 
@@ -380,6 +361,7 @@ typedef enum {
                          [self.view.superview layoutIfNeeded];
                      }completion: ^(BOOL done){
                          [self.view setNeedsUpdateConstraints];
+                         self.unsafeToToggleTOC = NO;
                      }];
 }
 
@@ -681,7 +663,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         NSLog(@"nonAnchorTouchEndedWithoutDragging = %@", payload);
 
         if (!weakSelf.tocVC) {
-            [weakSelf toggleTopMenu];
+            [ROOT animateTopAndBottomMenuToggle];
         }
 
         // nonAnchorTouchEndedWithoutDragging is used so TOC may be hidden if user tapped, but did *not* drag.
@@ -691,13 +673,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
     self.unsafeToScroll = NO;
     self.scrollOffset = CGPointZero;
-}
-
-#pragma mark Top menu toggle
-
--(void)toggleTopMenu
-{
-    ROOT.hideTopAndBottomMenus = ! ROOT.hideTopAndBottomMenus;
 }
 
 #pragma mark History
@@ -1273,7 +1248,9 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 
     NSNumber *langCount = article.languagecount;
     
-    [self updateBottomBarButtonsEnabledStateWithLangCount:langCount];
+    [ROOT.bottomMenuViewController updateBottomBarButtonsEnabledStateWithLangCount:langCount];
+
+    [ROOT.topMenuViewController updateTOCButtonVisibility];
 
     NSArray *sortedSections = [article.section sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
     NSMutableArray *sectionTextArray = [@[] mutableCopy];
@@ -1327,109 +1304,6 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
             [self tocShowWithDuration:@0.0f];
         }
     }];
-}
-
-#pragma mark Bottom bar button methods
-
-//TODO: Pull bottomBarView and into own object (and its subviews - the back and forward view/buttons/methods, etc).
-
-- (IBAction)backButtonPushed:(id)sender
-{
-    NSManagedObjectID *historyId = self.adjacentHistoryIDs[@"before"];
-    if (historyId){
-        History *history = (History *)[articleDataContext_.mainContext objectWithID:historyId];
-        [self navigateToPage: history.article.title
-                      domain: history.article.domain
-             discoveryMethod: DISCOVERY_METHOD_SEARCH
-           invalidatingCache: NO];
-    }
-}
-
-- (IBAction)forwardButtonPushed:(id)sender
-{
-    NSManagedObjectID *historyId = self.adjacentHistoryIDs[@"after"];
-    if (historyId){
-        History *history = (History *)[articleDataContext_.mainContext objectWithID:historyId];
-        [self navigateToPage: history.article.title
-                      domain: history.article.domain
-             discoveryMethod: DISCOVERY_METHOD_SEARCH
-           invalidatingCache: NO];
-    }
-}
-
--(NSDictionary *)getAdjacentHistoryIDs
-{
-    __block NSManagedObjectID *currentHistoryId = nil;
-    __block NSManagedObjectID *beforeHistoryId = nil;
-    __block NSManagedObjectID *afterHistoryId = nil;
-    
-    [articleDataContext_.workerContext performBlockAndWait:^(){
-        
-        NSError *error = nil;
-        NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-        NSEntityDescription *entity = [NSEntityDescription entityForName: @"History"
-                                                  inManagedObjectContext: articleDataContext_.workerContext];
-        [fetchRequest setEntity:entity];
-        
-        NSSortDescriptor *dateSort = [[NSSortDescriptor alloc] initWithKey:@"dateVisited" ascending:YES selector:nil];
-        
-        [fetchRequest setSortDescriptors:@[dateSort]];
-        
-        error = nil;
-        NSArray *historyEntities = [articleDataContext_.workerContext executeFetchRequest:fetchRequest error:&error];
-        
-        NSManagedObjectID *currentArticleId = [articleDataContext_.workerContext getArticleIDForTitle: [SessionSingleton sharedInstance].currentArticleTitle
-                                                                                               domain: [SessionSingleton sharedInstance].currentArticleDomain];
-        for (NSUInteger i = 0; i < historyEntities.count; i++) {
-            History *history = historyEntities[i];
-            if (history.article.objectID == currentArticleId){
-                currentHistoryId = history.objectID;
-                if (i > 0) {
-                    History *beforeHistory = historyEntities[i - 1];
-                    beforeHistoryId = beforeHistory.objectID;
-                }
-                if ((i + 1) <= (historyEntities.count - 1)) {
-                    History *afterHistory = historyEntities[i + 1];
-                    afterHistoryId = afterHistory.objectID;
-                }
-                break;
-            }
-        }
-    }];
-
-    NSMutableDictionary *result = [@{} mutableCopy];
-    if(beforeHistoryId) result[@"before"] = beforeHistoryId;
-    if(currentHistoryId) result[@"current"] = currentHistoryId;
-    if(afterHistoryId) result[@"after"] = afterHistoryId;
-
-    return result;
-}
-
--(void)updateBottomBarButtonsEnabledStateWithLangCount:(NSNumber *)langCount
-{
-    self.adjacentHistoryIDs = [self getAdjacentHistoryIDs];
-    self.forwardButton.enabled = (self.adjacentHistoryIDs[@"after"]) ? YES : NO;
-    self.backButton.enabled = (self.adjacentHistoryIDs[@"before"]) ? YES : NO;
-    
-    if ([[SessionSingleton sharedInstance] isCurrentArticleMain]) {
-        // Disable the TOC and the article languages buttons if this is the main page.
-        self.tocButton.enabled = NO;
-        self.langButton.enabled = NO;
-    }else{
-        NSString *currentArticleTitle = [SessionSingleton sharedInstance].currentArticleTitle;
-        self.tocButton.enabled = (currentArticleTitle && (currentArticleTitle.length > 0)) ? YES : NO;
-        self.langButton.enabled = (langCount.integerValue > 1) ? YES : NO;
-    }
-}
-
-- (IBAction)tocButtonPushed:(id)sender
-{
-    [self tocToggle];
-}
-
-- (IBAction)languageButtonPushed:(id)sender
-{
-    [self showLanguages];
 }
 
 #pragma mark Scroll to last section after rotate
@@ -1489,7 +1363,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
                      textField.placeholder = MWLocalizedString(@"search-field-placeholder-text-zero", nil);
 
                      self.zeroStatusLabel.text = message;
-                     self.zeroStatusLabel.paddingEdgeInsets = UIEdgeInsetsMake(3, 10, 3, 10);
+                     self.zeroStatusLabel.padding = UIEdgeInsetsMake(3, 10, 3, 10);
                      self.zeroStatusLabel.backgroundColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.93];
 
                      [self showAlert:message];
@@ -1515,7 +1389,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             self.zeroStatusLabel.text = @"";
-            self.zeroStatusLabel.paddingEdgeInsets = UIEdgeInsetsZero;
+            self.zeroStatusLabel.padding = UIEdgeInsetsZero;
         });
 
         [self showAlert:warnVerbiage];
