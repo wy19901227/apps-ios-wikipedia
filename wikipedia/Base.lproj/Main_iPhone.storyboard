@@ -1159,10 +1159,10 @@
                                     <segue destination="Iku-rK-nd2" kind="embed" identifier="CenterNavController_embed" id="4YC-1M-ec4"/>
                                 </connections>
                             </containerView>
-                            <containerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FUb-qe-W16">
+                            <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FUb-qe-W16">
                                 <rect key="frame" x="0.0" y="508" width="320" height="60"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="60" id="3fo-Zl-qxJ"/>
                                 </constraints>
@@ -1205,11 +1205,11 @@
                         <viewControllerLayoutGuide type="top" id="TZD-c8-Gy2"/>
                         <viewControllerLayoutGuide type="bottom" id="s0H-x2-sxc"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="RrN-8E-MMt">
+                    <view key="view" opaque="NO" contentMode="scaleToFill" id="RrN-8E-MMt">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="60"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <view autoresizesSubviews="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DsV-9G-XpE" userLabel="Bottom Menu Container" customClass="BottomMenuContainerView">
+                            <view autoresizesSubviews="NO" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DsV-9G-XpE" userLabel="Bottom Menu Container" customClass="BottomMenuContainerView">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="60"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
@@ -1269,7 +1269,7 @@
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" red="0.94117653369903564" green="0.94117653369903564" blue="0.96078437566757202" alpha="1" colorSpace="deviceRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="bottom" secondItem="e2H-k6-5qC" secondAttribute="bottom" id="DSh-qh-wMS"/>
                                     <constraint firstItem="e2H-k6-5qC" firstAttribute="top" secondItem="DsV-9G-XpE" secondAttribute="top" id="UFJ-G4-pOw"/>
@@ -1283,7 +1283,7 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" red="0.94117653369903564" green="0.92941182851791382" blue="0.95686280727386475" alpha="1" colorSpace="deviceRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="DsV-9G-XpE" firstAttribute="top" secondItem="TZD-c8-Gy2" secondAttribute="bottom" id="6Ha-JI-dEh"/>
                             <constraint firstAttribute="trailing" secondItem="DsV-9G-XpE" secondAttribute="trailing" id="NZX-G1-qFI"/>

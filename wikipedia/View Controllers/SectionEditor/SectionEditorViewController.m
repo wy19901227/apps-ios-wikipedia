@@ -241,7 +241,7 @@
     PreviewAndSaveViewController *previewVC = [self.navigationController.storyboard instantiateViewControllerWithIdentifier:@"PreviewViewController"];
     previewVC.sectionID = self.sectionID;
     previewVC.wikiText = self.editTextView.text;
-    [self.navigationController pushViewController:previewVC animated:YES];
+    [ROOT pushViewController:previewVC animated:YES];
 }
 
 - (void)cancelPushed:(id)sender
@@ -251,7 +251,7 @@
 
 -(void)hide
 {
-    [self.navigationController popViewControllerAnimated:YES];
+    [ROOT popViewControllerAnimated:YES];
 }
 
 #pragma mark Keyboard

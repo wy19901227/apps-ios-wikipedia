@@ -35,7 +35,20 @@
     self.delegate = self;
     
     self.isTransitioningBetweenViewControllers = NO;
+    
+    
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(viewControllerChange:) name:@"UINavigationControllerWillShowViewControllerNotification" object:self.navigationController];
+    
 }
+
+//-(void)viewControllerChange:(NSNotification *)notification {
+//    NSDictionary *userInfo = [notification userInfo];
+//    NSLog(@"Switching from %@ to %@", [[userInfo objectForKey:@"UINavigationControllerLastVisibleViewController"] class], [[userInfo objectForKey:@"UINavigationControllerNextVisibleViewController"] class]);
+//    
+//    
+////[ROOT updateTopAndBottomMenuVisibilityForViewController:[userInfo objectForKey:@"UINavigationControllerNextVisibleViewController"]];
+//
+//}
 
 - (void)navigationController: (UINavigationController *)navigationController
       willShowViewController: (UIViewController *)viewController
@@ -47,6 +60,34 @@
 
     [self fadeAlert];
     [self showHTMLAlert:@"" bannerImage:nil bannerColor:nil];
+    
+
+return;
+
+//ROOT.bottomMenuHidden = ([viewController isMemberOfClass:[WebViewController class]]) ? NO : YES;
+[ROOT updateTopAndBottomMenuVisibilityForViewController:viewController];
+
+
+//[[NSNotificationCenter defaultCenter] addObserver:self
+//    selector:@selector(observerViewControllerChange:)
+//    name:@"UINavigationControllerDidShowViewControllerNotification" object:nil];
+
+//[self.view setNeedsUpdateConstraints];
+[self.view setNeedsUpdateConstraints];
+[self.view layoutIfNeeded];
+[self.view.superview setNeedsUpdateConstraints];
+[self.view.superview layoutIfNeeded];
+
+
+}
+
+-(void)updateViewConstraints
+{
+
+//[ROOT updateTopAndBottomMenuVisibilityForViewController:self.topViewController];
+
+
+    [super updateViewConstraints];
 }
 
 - (void)navigationController: (UINavigationController *)navigationController
@@ -55,7 +96,7 @@
 {
     self.isTransitioningBetweenViewControllers = NO;
     
-    [ROOT updateTopAndBottomMenuVisibilityForViewController:viewController];
+//    [ROOT updateTopAndBottomMenuVisibilityForViewController:viewController];
 }
 
 -(void)setIsTransitioningBetweenViewControllers:(BOOL)isTransitioningBetweenViewControllers
@@ -87,7 +128,7 @@
                        domain: domain
               discoveryMethod: discoveryMethod
             invalidatingCache: invalidateCache];
-        [self popToViewController:webVC animated:animated];
+        [ROOT popToViewController:webVC animated:animated];
     }
 }
 

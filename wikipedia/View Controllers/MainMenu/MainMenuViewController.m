@@ -355,7 +355,7 @@ typedef enum {
                 if (!userName) {
                     LoginViewController *loginVC =
                     [NAV.storyboard instantiateViewControllerWithIdentifier:@"LoginViewController"];
-                    [NAV pushViewController:loginVC animated:YES];
+                    [ROOT pushViewController:loginVC animated:YES];
                 }else{
                     
                     [SessionSingleton sharedInstance].keychainCredentials.userName = nil;
@@ -377,14 +377,14 @@ typedef enum {
             {
                 HistoryViewController *historyVC =
                     [NAV.storyboard instantiateViewControllerWithIdentifier:@"HistoryViewController"];
-                [NAV pushViewController:historyVC animated:YES];
+                [ROOT pushViewController:historyVC animated:YES];
             }
                 break;
             case ROW_INDEX_SAVED_PAGES:
             {
                 SavedPagesViewController *savedPagesVC =
                     [NAV.storyboard instantiateViewControllerWithIdentifier:@"SavedPagesViewController"];
-                [NAV pushViewController:savedPagesVC animated:YES];
+                [ROOT pushViewController:savedPagesVC animated:YES];
             }
                 break;
             case ROW_INDEX_SAVE_PAGE:
@@ -408,14 +408,14 @@ typedef enum {
             {
                 PageHistoryViewController *pageHistoryVC =
                     [NAV.storyboard instantiateViewControllerWithIdentifier:@"PageHistoryViewController"];
-                [NAV pushViewController:pageHistoryVC animated:YES];
+                [ROOT pushViewController:pageHistoryVC animated:YES];
             }
                 break;
             case ROW_INDEX_CREDITS:
             {
                 CreditsViewController *creditsVC =
                     [NAV.storyboard instantiateViewControllerWithIdentifier:@"CreditsViewController"];
-                [NAV pushViewController:creditsVC animated:YES];
+                [ROOT pushViewController:creditsVC animated:YES];
             }
                 break;
             default:
@@ -460,13 +460,13 @@ typedef enum {
         
         [NAV.view.layer addAnimation:transition forKey:nil];
         // Don't animate - so the transistion set above will be used.
-        [NAV popViewControllerAnimated:NO];
+        [ROOT popViewControllerAnimated:NO];
 
     };
     
     [NAV.view.layer addAnimation:transition forKey:nil];
     // Don't animate - so the transistion set above will be used.
-    [NAV pushViewController:languagesTableVC animated:NO];
+    [ROOT pushViewController:languagesTableVC animated:NO];
 }
 
 -(void)switchPreferredLanguageToId:(NSString *)languageId name:(NSString *)name

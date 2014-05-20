@@ -233,8 +233,7 @@ typedef enum {
         sectionEditVC.sectionID = section.objectID;
     }
     
-    [self.navigationController pushViewController: sectionEditVC
-                                         animated: YES];
+    [ROOT pushViewController:sectionEditVC animated:YES];
 }
 
 -(void)searchFieldBecameFirstResponder
@@ -274,6 +273,9 @@ typedef enum {
 
 -(void)tocHideWithDuration:(NSNumber *)duration
 {
+
+//    ROOT.bottomMenuHidden = NO;
+
     // iOS 6 can blank out the web view this isn't scheduled for next run loop.
     [[NSRunLoop currentRunLoop] performSelector: @selector(tocHideWithDurationNextRunLoop:)
                                          target: self
@@ -284,8 +286,31 @@ typedef enum {
 
 -(void)tocHideWithDurationNextRunLoop:(NSNumber *)duration
 {
-    if(self.unsafeToToggleTOC)return;
+
+    if(self.unsafeToToggleTOC || !self.tocVC)return;
     self.unsafeToToggleTOC = YES;
+
+
+
+
+
+//// If the top menu isn't hidden, reveal the bottom menu.
+//if(!ROOT.topMenuHidden){
+//    
+//    [UIView animateWithDuration:0.1f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+//        
+//        ROOT.bottomMenuHidden = NO;
+//        
+//        [ROOT.view setNeedsUpdateConstraints];
+//        [ROOT.view.superview layoutSubviews];
+//        
+//    } completion:^(BOOL done){
+//        
+//    }];
+//}
+
+
+
 
     // Clear alerts
     [self fadeAlert];
@@ -295,23 +320,46 @@ typedef enum {
                           delay: 0.0f
                         options: UIViewAnimationOptionBeginFromCurrentState
                      animations: ^{
+
+
+// If the top menu isn't hidden, reveal the bottom menu.
+if(!ROOT.topMenuHidden){
+    
+//    [UIView animateWithDuration:0.1f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+    
+        ROOT.bottomMenuHidden = NO;
+        
+        [ROOT.view setNeedsUpdateConstraints];
+//        [ROOT.view.superview layoutSubviews];
+    
+//    } completion:^(BOOL done){
+//        
+//    }];
+}
+
+
+
+
+                     
                          self.webView.transform = CGAffineTransformIdentity;
                          self.bottomBarView.transform = CGAffineTransformIdentity;
-                         self.bottomBarView.alpha = 1.0f;
+//                         self.bottomBarView.alpha = 1.0f;
                          self.webViewLeftConstraint.constant = 0;
-                         [self.view.superview layoutIfNeeded];
+                         
+                         
+                         [ROOT.view.superview layoutIfNeeded];
                      }completion: ^(BOOL done){
 
                          if(self.tocVC) [self tocViewControllerRemove];
 
-                         // If the top menu isn't hidden, reveal the bottom menu.
-                         if(!ROOT.topMenuHidden){
-                             if (NAV.topViewController == self) {
-                                 // Without the topViewController check, tap the edit pencil in iOS 6 and when the edit
-                                 // page loads the bottom menu doesn't go away.
-                                 ROOT.bottomMenuHidden = NO;
-                             }
-                         }
+//                         // If the top menu isn't hidden, reveal the bottom menu.
+//                         if(!ROOT.topMenuHidden){
+//                             if (NAV.topViewController == self) {
+//                                 // Without the topViewController check, tap the edit pencil in iOS 6 and when the edit
+//                                 // page loads the bottom menu doesn't go away.
+//                                 ROOT.bottomMenuHidden = NO;
+//                             }
+//                         }
                          self.unsafeToToggleTOC = NO;
                      }];
 }
@@ -320,7 +368,7 @@ typedef enum {
 {
     if([[SessionSingleton sharedInstance] isCurrentArticleMain]) return;
 
-    ROOT.bottomMenuHidden = YES;
+//    ROOT.bottomMenuHidden = YES;
 
     // iOS 6 can blank out the web view this isn't scheduled for next run loop.
     [[NSRunLoop currentRunLoop] performSelector: @selector(tocShowWithDurationNextRunLoop:)
@@ -332,8 +380,21 @@ typedef enum {
 
 -(void)tocShowWithDurationNextRunLoop:(NSNumber *)duration
 {
-    if(self.unsafeToToggleTOC)return;
+    if(self.unsafeToToggleTOC || self.tocVC)return;
     self.unsafeToToggleTOC = YES;
+
+
+//[UIView animateWithDuration:0.1f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+//    
+//    ROOT.bottomMenuHidden = YES;
+//
+//[ROOT.view setNeedsUpdateConstraints];
+//[ROOT.view.superview layoutSubviews];
+//
+//} completion:^(BOOL done){
+//    
+//}];
+
 
     // Clear alerts
     [self fadeAlert];
@@ -354,11 +415,16 @@ typedef enum {
                           delay: 0.0f
                         options: UIViewAnimationOptionBeginFromCurrentState
                      animations: ^{
+
+ROOT.bottomMenuHidden = YES;
+[ROOT.view setNeedsUpdateConstraints];
+
+                     
                          self.webView.transform = xf;
                          self.bottomBarView.transform = xf;
-                         self.bottomBarView.alpha = 0.0f;
+//                         self.bottomBarView.alpha = 0.0f;
                          self.webViewLeftConstraint.constant = [self tocGetWidthForWebViewScale:webViewScale];
-                         [self.view.superview layoutIfNeeded];
+                         [ROOT.view.superview layoutIfNeeded];
                      }completion: ^(BOOL done){
                          [self.view setNeedsUpdateConstraints];
                          self.unsafeToToggleTOC = NO;
@@ -656,7 +722,25 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
         [weakSelf tocHide];
         weakSelf.sectionToEditId = [[payload[@"href"] stringByReplacingOccurrencesOfString:@"edit_section_" withString:@""] integerValue];
 
-        [weakSelf.self showSectionEditor];
+//ROOT.bottomMenuHidden = YES;
+
+
+
+//[UIView animateWithDuration:0.15f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+//
+//    ROOT.bottomMenuHidden = YES;
+//
+//} completion:^(BOOL done){
+//    
+//}];
+
+
+
+
+
+
+
+        [weakSelf showSectionEditor];
     }];
 
     [self.bridge addListener:@"nonAnchorTouchEndedWithoutDragging" withBlock:^(NSString *messageType, NSDictionary *payload) {
@@ -680,7 +764,7 @@ NSString *msg = [NSString stringWithFormat:@"To do: add code for navigating to e
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
     // Ensure the web VC is the top VC.
-    [self.navigationController popToViewController:self animated:YES];
+    [ROOT popToViewController:self animated:YES];
 
     [self fadeAlert];
 }

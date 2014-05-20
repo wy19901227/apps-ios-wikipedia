@@ -153,7 +153,7 @@
 
 -(void)hide
 {
-    [self.navigationController popViewControllerAnimated:YES];
+    [ROOT popViewControllerAnimated:YES];
 }
 
 -(void)viewWillDisappear:(BOOL)animated
@@ -327,7 +327,7 @@
             schema: LOG_SCHEMA_LOGIN];
 
     AccountCreationViewController *createAcctVC = [self.navigationController.storyboard instantiateViewControllerWithIdentifier:@"AccountCreationViewController"];
-    [self.navigationController pushViewController:createAcctVC animated:YES];
+    [ROOT pushViewController:createAcctVC animated:YES];
 }
 
 @end

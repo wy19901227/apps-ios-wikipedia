@@ -89,7 +89,7 @@ typedef enum {
 
     switch (tappedItem.tag) {
         case NAVBAR_BUTTON_PENCIL:
-            [self.navigationController popViewControllerAnimated:YES];
+            [ROOT popViewControllerAnimated:YES];
             
             if(ROOT.topMenuViewController.navBarMode == NAVBAR_MODE_EDIT_WIKITEXT_WARNING){
                 [self logEvent: @{@"action": @"abuseFilterWarningBack"}
@@ -155,7 +155,7 @@ typedef enum {
 
 -(void)htmlAlertWasHidden
 {
-    [self.navigationController popViewControllerAnimated:YES];
+    [ROOT popViewControllerAnimated:YES];
 }
 
 -(void)viewDidAppear:(BOOL)animated
@@ -325,7 +325,7 @@ typedef enum {
         case PREVIEW_CHOICE_LOGIN_THEN_SAVE:{
             self.saveAutomaticallyIfSignedIn = YES;
             LoginViewController *loginVC = [self.navigationController.storyboard instantiateViewControllerWithIdentifier:@"LoginViewController"];
-            [self.navigationController pushViewController:loginVC animated:YES];
+            [ROOT pushViewController:loginVC animated:YES];
         }
             break;
         case PREVIEW_CHOICE_SAVE:
@@ -470,7 +470,7 @@ return;
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
                 WebViewController *webVC = [self.navigationController searchNavStackForViewControllerOfClass:[WebViewController class]];
                 [webVC reloadCurrentArticleInvalidatingCache:YES];
-                [self.navigationController popToViewController:webVC animated:YES];
+                [ROOT popToViewController:webVC animated:YES];
                 isAleadySaving = NO;
             }];
         }

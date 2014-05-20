@@ -519,11 +519,11 @@
         if (NAV.topViewController == searchResultsVC) {
             [searchResultsVC refreshSearchResults];
         }else{
-            [NAV popToViewController:searchResultsVC animated:NO];
+            [ROOT popToViewController:searchResultsVC animated:NO];
         }
     }else{
         SearchResultsController *searchResultsVC = [self.storyboard instantiateViewControllerWithIdentifier:@"SearchResultsController"];
-        [NAV pushViewController:searchResultsVC animated:NO];
+        [ROOT pushViewController:searchResultsVC animated:NO];
     }
 }
 
@@ -535,11 +535,13 @@
     
     MainMenuViewController *mainMenuTableVC = [NAV searchNavStackForViewControllerOfClass:[MainMenuViewController class]];
     
+//    ROOT.bottomMenuHidden = (mainMenuTableVC) ? NO : YES;
+
     if(mainMenuTableVC){
-        [NAV popToRootViewControllerAnimated:YES];
+        [ROOT popToRootViewControllerAnimated:YES];
     }else{
         MainMenuViewController *mainMenuTableVC = [self.storyboard instantiateViewControllerWithIdentifier:@"MainMenuViewController"];
-        [NAV pushViewController:mainMenuTableVC animated:YES];
+        [ROOT pushViewController:mainMenuTableVC animated:YES];
     }
 }
 
@@ -573,7 +575,7 @@
     [searchResultsVC clearSearchResults];
     
     if (NAV.topViewController == searchResultsVC) {
-        [NAV popViewControllerAnimated:NO];
+        [ROOT popViewControllerAnimated:NO];
     }
 }
 

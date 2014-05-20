@@ -18,4 +18,19 @@
 
 -(void)animateTopAndBottomMenuToggle;
 
+
+
+
+
+//TODO: override center nav controller versions of these and don't call
+// super and output a msg saying use these ROOT versions instead
+
+- (void)popToRootViewControllerAnimated:(BOOL)animated;
+- (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
+- (void)popViewControllerAnimated:(BOOL)animated;
+- (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
+
+
+
+
 @end

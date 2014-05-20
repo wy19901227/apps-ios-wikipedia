@@ -55,49 +55,103 @@
 
 -(void)setTopMenuHidden:(BOOL)topMenuHidden
 {
+    if (_topMenuHidden == topMenuHidden) return;
+
     _topMenuHidden = topMenuHidden;
 
-    // iOS 6 can blank out the web view this isn't scheduled for next run loop.
-    [[NSRunLoop currentRunLoop] performSelector: @selector(animateUpdateToTopMenuVisibility)
-                                         target: self
-                                       argument: nil
-                                          order: 0
-                                          modes: [NSArray arrayWithObject:@"NSDefaultRunLoopMode"]];
+
+
+// Fade out the top menu when it is hidden.
+CGFloat alpha = topMenuHidden ? 0.0 : 1.0;
+
+//self.topMenuViewController.navBarContainer.alpha = alpha;
+for (UIView *v in self.topMenuViewController.navBarContainer.subviews) {
+    v.alpha = alpha;
+}
+
+
+
+
+
+//[self.view setNeedsUpdateConstraints];
+//
+//[self.view.superview layoutSubviews];
+
+//[self.view.superview layoutIfNeeded];
+
+
+
+
+
+
+
+
+//return;
+//
+//    // iOS 6 can blank out the web view this isn't scheduled for next run loop.
+//    [[NSRunLoop currentRunLoop] performSelector: @selector(animateUpdateToTopMenuVisibility)
+//                                         target: self
+//                                       argument: nil
+//                                          order: 0
+//                                          modes: [NSArray arrayWithObject:@"NSDefaultRunLoopMode"]];
 }
 
 -(void)setBottomMenuHidden:(BOOL)bottomMenuHidden
 {
+    if (_bottomMenuHidden == bottomMenuHidden) return;
+
     _bottomMenuHidden = bottomMenuHidden;
 
-    // iOS 6 can blank out the web view this isn't scheduled for next run loop.
-    [[NSRunLoop currentRunLoop] performSelector: @selector(animateUpdateToBottomMenuVisibility)
-                                         target: self
-                                       argument: nil
-                                          order: 0
-                                          modes: [NSArray arrayWithObject:@"NSDefaultRunLoopMode"]];
+
+// Fade out the top menu when it is hidden.
+CGFloat alpha = bottomMenuHidden ? 0.0 : 1.0;
+
+self.bottomMenuViewController.view.alpha = alpha;
+
+
+
+
+
+//[self.view setNeedsUpdateConstraints];
+//
+//[self.view.superview layoutSubviews];
+//
+//[self.view.superview layoutIfNeeded];
+
+
+
+
+
+
+
+//return;
+//
+//    // iOS 6 can blank out the web view this isn't scheduled for next run loop.
+//    [[NSRunLoop currentRunLoop] performSelector: @selector(animateUpdateToBottomMenuVisibility)
+//                                         target: self
+//                                       argument: nil
+//                                          order: 0
+//                                          modes: [NSArray arrayWithObject:@"NSDefaultRunLoopMode"]];
 }
 
--(void)animateUpdateToTopMenuVisibility
-{
-    [UIView animateWithDuration:0.15f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
-        
-        [self updateTopMenuVisibility];
-        [self.view layoutIfNeeded];
+//-(void)animateUpdateToTopMenuVisibility
+//{
+//    [UIView animateWithDuration:0.15f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+//        
+//        [self updateTopMenuVisibility];
+//        [self.view layoutIfNeeded];
+//
+//    } completion:^(BOOL done){
+//        
+//    }];
+//}
 
-    } completion:^(BOOL done){
-        
-    }];
-}
-
--(void)updateTopMenuVisibility
+-(void)updateTopMenuVisibilityConstraint
 {
     // Remember the initial constants so they can be returned to when menu shown again.
     if (self.initalCenterContainerTopConstraintConstant == 0) {
         self.initalCenterContainerTopConstraintConstant = self.centerContainerTopConstraint.constant;
     }
-    
-    // Fade out the top menu when it is hidden.
-    CGFloat alpha = self.topMenuHidden ? 0.0 : 1.0;
     
     // Height for top menu when visible.
     CGFloat visibleTopMenuHeight = self.initalCenterContainerTopConstraintConstant;
@@ -112,31 +166,38 @@
     
     self.centerContainerTopConstraint.constant = topMenuHeight;
     
-    //self.topMenuViewController.navBarContainer.alpha = alpha;
-    for (UIView *v in self.topMenuViewController.navBarContainer.subviews) {
-        v.alpha = alpha;
-    }
+//    // Fade out the top menu when it is hidden.
+//    CGFloat alpha = self.topMenuHidden ? 0.0 : 1.0;
+//
+//    //self.topMenuViewController.navBarContainer.alpha = alpha;
+//    for (UIView *v in self.topMenuViewController.navBarContainer.subviews) {
+//        v.alpha = alpha;
+//    }
+
 }
 
--(void)animateUpdateToBottomMenuVisibility
-{
-    [UIView animateWithDuration:0.15f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+//-(void)animateUpdateToBottomMenuVisibility
+//{
+//    [UIView animateWithDuration:0.15f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+//
+//        [self updateBottomMenuVisibility];
+//        
+//        [self.view layoutIfNeeded];
+//        
+//    } completion:^(BOOL done){
+//        
+//    }];
+//}
 
-        [self updateBottomMenuVisibility];
-        
-        [self.view layoutIfNeeded];
-        
-    } completion:^(BOOL done){
-        
-    }];
-}
-
--(void)updateBottomMenuVisibility
+-(void)updateBottomMenuVisibilityConstraint
 {
     // Remember the initial constants so they can be returned to when menu shown again.
     if (self.initalCenterContainerBottomConstraintConstant == 0) {
         self.initalCenterContainerBottomConstraintConstant = self.centerContainerBottomConstraint.constant;
     }
+
+//    // Fade out the top menu when it is hidden.
+//    CGFloat alpha = self.bottomMenuHidden ? 0.0 : 1.0;
     
     // Height for bottom menu when visible.
     CGFloat visibleBottomMenuHeight = self.initalCenterContainerBottomConstraintConstant;
@@ -144,36 +205,103 @@
     CGFloat bottomMenuHeight = self.bottomMenuHidden ? 0 : visibleBottomMenuHeight;
     
     self.centerContainerBottomConstraint.constant = bottomMenuHeight;
+
+
+//self.bottomMenuViewController.view.alpha = alpha;
+
 }
 
 -(void)animateTopAndBottomMenuToggle
 {
-    // iOS 6 can blank out the web view this isn't scheduled for next run loop.
-    [[NSRunLoop currentRunLoop] performSelector: @selector(animateTopAndBottomMenuToggleNextRunLoop)
-                                         target: self
-                                       argument: nil
-                                          order: 0
-                                          modes: [NSArray arrayWithObject:@"NSDefaultRunLoopMode"]];
-}
 
--(void)animateTopAndBottomMenuToggleNextRunLoop
-{
-    // Don't use the setters here as we want both animations to happen in the single
-    // animateWithDuration call here, not in the setters' animateWithDuration.
-    _topMenuHidden = !self.topMenuHidden;
-    _bottomMenuHidden = !self.bottomMenuHidden;
 
-    [UIView animateWithDuration:0.15f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
 
-        [self updateBottomMenuVisibility];
-        [self updateTopMenuVisibility];
-        
-        [self.view layoutIfNeeded];
-        
-    } completion:^(BOOL done){
-        
+// Queue it up so web view doesn't get blanked out.
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+
+//
+//// Don't use the setters here as we want both animations to happen in the single
+//// animateWithDuration call here, not in the setters' animateWithDuration.
+//_topMenuHidden = !self.topMenuHidden;
+//_bottomMenuHidden = !self.bottomMenuHidden;
+//
+
+
+
+
+//self.topMenuHidden = !self.topMenuHidden;
+//self.bottomMenuHidden = !self.bottomMenuHidden;
+
+
+
+
+//[self.view setNeedsUpdateConstraints];
+
+
+[UIView animateWithDuration:0.15f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+
+self.topMenuHidden = !self.topMenuHidden;
+self.bottomMenuHidden = !self.bottomMenuHidden;
+
+[self.view setNeedsUpdateConstraints];
+//[self.view.superview layoutSubviews];
+
+
+    [self.view.superview layoutIfNeeded];
+    
+    
+} completion:^(BOOL done){
+}];
+
     }];
+
+
+
+//return;
+//
+//    // iOS 6 can blank out the web view this isn't scheduled for next run loop.
+//    [[NSRunLoop currentRunLoop] performSelector: @selector(animateTopAndBottomMenuToggleNextRunLoop)
+//                                         target: self
+//                                       argument: nil
+//                                          order: 0
+//                                          modes: [NSArray arrayWithObject:@"NSDefaultRunLoopMode"]];
 }
+
+//-(void)animateTopAndBottomMenuToggleNextRunLoop
+//{
+//    // Don't use the setters here as we want both animations to happen in the single
+//    // animateWithDuration call here, not in the setters' animateWithDuration.
+//    _topMenuHidden = !self.topMenuHidden;
+//    _bottomMenuHidden = !self.bottomMenuHidden;
+//
+//    [UIView animateWithDuration:0.15f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+//
+//        [self updateBottomMenuVisibility];
+//        [self updateTopMenuVisibility];
+//        
+//        [self.view layoutIfNeeded];
+//        
+//    } completion:^(BOOL done){
+//        
+//    }];
+//}
+
+
+
+
+-(void)updateViewConstraints
+{
+
+[self updateBottomMenuVisibilityConstraint];
+[self updateTopMenuVisibilityConstraint];
+
+    [super updateViewConstraints];
+
+}
+
+
+
+
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
@@ -193,6 +321,11 @@
 
 -(void)updateTopAndBottomMenuVisibilityForViewController:(UIViewController *)viewController
 {
+
+
+[UIView animateWithDuration:0.1f delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+
+
     if([viewController isMemberOfClass:[WebViewController class]]){
         // Ensure the bottom menu is shown once the web view is loaded.
         self.bottomMenuHidden = NO;
@@ -202,6 +335,25 @@
         self.topMenuHidden = NO;
         self.bottomMenuHidden = YES;
     }
+
+
+
+[self.view setNeedsUpdateConstraints];
+// Prevents jumpiness in ios 6 vs layoutIfNeeded
+[self.view layoutSubviews];
+
+
+} completion:^(BOOL done){
+    
+}];
+
+
+    
+
+//[self.view.superview setNeedsUpdateConstraints];
+//[self.view.superview setNeedsLayout];
+    
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -219,6 +371,84 @@
  // Get the new view controller using [segue destinationViewController].
  // Pass the selected object to the new view controller.
  }
- */
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+- (void)popToRootViewControllerAnimated:(BOOL)animated
+{
+    [self updateTopAndBottomMenuVisibilityForViewController:NAV.viewControllers.firstObject];
+
+    // Queue it up to give top and bottom nav a chance to toggle if needed.
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [NAV popToRootViewControllerAnimated:animated];
+    }];
+}
+
+- (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated
+{
+    [self updateTopAndBottomMenuVisibilityForViewController:viewController];
+
+    // Queue it up to give top and bottom nav a chance to toggle if needed.
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [NAV pushViewController:viewController animated:animated];
+    }];
+}
+
+- (void)popViewControllerAnimated:(BOOL)animated
+{
+
+if (NAV.viewControllers.count > 1) {
+    id v = [NAV.viewControllers objectAtIndex:NAV.viewControllers.count - 2];
+    [self updateTopAndBottomMenuVisibilityForViewController:v];
+}
+
+    // Queue it up to give top and bottom nav a chance to toggle if needed.
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [NAV popViewControllerAnimated:animated];
+    }];
+
+}
+
+- (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated
+{
+    [self updateTopAndBottomMenuVisibilityForViewController:viewController];
+
+    // Queue it up to give top and bottom nav a chance to toggle if needed.
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [NAV popToViewController:viewController animated:animated];
+    }];
+
+}
+
+
+
+
+
+
 
 @end

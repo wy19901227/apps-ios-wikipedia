@@ -158,7 +158,7 @@
     [NAV.view.layer addAnimation:transition forKey:nil];
 
     // Don't animate - so the transistion set above will be used.
-    [NAV pushViewController:languagesTableVC animated:NO];
+    [ROOT pushViewController:languagesTableVC animated:NO];
 }
 
 - (void)didReceiveMemoryWarning
