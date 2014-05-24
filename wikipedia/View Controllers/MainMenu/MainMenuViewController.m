@@ -7,7 +7,6 @@
 #import "HistoryViewController.h"
 #import "SavedPagesViewController.h"
 #import "QueuesSingleton.h"
-#import "DownloadTitlesForRandomArticlesOp.h"
 #import "SessionSingleton.h"
 #import "WebViewController.h"
 #import "WikipediaAppUtils.h"
@@ -27,6 +26,10 @@
 
 #import "WMF_WikiFont_Chars.h"
 
+#import "TopMenuContainerView.h"
+#import "TopMenuViewController.h"
+#import "TopMenuLabel.h"
+
 #pragma mark - Defines
 
 #define BACKGROUND_COLOR [UIColor colorWithWhite:0.97f alpha:1.0f]
@@ -36,8 +39,6 @@
 
 typedef enum {
     ROW_INDEX_LOGIN = 0,
-    ROW_INDEX_RANDOM = 1,
-    ROW_INDEX_HISTORY = 2,
     ROW_INDEX_SAVED_PAGES = 3,
     ROW_INDEX_SAVE_PAGE = 4,
     ROW_INDEX_SEARCH_LANGUAGE = 5,
@@ -60,15 +61,74 @@ typedef enum {
 
 @property (strong, nonatomic) NSDictionary *highlightedTextAttributes;
 
+@property (strong, nonatomic) TopMenuViewController *topMenuViewController;
+
 @end
 
 @implementation MainMenuViewController
+
+#pragma mark - Top menu
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+	if ([segue.identifier isEqualToString: @"TopMenuViewController_embed_in_MainMenuViewController"]) {
+		self.topMenuViewController = (TopMenuViewController *) [segue destinationViewController];
+    }
+}
+
+// Handle nav bar taps. (same way as any other view controller would)
+- (void)navItemTappedNotification:(NSNotification *)notification
+{
+    NSDictionary *userInfo = [notification userInfo];
+    UIView *tappedItem = userInfo[@"tappedItem"];
+
+    switch (tappedItem.tag) {
+        case NAVBAR_BUTTON_X:
+        case NAVBAR_LABEL:
+            [self hide];
+
+            break;
+        default:
+            break;
+    }
+}
+
+-(void)configureContainedTopMenu
+{
+    self.topMenuViewController.navBarStyle = NAVBAR_STYLE_DAY;
+    self.topMenuViewController.navBarMode = NAVBAR_MODE_X_WITH_LABEL;
+    self.topMenuViewController.navBarContainer.showBottomBorder = NO;
+    
+    TopMenuLabel *label = [self.topMenuViewController getNavBarItem:NAVBAR_LABEL];
+    label.text = MWLocalizedString(@"main-menu-title", nil);
+    label.font = [UIFont systemFontOfSize:21];
+    label.textAlignment = NSTextAlignmentCenter;
+}
+
+#pragma mark - Hiding
+
+-(void)hide
+{
+    // Hide this view controller.
+    if(!(self.isBeingPresented || self.isBeingDismissed)){
+        [self.presentingViewController dismissViewControllerAnimated:YES completion:^{}];
+    }
+}
+
+-(void)hidePresenter
+{
+    // Hide the black menu which presented this view controller.
+    [self.presentingViewController.presentingViewController dismissViewControllerAnimated: YES
+                                                                               completion: ^{}];
+}
 
 #pragma mark - View lifecycle
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
+    [self configureContainedTopMenu];
 
     self.highlightedTextAttributes = @{NSFontAttributeName: [UIFont italicSystemFontOfSize:16]};
 
@@ -103,6 +163,12 @@ typedef enum {
 {
     [super viewDidAppear:animated];
 
+    // Listen for nav bar taps.
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                             selector: @selector(navItemTappedNotification:)
+                                                 name: @"NavItemTapped"
+                                               object: nil];
+
     [[NSNotificationCenter defaultCenter] addObserver: self
                                              selector: @selector(tabularScrollViewItemTappedNotification:)
                                                  name: @"TabularScrollViewItemTapped"
@@ -112,10 +178,12 @@ typedef enum {
 -(void)viewWillDisappear:(BOOL)animated
 {
     [[NSNotificationCenter defaultCenter] removeObserver: self
+                                                    name: @"NavItemTapped"
+                                                  object: nil];
+
+    [[NSNotificationCenter defaultCenter] removeObserver: self
                                                     name: @"TabularScrollViewItemTapped"
                                                   object: nil];
-    [[QueuesSingleton sharedInstance].randomArticleQ cancelAllOperations];
-
     [super viewWillDisappear:animated];
 }
 
@@ -216,11 +284,13 @@ typedef enum {
                                                                  substitutionAttributes: @[self.highlightedTextAttributes]
      ];
     
+    /*
     NSAttributedString *saveArticleTitle =
     [MWLocalizedString(@"main-menu-current-article-save", nil) attributedStringWithAttributes: nil
                                                                           substitutionStrings: @[currentArticleTitle]
                                                                        substitutionAttributes: @[self.highlightedTextAttributes]
      ];
+     */
 
     NSAttributedString *pageHistoryTitle =
     [MWLocalizedString(@"main-menu-show-page-history", nil) attributedStringWithAttributes: nil
@@ -237,20 +307,7 @@ typedef enum {
           @"highlighted": @YES,
           }.mutableCopy
       ,
-      @{
-          @"title": MWLocalizedString(@"main-menu-random", nil),
-          @"tag": @(ROW_INDEX_RANDOM),
-          @"icon": WIKIFONT_CHAR_DICE,
-          @"highlighted": @YES,
-          }.mutableCopy
-      ,
-      @{
-          @"title": MWLocalizedString(@"main-menu-show-history", nil),
-          @"tag": @(ROW_INDEX_HISTORY),
-          @"icon": WIKIFONT_CHAR_CLOCK,
-          @"highlighted": @YES,
-          }.mutableCopy
-      ,
+      /*
       @{
           @"title": MWLocalizedString(@"main-menu-show-saved", nil),
           @"tag": @(ROW_INDEX_SAVED_PAGES),
@@ -265,25 +322,12 @@ typedef enum {
           @"highlighted": @YES,
           }.mutableCopy
       ,
+      */
       @{
           @"domain": [SessionSingleton sharedInstance].domain,
           @"title": searchWikiTitle,
           @"tag": @(ROW_INDEX_SEARCH_LANGUAGE),
           @"icon": WIKIFONT_CHAR_TRANSLATE,
-          @"highlighted": @YES,
-          }.mutableCopy
-      ,
-      @{
-          @"title": MWLocalizedString(@"zero-warn-when-leaving", nil),
-          @"tag": @(ROW_INDEX_ZERO_WARN_WHEN_LEAVING),
-          @"icon": WIKIFONT_CHAR_FLAG,
-          @"highlighted": @([SessionSingleton sharedInstance].zeroConfigState.warnWhenLeaving),
-          }.mutableCopy
-      ,
-      @{
-          @"title": MWLocalizedString(@"main-menu-send-feedback", nil),
-          @"tag": @(ROW_INDEX_SEND_FEEDBACK),
-          @"icon": WIKIFONT_CHAR_ENVELOPE,
           @"highlighted": @YES,
           }.mutableCopy
       ,
@@ -301,6 +345,20 @@ typedef enum {
           @"icon": WIKIFONT_CHAR_PUZZLE,
           @"highlighted": @YES,
           }.mutableCopy
+        ,
+      @{
+          @"title": MWLocalizedString(@"main-menu-send-feedback", nil),
+          @"tag": @(ROW_INDEX_SEND_FEEDBACK),
+          @"icon": WIKIFONT_CHAR_ENVELOPE,
+          @"highlighted": @YES,
+          }.mutableCopy
+      ,
+      @{
+          @"title": MWLocalizedString(@"zero-warn-when-leaving", nil),
+          @"tag": @(ROW_INDEX_ZERO_WARN_WHEN_LEAVING),
+          @"icon": WIKIFONT_CHAR_FLAG,
+          @"highlighted": @([SessionSingleton sharedInstance].zeroConfigState.warnWhenLeaving),
+          }.mutableCopy
       ].mutableCopy;
 
     self.rowData = rowData;
@@ -308,6 +366,11 @@ typedef enum {
     if(self.hidePagesSection){
         [self deleteRowWithTag:ROW_INDEX_SAVE_PAGE];
         [self deleteRowWithTag:ROW_INDEX_PAGE_HISTORY];
+    }
+    
+    NSString *userName = [SessionSingleton sharedInstance].keychainCredentials.userName;
+    if(!userName){
+        [self deleteRowWithTag:ROW_INDEX_LOGIN];
     }
 }
 
@@ -367,17 +430,7 @@ typedef enum {
                         [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
                     }
                 }
-            }
-                break;
-            case ROW_INDEX_RANDOM:
-                [self showAlert:MWLocalizedString(@"fetching-random-article", nil)];
-                [self fetchRandomArticle];
-                break;
-            case ROW_INDEX_HISTORY:
-            {
-                HistoryViewController *historyVC =
-                    [NAV.storyboard instantiateViewControllerWithIdentifier:@"HistoryViewController"];
-                [NAV pushViewController:historyVC animated:YES];
+[self hidePresenter];
             }
                 break;
             case ROW_INDEX_SAVED_PAGES:
@@ -393,6 +446,7 @@ typedef enum {
                 break;
             case ROW_INDEX_SEARCH_LANGUAGE:
                 [self showLanguages];
+[self hidePresenter];
                 break;
             case ROW_INDEX_ZERO_WARN_WHEN_LEAVING:
                 [[SessionSingleton sharedInstance].zeroConfigState toggleWarnWhenLeaving];
@@ -401,7 +455,13 @@ typedef enum {
             {
                 NSString *mailtoUri =
                 [NSString stringWithFormat:@"mailto:mobile-ios-wikipedia@wikimedia.org?subject=Feedback:%@", [WikipediaAppUtils versionedUserAgent]];
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:mailtoUri]];
+                
+                NSString *encodedUrlString =
+                    [mailtoUri stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+                
+                NSURL *url = [NSURL URLWithString:encodedUrlString];
+                
+                [[UIApplication sharedApplication] openURL:url];
             }
                 break;
             case ROW_INDEX_PAGE_HISTORY:
@@ -409,6 +469,7 @@ typedef enum {
                 PageHistoryViewController *pageHistoryVC =
                     [NAV.storyboard instantiateViewControllerWithIdentifier:@"PageHistoryViewController"];
                 [NAV pushViewController:pageHistoryVC animated:YES];
+[self hidePresenter];
             }
                 break;
             case ROW_INDEX_CREDITS:
@@ -416,6 +477,7 @@ typedef enum {
                 CreditsViewController *creditsVC =
                     [NAV.storyboard instantiateViewControllerWithIdentifier:@"CreditsViewController"];
                 [NAV pushViewController:creditsVC animated:YES];
+[self hidePresenter];
             }
                 break;
             default:
@@ -483,31 +545,6 @@ typedef enum {
                   discoveryMethod: DISCOVERY_METHOD_SEARCH
                 invalidatingCache: YES];
     }
-}
-
--(void)fetchRandomArticle {
-
-    [[QueuesSingleton sharedInstance].randomArticleQ cancelAllOperations];
-
-    DownloadTitlesForRandomArticlesOp *downloadTitlesForRandomArticlesOp =
-        [[DownloadTitlesForRandomArticlesOp alloc] initForDomain: [SessionSingleton sharedInstance].domain
-                                                 completionBlock: ^(NSString *title) {
-                                                     if (title) {
-                                                         dispatch_async(dispatch_get_main_queue(), ^(){
-                                                             [NAV loadArticleWithTitle: title
-                                                                                domain: [SessionSingleton sharedInstance].domain
-                                                                              animated: YES
-                                                                       discoveryMethod: DISCOVERY_METHOD_RANDOM
-                                                                     invalidatingCache: NO];
-                                                         });
-                                                     }
-                                                 } cancelledBlock: ^(NSError *errorCancel) {
-                                                    [self fadeAlert];
-                                                 } errorBlock: ^(NSError *error) {
-                                                    [self showAlert:error.localizedDescription];
-                                                 }];
-
-    [[QueuesSingleton sharedInstance].randomArticleQ addOperation:downloadTitlesForRandomArticlesOp];
 }
 
 #pragma mark - Animation

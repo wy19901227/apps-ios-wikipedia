@@ -31,6 +31,9 @@
 #import "RootViewController.h"
 #import "TopMenuViewController.h"
 
+#import "RootViewController.h"
+#import "TopMenuContainerView.h"
+
 @interface TopMenuViewController (){
 
 }
@@ -73,7 +76,7 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-  
+    
     self.currentSearchResultsOrdered = [@[] mutableCopy];
     self.currentSearchString = @"";
 
@@ -345,7 +348,9 @@
     self.label.text = @"";
     self.label.translatesAutoresizingMaskIntoConstraints = NO;
     self.label.tag = NAVBAR_LABEL;
-    self.label.font = [UIFont boldSystemFontOfSize:15.0];
+    self.label.font = [UIFont systemFontOfSize:21.0];
+    self.label.textAlignment = NSTextAlignmentCenter;
+    
     self.label.adjustsFontSizeToFitWidth = YES;
     self.label.minimumScaleFactor = 0.5f;
     self.label.textColor = [UIColor darkGrayColor];
@@ -459,7 +464,7 @@
         case NAVBAR_MODE_EDIT_WIKITEXT_DISALLOW:
             self.label.text = MWLocalizedString(@"navbar-title-mode-edit-wikitext-disallow", nil);
             self.navBarSubViewsHorizontalVFLString =
-                @"H:|[NAVBAR_BUTTON_PENCIL(50)][NAVBAR_VERTICAL_LINE_1(singlePixel)]-(10)-[NAVBAR_LABEL]-(10)-|";
+                @"H:|[NAVBAR_BUTTON_PENCIL(50)][NAVBAR_VERTICAL_LINE_1(singlePixel)]-(10)-[NAVBAR_LABEL]-(60)-|";
             break;
         case NAVBAR_MODE_EDIT_WIKITEXT_PREVIEW:
         case NAVBAR_MODE_EDIT_WIKITEXT_SUMMARY:
@@ -479,16 +484,20 @@
         case NAVBAR_MODE_PAGE_HISTORY:
             self.label.text = MWLocalizedString(@"page-history-title", nil);
             self.navBarSubViewsHorizontalVFLString =
-                @"H:|[NAVBAR_BUTTON_ARROW_LEFT(50)][NAVBAR_VERTICAL_LINE_1(singlePixel)]-(10)-[NAVBAR_LABEL]-(10)-|";
+                @"H:|[NAVBAR_BUTTON_X(50)][NAVBAR_VERTICAL_LINE_1(singlePixel)]-(10)-[NAVBAR_LABEL]-(60)-|";
             break;        
         case NAVBAR_MODE_CREDITS:
             self.label.text = MWLocalizedString(@"main-menu-credits", nil);
             self.navBarSubViewsHorizontalVFLString =
-                @"H:|[NAVBAR_BUTTON_ARROW_LEFT(50)][NAVBAR_VERTICAL_LINE_1(singlePixel)]-(10)-[NAVBAR_LABEL]-(10)-|";
+                @"H:|[NAVBAR_BUTTON_X(50)][NAVBAR_VERTICAL_LINE_1(singlePixel)]-(10)-[NAVBAR_LABEL]-(60)-|";
             break;        
         case NAVBAR_MODE_SEARCH:
             self.navBarSubViewsHorizontalVFLString =
             @"H:|-(5)-[NAVBAR_TEXT_FIELD]-(6)-[NAVBAR_BUTTON_CANCEL]-(5)-|";
+            break;
+        case NAVBAR_MODE_X_WITH_LABEL:
+            self.navBarSubViewsHorizontalVFLString =
+            @"H:|-(5)-[NAVBAR_BUTTON_X(50)][NAVBAR_LABEL]-(55)-|";
             break;
         case NAVBAR_MODE_DEFAULT_WITH_TOC:
             self.navBarSubViewsHorizontalVFLString =
@@ -546,8 +555,16 @@
     UIView *tappedItem = userInfo[@"tappedItem"];
 
     switch (tappedItem.tag) {
-        case NAVBAR_BUTTON_LOGO_W:
-            [self mainMenuToggle];
+        case NAVBAR_BUTTON_LOGO_W: {
+
+//            [self mainMenuToggle];
+
+UIViewController *topVC = NAV.topViewController;
+[topVC hideKeyboard];
+
+[ROOT toggleMainMenu];
+
+}
             break;
         case NAVBAR_BUTTON_TOC:{
             WebViewController *webVC = [NAV searchNavStackForViewControllerOfClass:[WebViewController class]];
@@ -555,8 +572,16 @@
         }
             break;
         case NAVBAR_BUTTON_MAGNIFY:
-        case NAVBAR_BUTTON_BLANK:
-            self.navBarMode = NAVBAR_MODE_SEARCH;
+        case NAVBAR_BUTTON_BLANK: {
+            switch (self.navBarMode) {
+                case NAVBAR_MODE_DEFAULT:
+                case NAVBAR_MODE_DEFAULT_WITH_TOC:
+                    self.navBarMode = NAVBAR_MODE_SEARCH;
+                    break;
+                default:
+                    break;
+            }
+        }
             break;
         case NAVBAR_BUTTON_CANCEL:
             self.navBarMode = NAVBAR_MODE_DEFAULT;
@@ -596,6 +621,7 @@
     }
 }
 
+/*
 -(void)mainMenuToggle
 {
     UIViewController *topVC = NAV.topViewController;
@@ -629,6 +655,7 @@
         [NAV pushViewController:mainMenuTableVC animated:NO];
     }
 }
+*/
 
 #pragma mark Text field
 
@@ -756,13 +783,13 @@
                        @"NAVBAR_TEXT_CLEAR_BUTTON_COLOR": [UIColor colorWithWhite:0.33 alpha:1.0],
                        @"NAVBAR_BUTTON_COLOR": [UIColor blackColor],
                        @"NAVBAR_LABEL_TEXT_COLOR": [UIColor blackColor],
-                       @"NAVBAR_VERTICAL_LINE_COLOR": [UIColor colorWithWhite:0.78 alpha:1.0],
+                       @"NAVBAR_VERTICAL_LINE_COLOR": [UIColor colorWithWhite:0.88 alpha:1.0],
                        };
         }
             break;
         case NAVBAR_STYLE_NIGHT:{
             output = @{
-                       @"NAVBAR_COLOR": [UIColor colorWithWhite:0.0 alpha:0.9],
+                       @"NAVBAR_COLOR": [UIColor colorWithWhite:0.0 alpha:1.0],
                        @"NAVBAR_TEXT_FIELD_TEXT_COLOR": [UIColor whiteColor],
                        @"NAVBAR_TEXT_FIELD_PLACEHOLDER_TEXT_COLOR": [UIColor whiteColor],
                        @"NAVBAR_TEXT_CLEAR_BUTTON_COLOR": [UIColor whiteColor],
@@ -790,7 +817,12 @@
         case NAVBAR_BUTTON_ARROW_LEFT:
         case NAVBAR_BUTTON_ARROW_RIGHT:
         case NAVBAR_BUTTON_LOGO_W:
-        case NAVBAR_BUTTON_EYE:{
+        case NAVBAR_BUTTON_EYE:
+        case NAVBAR_BUTTON_TOC:
+        case NAVBAR_BUTTON_MAGNIFY:
+        case NAVBAR_BUTTON_BLANK:
+        case NAVBAR_BUTTON_CANCEL:
+        {
             TopMenuButtonView *button = (TopMenuButtonView *)view;
             button.label.textColor = colors[@"NAVBAR_BUTTON_COLOR"];
         }

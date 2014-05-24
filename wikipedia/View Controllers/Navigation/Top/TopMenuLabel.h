@@ -7,4 +7,6 @@
 
 -(void)setWikiText:(NSString *)text;
 
+-(void)setWikiText:(NSString *)text color:(UIColor *)color size:(CGFloat)size;
+
 @end

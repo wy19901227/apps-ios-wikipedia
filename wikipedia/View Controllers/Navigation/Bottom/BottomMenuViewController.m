@@ -130,15 +130,23 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     
     ShareMenuSavePageActivity *shareMenuSavePageActivity = [[ShareMenuSavePageActivity alloc] init];
     
-    UIActivityViewController *shareActivityViewController =
+    UIActivityViewController *shareActivityVC =
         [[UIActivityViewController alloc] initWithActivityItems: @[title, desktopURL]
                                           applicationActivities: @[shareMenuSavePageActivity]];
+    NSMutableArray *exclusions = @[UIActivityTypeCopyToPasteboard].mutableCopy;
     
-    [self presentViewController:shareActivityViewController animated:YES completion:^{
+    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
+        [exclusions addObject:UIActivityTypeAirDrop];
+        [exclusions addObject:UIActivityTypeAddToReadingList];
+    }
+
+    shareActivityVC.excludedActivityTypes = exclusions;
+
+    [self presentViewController:shareActivityVC animated:YES completion:^{
         
     }];
     
-    [shareActivityViewController setCompletionHandler:^(NSString *activityType, BOOL completed) {
+    [shareActivityVC setCompletionHandler:^(NSString *activityType, BOOL completed) {
         NSLog(@"activityType = %@", activityType);
     }];
 }

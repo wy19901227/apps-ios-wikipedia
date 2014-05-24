@@ -7,6 +7,8 @@
 #import "WebViewController.h"
 
 #import "UINavigationController+SearchNavStack.h"
+#import "BlackMainMenuViewController.h"
+#import "TopMenuContainerView.h"
 
 @interface RootViewController (){
     
@@ -144,6 +146,35 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+-(void)toggleMainMenu
+{
+    if (
+        self.presentedViewController.isBeingPresented
+        ||
+        self.presentedViewController.isBeingDismissed
+        )
+    {
+        return;
+    }
+
+
+    if ([self.presentedViewController isMemberOfClass:[BlackMainMenuViewController class]]) {
+
+
+
+
+        [self dismissViewControllerAnimated:YES completion:^{}];
+    }else{
+
+
+
+
+        BlackMainMenuViewController *mainMenuVC =
+            [NAV.storyboard instantiateViewControllerWithIdentifier:@"BlackMainMenuViewController"];
+        [self presentViewController:mainMenuVC animated:YES completion:^{}];
+    }
 }
 
 @end

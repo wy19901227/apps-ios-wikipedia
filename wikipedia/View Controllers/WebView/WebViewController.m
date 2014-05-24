@@ -203,6 +203,8 @@ typedef enum {
     
     //if (ROOT.topMenuViewController.navBarMode != NAVBAR_MODE_SEARCH) {
         ROOT.topMenuViewController.navBarMode = NAVBAR_MODE_DEFAULT;
+        [ROOT.topMenuViewController updateTOCButtonVisibility];
+
     //}
 }
 

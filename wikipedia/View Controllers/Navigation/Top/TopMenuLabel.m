@@ -32,10 +32,15 @@
 
 -(void)setWikiText:(NSString *)text
 {
+    [self setWikiText:text color:[UIColor blackColor] size:34];
+}
+
+-(void)setWikiText:(NSString *)text color:(UIColor *)color size:(CGFloat)size
+{
     NSDictionary *attributes =
     @{
-      NSFontAttributeName: [UIFont fontWithName:@"WikiFont-Regular" size:34],
-      NSForegroundColorAttributeName : [UIColor blackColor],
+      NSFontAttributeName: [UIFont fontWithName:@"WikiFont-Regular" size:size],
+      NSForegroundColorAttributeName : color,
       NSBaselineOffsetAttributeName: @2
       };
     

@@ -16,4 +16,6 @@
 
 -(void)animateTopAndBottomMenuToggle;
 
+-(void)toggleMainMenu;
+
 @end
