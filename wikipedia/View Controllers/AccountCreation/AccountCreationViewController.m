@@ -36,6 +36,11 @@
 
 @implementation AccountCreationViewController
 
+- (BOOL)prefersStatusBarHidden
+{
+    return YES;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
