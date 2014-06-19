@@ -22,7 +22,8 @@
 #import "WikiGlyphLabel.h"
 #import "PaddedLabel.h"
 
-#import "WMF_WikiFont_Chars.h"
+#import "WikiGlyph_Chars.h"
+#import "WikiGlyph_Chars_iOS.h"
 
 #import "CenterNavController.h"
 
@@ -244,15 +245,15 @@
         return button;
     };
 
-    self.buttonPencil =     getWikiGlyphButton(WIKIFONT_CHAR_PENCIL,             NAVBAR_BUTTON_PENCIL);
-    self.buttonCheck =      getWikiGlyphButton(WIKIFONT_CHAR_TICK,               NAVBAR_BUTTON_CHECK);
-    self.buttonX =          getWikiGlyphButton(WIKIFONT_CHAR_X,                  NAVBAR_BUTTON_X);
-    self.buttonEye =        getWikiGlyphButton(WIKIFONT_CHAR_EYE,                NAVBAR_BUTTON_EYE);
-    self.buttonArrowLeft =  getWikiGlyphButton(WIKIFONT_CHAR_ARROW_LEFT,         NAVBAR_BUTTON_ARROW_LEFT);
-    self.buttonArrowRight = getWikiGlyphButton(WIKIFONT_CHAR_ARROW_LEFT,         NAVBAR_BUTTON_ARROW_RIGHT);
-    self.buttonW =          getWikiGlyphButton(WIKIFONT_CHAR_IOS_W,              NAVBAR_BUTTON_LOGO_W);
-    self.buttonTOC =        getWikiGlyphButton(WIKIFONT_CHAR_IOS_TOC,            NAVBAR_BUTTON_TOC);
-    self.buttonMagnify =    getWikiGlyphButton(WIKIFONT_CHAR_IOS_MAGNIFY,        NAVBAR_BUTTON_MAGNIFY);
+    self.buttonPencil =     getWikiGlyphButton(WIKIGLYPH_PENCIL,             NAVBAR_BUTTON_PENCIL);
+    self.buttonCheck =      getWikiGlyphButton(WIKIGLYPH_TICK,               NAVBAR_BUTTON_CHECK);
+    self.buttonX =          getWikiGlyphButton(WIKIGLYPH_X,                  NAVBAR_BUTTON_X);
+    self.buttonEye =        getWikiGlyphButton(WIKIGLYPH_EYE,                NAVBAR_BUTTON_EYE);
+    self.buttonArrowLeft =  getWikiGlyphButton(WIKIGLYPH_ARROW_LEFT,         NAVBAR_BUTTON_ARROW_LEFT);
+    self.buttonArrowRight = getWikiGlyphButton(WIKIGLYPH_ARROW_LEFT,         NAVBAR_BUTTON_ARROW_RIGHT);
+    self.buttonW =          getWikiGlyphButton(IOS_WIKIGLYPH_W,              NAVBAR_BUTTON_LOGO_W);
+    self.buttonTOC =        getWikiGlyphButton(IOS_WIKIGLYPH_TOC,            NAVBAR_BUTTON_TOC);
+    self.buttonMagnify =    getWikiGlyphButton(IOS_WIKIGLYPH_MAGNIFY,        NAVBAR_BUTTON_MAGNIFY);
     self.buttonBlank =      getWikiGlyphButton(@"",                              NAVBAR_BUTTON_BLANK);
     self.buttonCancel =     getWikiGlyphButton(@"",                              NAVBAR_BUTTON_CANCEL);
 
