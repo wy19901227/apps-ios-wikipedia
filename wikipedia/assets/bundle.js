@@ -24,7 +24,7 @@ Bridge.prototype.registerListener = function( messageType, callback ) {
 
 Bridge.prototype.sendMessage = function( messageType, payload ) {
     var messagePack = { type: messageType, payload: payload };
-    var url = "x-wikipedia-bridge:" + JSON.stringify( messagePack );
+    var url = "x-wikipedia-bridge:" + encodeURIComponent( JSON.stringify( messagePack ) );
     
     // quick iframe version based on http://stackoverflow.com/a/6508343/82439
     // fixme can this be an XHR instead? check Cordova current state
@@ -96,6 +96,7 @@ exports.getIndexOfFirstOnScreenElementWithTopGreaterThanY = function(elementPref
 },{}],3:[function(require,module,exports){
 var bridge = require("./bridge");
 var wikihacks = require("./wikihacks");
+var refs = require("./refs");
 
 //TODO: move makeTablesNotBlockIfSafeToDoSo, hideAudioTags and reduceWeirdWebkitMargin out into own js object.
 
@@ -230,7 +231,10 @@ document.onclick = function() {
 
     if ( anchorTarget && (anchorTarget.tagName === "A") ) {
         var href = anchorTarget.getAttribute( "href" );
-        if ( href[0] === "#" ) {
+        if ( refs.isReference( href ) ) {
+            // Handle reference links with a popup view instead of scrolling about!
+            refs.sendNearbyReferences( anchorTarget );
+        } else if ( href[0] === "#" ) {
             // If it is a link to an anchor in the current page, just scroll to it
             document.getElementById( href.substring( 1 ) ).scrollIntoView();
         } else {
@@ -270,7 +274,7 @@ function touchEnd(event){
 
 document.addEventListener("touchend", touchEnd, "false");
 
-},{"./bridge":1,"./wikihacks":5}],4:[function(require,module,exports){
+},{"./bridge":1,"./refs":5,"./wikihacks":6}],4:[function(require,module,exports){
 
 var bridge = require("./bridge");
 var elementLocation = require("./elementLocation");
@@ -279,6 +283,73 @@ window.bridge = bridge;
 window.elementLocation = elementLocation;
 
 },{"./bridge":1,"./elementLocation":2}],5:[function(require,module,exports){
+var bridge = require("./bridge");
+
+function isReference( href ) {
+    return ( href.slice( 0, 10 ) === "#cite_note" );
+}
+
+function goDown( element ) {
+    return element.getElementsByTagName( "A" )[0];
+}
+
+function hasReferenceLink( element ) {
+    try {
+        return isReference( goDown( element ).getAttribute( "href" ) );
+    } catch (e) {
+        return false;
+    }
+}
+
+function collectRefText( sourceNode ) {
+    var href = sourceNode.getAttribute( "href" );
+    var targetId = href.slice(1);
+    var targetNode = document.getElementById( targetId );
+    if ( targetNode === null ) {
+        console.log("reference target not found: " + targetId);
+        return "";
+    }
+
+    // preferably without the back link
+    var refTexts = targetNode.getElementsByClassName( "reference-text" );
+    if ( refTexts.length > 0 ) {
+        targetNode = refTexts[0];
+    }
+
+    return targetNode.innerHTML;
+}
+
+function sendNearbyReferences( sourceNode ) {
+    var refsIndex = 0;
+    var refs = [];
+    var curNode = sourceNode;
+
+    // handle clicked ref:
+    refs.push( collectRefText( curNode ) );
+
+    // go left:
+    curNode = sourceNode.parentElement;
+    while ( hasReferenceLink( curNode.previousSibling ) ) {
+        refsIndex += 1;
+        curNode = curNode.previousSibling;
+        refs.unshift( collectRefText( goDown ( curNode ) ) );
+    }
+
+    // go right:
+    curNode = sourceNode.parentElement;
+    while ( hasReferenceLink( curNode.nextSibling ) ) {
+        curNode = curNode.nextSibling;
+        refs.push( collectRefText( goDown ( curNode ) ) );
+    }
+
+    // Special handling for references
+    bridge.sendMessage( 'referenceClicked', { "refs": refs, "refsIndex": refsIndex } );
+}
+
+exports.isReference = isReference;
+exports.sendNearbyReferences = sendNearbyReferences;
+
+},{"./bridge":1}],6:[function(require,module,exports){
 
 // this doesn't seem to work on iOS?
 exports.makeTablesNotBlockIfSafeToDoSo = function() {
@@ -388,4 +459,4 @@ exports.tweakFilePage = function() {
     }
 }
 
-},{}]},{},[1,2,3,4,5])
+},{}]},{},[1,2,3,4,5,6])

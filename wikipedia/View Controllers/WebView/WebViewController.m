@@ -892,6 +892,10 @@ typedef enum {
         // Used because UIWebView is difficult to attach one-finger touch events to.
         [weakSelf tocHide];
     }];
+    
+    [self.bridge addListener:@"referenceClicked" withBlock:^(NSString *messageType, NSDictionary *payload) {
+        NSLog(@"referenceClicked: %@", payload);
+    }];
 
     self.unsafeToScroll = NO;
     self.scrollOffset = CGPointZero;
