@@ -44,7 +44,7 @@
     //NSLog(@"NETWORK OP INIT'ED: TAG = %d, POINTER = %p", self.tag, self);
 
     if (self) {
-        self.cancelDependentOpsIfThisOpFails = YES;
+        self.cancelIfAnyDependentOpCancelled = YES;
         self.error = nil;
         self.connection = nil;
         self.response = nil;
@@ -86,16 +86,13 @@
 
 -(void)start
 {
-
-    if (self.cancelDependentOpsIfThisOpFails) {
-        // Don't start if *any* parent op failed or had an error.
-        // "Dependent" for MWNetworkOp means dependent on its success!
-        // This is so failures cascade automatically.
+    if (self.cancelIfAnyDependentOpCancelled) {
+        // Don't start if *any* parent op was cancelled.
         for (id obj in self.dependencies) {
-            if ([obj isKindOfClass:[MWNetworkOp class]]){
-                MWNetworkOp *op = (MWNetworkOp *)obj;
-                if (op.error || [op isCancelled]) {
-                    [self finishWithError:@"Start method aborted early because parent MWNetworkOp had been cancelled or had an error."];
+            if ([obj isKindOfClass:[NSOperation class]]){
+                NSOperation *op = (NSOperation *)obj;
+                if ([op isCancelled]) {
+                    [self finishWithError:@"Start method aborted because parent NSOperation had been cancelled."];
                     return;
                 }
             }
@@ -172,7 +169,12 @@
     // call cancel - the isCancelled check above would then prevent recursion)
     [super cancel];
     
+// Cancel is called when self.error is set. This is so ops can see if any of the ops on which
+// they depend have been cancelled.
+if (!self.error) {
     [self finishWithError:@"Cancel method was called."];
+}
+
 }
 
 #pragma mark - NSURLConnectionDataDelegate methods
@@ -233,11 +235,6 @@
 
 -(void)finish
 {
-    // This needs to happen whether the operation started or not. Any dependencies retained
-    // by this op can prevent this op from being dealloc'ed!
-    for (id op in [self.dependencies copy]) {
-        [self removeDependency:op];
-    }
     self.request = nil;
     self.aboutToStart = nil;
     self.response = nil;
@@ -298,6 +295,15 @@
                                                    NSLocalizedDescriptionKey: MWLocalizedString([@"MWNetworkOp Error: " stringByAppendingString:description], nil)
                                                    }];
 	[self finish];
+}
+
+-(void)setError:(NSError *)error
+{
+    _error = error;
+
+    if (error) {
+        [self cancel];  // Cancel any time error is set so cancelIfAnyDependentOpCancelled trips when errors happen too.
+    }
 }
 
 @end

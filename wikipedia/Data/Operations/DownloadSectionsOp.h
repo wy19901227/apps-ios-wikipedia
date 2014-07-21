@@ -5,6 +5,8 @@
 
 @interface DownloadSectionsOp : MWNetworkOp
 
+@property (nonatomic, retain) NSMutableDictionary *result;
+
 - (id)initForPageTitle: (NSString *)title
                 domain: (NSString *)domain
        leadSectionOnly: (BOOL)leadSectionOnly

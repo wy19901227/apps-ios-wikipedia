@@ -51,6 +51,7 @@
 #import "TopMenuContainerView.h"
 #import "WikiGlyph_Chars.h"
 #import "UINavigationController+TopActionSheet.h"
+#import "MWBlockOperation.h"
 
 //#import "UIView+Debugging.h"
 
@@ -1127,6 +1128,86 @@ typedef enum {
     //[[SessionSingleton sharedInstance].zeroConfigState toggleFakeZeroOn];
 
     //[self toggleImageSheet];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+// if mwnetwork op is made to set isCancelled to YES when it has an error, then the NSBlockOperation
+// scheme below can be used (it checks if any dependencies were cancelled before doing any work)
+// Could i create MWBlockOp which would override "addExecutionBlock" to (before calling super) add
+// an execution block which checks dependencies and if any cancelled calls cancel on self before
+// calling super? that way any MWBlockOp execution block can just check a weak reference to see if
+// it's been cancelled before proceeding?
+
+
+if (!self.testQ) {
+    self.testQ = [[NSOperationQueue alloc] init];
+}
+
+
+MWBlockOperation *opA = [[MWBlockOperation alloc] init];
+__weak MWBlockOperation *weakOpA = opA;
+[opA addExecutionBlock:^{
+    if (weakOpA.isCancelled)return;
+
+    NSLog(@"op a (cancelled because dependent op cancelled = %d)", weakOpA.isCancelled);
+    [weakOpA cancel];
+
+}];
+
+
+MWBlockOperation *opB = [[MWBlockOperation alloc] init];
+__weak MWBlockOperation *weakOpB = opB;
+[opB addExecutionBlock:^{
+    if (weakOpB.isCancelled)return;
+
+    NSLog(@"op b (cancelled because dependent op cancelled = %d)", weakOpB.isCancelled);
+    //[weakOpB cancel];
+}];
+
+
+[opB addDependency:opA];
+
+
+[self.testQ addOperation:opB];
+[self.testQ addOperation:opA];
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 -(void)toggleImageSheet
@@ -1255,6 +1336,18 @@ typedef enum {
     __block NSManagedObjectID *articleID =
     [articleDataContext_.mainContext getArticleIDForTitle: pageTitle.prefixedText
                                                    domain: domain];
+
+
+
+
+
+
+
+
+
+
+
+
     BOOL needsRefresh = NO;
 
     if (articleID) {
@@ -1269,6 +1362,16 @@ typedef enum {
         }
         needsRefresh = article.needsRefresh.boolValue;
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     // Retrieve remaining sections op (dependent on first section op)
     DownloadSectionsOp *remainingSectionsOp =
@@ -1334,9 +1437,9 @@ typedef enum {
             [articleDataContext_.workerContext save:&error];
         }];
         
-        [self displayArticle:articleID mode:DISPLAY_APPEND_NON_LEAD_SECTIONS];
-        [self showAlert:MWLocalizedString(@"search-loading-article-loaded", nil)];
-        [self fadeAlert];
+//        [self displayArticle:articleID mode:DISPLAY_APPEND_NON_LEAD_SECTIONS];
+//        [self showAlert:MWLocalizedString(@"search-loading-article-loaded", nil)];
+//        [self fadeAlert];
 
     } cancelledBlock:^(NSError *error){
         [self fadeAlert];
@@ -1348,12 +1451,46 @@ typedef enum {
     remainingSectionsOp.delegate = self;
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+Notes:
+
+would need to make the redirect, article record creation, refresh and core data update chunks
+below use dependent block ops with proper dependencies. i added a "result" property to
+DownloadSectionsOp to make this easier to do.
+
+maybe move at least the core data update chunk to a custom MWBlockOperation?
+
+*/
+
+
+
+
     // Retrieve first section op
     DownloadSectionsOp *firstSectionOp =
     [[DownloadSectionsOp alloc] initForPageTitle: pageTitle.prefixedText
                                           domain: [SessionSingleton sharedInstance].currentArticleDomain
                                  leadSectionOnly: YES
                                  completionBlock: ^(NSDictionary *dataRetrieved){
+
+
+
+
+
 
 
         NSString *redirectedTitle = [dataRetrieved[@"redirected"] copy];
@@ -1367,6 +1504,12 @@ typedef enum {
                               discoveryMethod: discoveryMethod];
             return;
         }
+
+
+
+
+
+
 
         [articleDataContext_.workerContext performBlockAndWait:^(){
             Article *article = nil;
@@ -1386,12 +1529,24 @@ typedef enum {
                 article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
             }
 
+
+
+
+
+
+
             if (needsRefresh) {
                 // If and article needs refreshing remove its sections so they get reloaded too.
                 for (Section *thisSection in [article.section copy]) {
                     [articleDataContext_.workerContext deleteObject:thisSection];
                 }
             }
+
+
+
+
+
+
 
             // If "needsRefresh", an existing article's data is being retrieved again, so these need
             // to be updated whether a new article record is being inserted or not as data may have
@@ -1489,8 +1644,8 @@ typedef enum {
             }
         }];
 
-        [self displayArticle:articleID mode:DISPLAY_LEAD_SECTION];
-        [self showAlert:MWLocalizedString(@"search-loading-section-remaining", nil)];
+//        [self displayArticle:articleID mode:DISPLAY_LEAD_SECTION];
+//        [self showAlert:MWLocalizedString(@"search-loading-section-remaining", nil)];
 
     } cancelledBlock:^(NSError *error){
 
@@ -1526,12 +1681,89 @@ typedef enum {
 
     firstSectionOp.delegate = self;
     
-    
-    // Retrieval of remaining sections depends on retrieving first section
-    [remainingSectionsOp addDependency:firstSectionOp];
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Whoa. dependencies property of NSOperation keeps it's array pointers even if
+// the ops in the array have finished - this means data can be relayed by looking
+// at properties on the pointers in this array. also means a lot of the custom
+// MWNetworkOp callback stuff isn't really necessary. this includes the success
+// and failure blocks we pass the init, propbably other props too.
+//BUT MWNetworkOp fucks this up! it removes dependencies in -(void)finish method!
+
+
+
+
+
+
+
+
+MWBlockOperation *displayLeadSection = [[MWBlockOperation alloc] init];
+__weak MWBlockOperation *weakDisplayLeadSection = displayLeadSection;
+[displayLeadSection addExecutionBlock:^{
+    if (weakDisplayLeadSection.isCancelled)return;
+    //[weakDisplayLeadSection cancel];
+    [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+        [self displayArticle:articleID mode:DISPLAY_LEAD_SECTION];
+        [self showAlert:MWLocalizedString(@"search-loading-section-remaining", nil)];
+    }];
+}];
+
+MWBlockOperation *displayRemainingSections = [[MWBlockOperation alloc] init];
+__weak MWBlockOperation *weakDisplayRemainingSections = displayRemainingSections;
+[displayRemainingSections addExecutionBlock:^{
+    if (weakDisplayRemainingSections.isCancelled)return;
+    [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
+        [self displayArticle:articleID mode:DISPLAY_APPEND_NON_LEAD_SECTIONS];
+        [self showAlert:MWLocalizedString(@"search-loading-article-loaded", nil)];
+        [self fadeAlert];
+    }];
+}];
+
+
+
+
+    [displayLeadSection addDependency:firstSectionOp];
+
+    [remainingSectionsOp addDependency:displayLeadSection];
+
+    [displayRemainingSections addDependency:remainingSectionsOp];
+
+
+
+
+
+
+
+
+    [[QueuesSingleton sharedInstance].articleRetrievalQ addOperation:displayRemainingSections];
     [[QueuesSingleton sharedInstance].articleRetrievalQ addOperation:remainingSectionsOp];
+    [[QueuesSingleton sharedInstance].articleRetrievalQ addOperation:displayLeadSection];
     [[QueuesSingleton sharedInstance].articleRetrievalQ addOperation:firstSectionOp];
+
+
+
+
+
+
+
+
 }
 
 #pragma mark Progress report

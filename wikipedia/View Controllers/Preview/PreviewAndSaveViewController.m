@@ -687,16 +687,16 @@ typedef enum {
 // an anonymous token (i think this happens if you try to get an edit token
 // and your login session has expired), need to pop up alert asking user if they
 // want to log in before continuing with their edit. In this scenario would
-// probably need cancelDependentOpsIfThisOpFails set to YES, then if the user
+// probably need cancelIfAnyDependentOpCancelled set to YES, then if the user
 // says they don't want to login in (ie continue anon editing) then we would
-// want cancelDependentOpsIfThisOpFails set to NO.
+// want cancelIfAnyDependentOpCancelled set to NO.
 
     editTokenOp.delegate = self;
     uploadWikiTextOp.delegate = self;
     
     // Still try the uploadWikiTextOp even if editTokenOp fails to get a token. uploadWikiTextOp
     // will use an anonymous "+\" edit token if it doesn't find an edit token.
-    editTokenOp.cancelDependentOpsIfThisOpFails = NO;
+    editTokenOp.cancelIfAnyDependentOpCancelled = NO;
     
     // Try to get an edit token for the page's domain before trying to upload the changes.
     [uploadWikiTextOp addDependency:editTokenOp];

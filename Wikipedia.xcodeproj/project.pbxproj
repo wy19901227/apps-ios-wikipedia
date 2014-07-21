@@ -141,6 +141,7 @@
 		04D34DC91863F6CC00610A87 /* Saved.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D34DC81863F6CC00610A87 /* Saved.m */; };
 		04D34DD11863F6E600610A87 /* SectionImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D34DD01863F6E600610A87 /* SectionImage.m */; };
 		04D34DE11868E21F00610A87 /* Article+Convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D34DE01868E21F00610A87 /* Article+Convenience.m */; };
+		04D73A54197CE4CF005303D9 /* MWBlockOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D73A53197CE4CF005303D9 /* MWBlockOperation.m */; };
 		04D75824189248E900CE2040 /* DownloadLangLinksOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D75823189248E900CE2040 /* DownloadLangLinksOp.m */; };
 		04DB0BE618BC2E1E00B4BCF3 /* CaptchaResetOp.m in Sources */ = {isa = PBXBuildFile; fileRef = 04DB0BE518BC2E1E00B4BCF3 /* CaptchaResetOp.m */; };
 		04DB0BEA18BD37F900B4BCF3 /* UIScrollView+ScrollSubviewToLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 04DB0BE918BD37F900B4BCF3 /* UIScrollView+ScrollSubviewToLocation.m */; };
@@ -440,6 +441,8 @@
 		04D34DD01863F6E600610A87 /* SectionImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SectionImage.m; sourceTree = "<group>"; };
 		04D34DDF1868E21F00610A87 /* Article+Convenience.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Article+Convenience.h"; sourceTree = "<group>"; };
 		04D34DE01868E21F00610A87 /* Article+Convenience.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Article+Convenience.m"; sourceTree = "<group>"; };
+		04D73A52197CE4CF005303D9 /* MWBlockOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWBlockOperation.h; sourceTree = "<group>"; };
+		04D73A53197CE4CF005303D9 /* MWBlockOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MWBlockOperation.m; sourceTree = "<group>"; };
 		04D75822189248E900CE2040 /* DownloadLangLinksOp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloadLangLinksOp.h; sourceTree = "<group>"; };
 		04D75823189248E900CE2040 /* DownloadLangLinksOp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DownloadLangLinksOp.m; sourceTree = "<group>"; };
 		04DB0BE418BC2E1E00B4BCF3 /* CaptchaResetOp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CaptchaResetOp.h; sourceTree = "<group>"; };
@@ -1085,6 +1088,8 @@
 				04C43AA1183440C1006C643B /* MWNetworkActivityIndicatorManager.m */,
 				04C43AA2183440C1006C643B /* MWNetworkOp.h */,
 				04C43AA3183440C1006C643B /* MWNetworkOp.m */,
+				04D73A52197CE4CF005303D9 /* MWBlockOperation.h */,
+				04D73A53197CE4CF005303D9 /* MWBlockOperation.m */,
 			);
 			path = "mw-network";
 			sourceTree = "<group>";
@@ -1928,6 +1933,7 @@
 				042A5B2919253E570095E172 /* TopMenuViewController.m in Sources */,
 				04C43A9D183440B0006C643B /* MWCrumbyTest.m in Sources */,
 				D4991445181D51DE00E6073C /* main.m in Sources */,
+				04D73A54197CE4CF005303D9 /* MWBlockOperation.m in Sources */,
 				04CFA123194B94980088269A /* MenuButton.m in Sources */,
 				04C43AC0183442FC006C643B /* NSString+Extras.m in Sources */,
 				04CCCFEE1935093A00E3F60C /* SecondaryMenuRowView.m in Sources */,

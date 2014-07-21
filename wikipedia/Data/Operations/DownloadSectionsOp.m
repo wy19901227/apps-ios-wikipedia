@@ -156,6 +156,7 @@
                                             }.mutableCopy;
 
 
+weakSelf.result = output;
 
             completionBlock(output);
         };
