@@ -35,20 +35,11 @@
         self.mainContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
         self.mainContext.parentContext = self.masterContext;
         
-        self.workerContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-        self.workerContext.parentContext = self.mainContext;
-        
         // Ensure object changes saved to mainContext bubble up to masterContext.
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(propagateMainSavesToMaster)
                                                      name:NSManagedObjectContextDidSaveNotification
                                                    object:self.mainContext];
-        
-        // Ensure object changes saved to workerContext bubble up to mainContext.
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(propagateWorkerSavesToMain)
-                                                     name:NSManagedObjectContextDidSaveNotification
-                                                   object:self.workerContext];
     }
     return self;
 }

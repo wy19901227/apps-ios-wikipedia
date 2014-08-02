@@ -1304,12 +1304,12 @@ typedef enum {
     [articleDataContext_.mainContext getArticleIDForTitle: pageTitle.prefixedText
                                                    domain: domain];
     if (articleID) {
-        [articleDataContext_.workerContext performBlockAndWait:^(){
-            Article *article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
+        [articleDataContext_.mainContext performBlockAndWait:^(){
+            Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
             if (article) {
                 article.needsRefresh = @YES;
                 NSError *error = nil;
-                [articleDataContext_.workerContext save:&error];
+                [articleDataContext_.mainContext save:&error];
                 NSLog(@"error = %@", error);
             }
         }];
@@ -1371,11 +1371,10 @@ typedef enum {
         // Just in case the article wasn't created during the "parent" operation.
         if (!articleID) return;
 
-        [articleDataContext_.workerContext performBlockAndWait:^(){
+        [articleDataContext_.mainContext performBlockAndWait:^(){
             // The completion block happens on non-main thread, so must get article from articleID again.
             // Because "you can only use a context on a thread when the context was created on that thread"
-            // this must happen on workerContext as well (see: http://stackoverflow.com/a/6356201/135557)
-            Article *article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
+            Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
 
             //Non-lead sections have been retreived so set needsRefresh to NO.
             article.needsRefresh = @NO;
@@ -1386,7 +1385,7 @@ typedef enum {
                 if (![section[@"id"] isEqual: @0]) {
                                     
                     // Add sections for article
-                    Section *thisSection = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_.workerContext];
+                    Section *thisSection = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_.mainContext];
 
                     // Section index is a string because transclusion sections indexes will start with "T-".
                     if ([section[@"index"] isKindOfClass:[NSString class]]) {
@@ -1417,12 +1416,12 @@ typedef enum {
 
                     [article addSectionObject:thisSection];
 
-                    [thisSection createImageRecordsForHtmlOnContext:articleDataContext_.workerContext];
+                    [thisSection createImageRecordsForHtmlOnContext:articleDataContext_.mainContext];
                 }
             }
 
             NSError *error = nil;
-            [articleDataContext_.workerContext save:&error];
+            [articleDataContext_.mainContext save:&error];
         }];
         
         [self displayArticle:articleID mode:DISPLAY_APPEND_NON_LEAD_SECTIONS];
@@ -1459,13 +1458,13 @@ typedef enum {
             return;
         }
 
-        [articleDataContext_.workerContext performBlockAndWait:^(){
+        [articleDataContext_.mainContext performBlockAndWait:^(){
             Article *article = nil;
 
             if (!articleID) {
                 article = [NSEntityDescription
                     insertNewObjectForEntityForName:@"Article"
-                    inManagedObjectContext:articleDataContext_.workerContext
+                    inManagedObjectContext:articleDataContext_.mainContext
                 ];
                 article.title = pageTitle.prefixedText;
                 article.dateCreated = [NSDate date];
@@ -1474,13 +1473,13 @@ typedef enum {
                 article.domainName = [SessionSingleton sharedInstance].currentArticleDomainName;
                 articleID = article.objectID;
             }else{
-                article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
+                article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
             }
 
             if (needsRefresh) {
                 // If and article needs refreshing remove its sections so they get reloaded too.
                 for (Section *thisSection in [article.section copy]) {
-                    [articleDataContext_.workerContext deleteObject:thisSection];
+                    [articleDataContext_.mainContext deleteObject:thisSection];
                 }
             }
 
@@ -1517,7 +1516,7 @@ typedef enum {
             if (result.count == 1) {
                 NSString *thumbURL = result[0][@"thumbnail"][@"source"];
                 thumbURL = [thumbURL getUrlWithoutScheme];
-                Image *thumb = (Image *)[articleDataContext_.workerContext getEntityForName: @"Image" withPredicateFormat:@"sourceUrl == %@", thumbURL];
+                Image *thumb = (Image *)[articleDataContext_.mainContext getEntityForName: @"Image" withPredicateFormat:@"sourceUrl == %@", thumbURL];
                 if (thumb) article.thumbnailImage = thumb;
             }
 
@@ -1544,7 +1543,7 @@ typedef enum {
             }
 
             // Add sections for article
-            Section *section0 = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_.workerContext];
+            Section *section0 = [NSEntityDescription insertNewObjectForEntityForName:@"Section" inManagedObjectContext:articleDataContext_.mainContext];
             // Section index is a string because transclusion sections indexes will start with "T-"
             section0.index = @"0";
             section0.level = @"0";
@@ -1557,13 +1556,13 @@ typedef enum {
             
             [article addSectionObject:section0];
 
-            [section0 createImageRecordsForHtmlOnContext:articleDataContext_.workerContext];
+            [section0 createImageRecordsForHtmlOnContext:articleDataContext_.mainContext];
 
             // Don't add multiple history items for the same article or back-forward button
             // behavior becomes a confusing mess.
             if(article.history.count == 0){
                 // Add history for article
-                History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:articleDataContext_.workerContext];
+                History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:articleDataContext_.mainContext];
                 history0.dateVisited = [NSDate date];
                 //history0.dateVisited = [NSDate dateWithDaysBeforeNow:31];
                 history0.discoveryMethod = discoveryMethod;
@@ -1572,7 +1571,7 @@ typedef enum {
 
             // Save the article!
             NSError *error = nil;
-            [articleDataContext_.workerContext save:&error];
+            [articleDataContext_.mainContext save:&error];
 
             if (error) {
                 NSLog(@"error = %@", error);
@@ -1587,8 +1586,8 @@ typedef enum {
 
         // Remove the article so it doesn't get saved.
         if (articleID) {
-            Article *article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
-            [articleDataContext_.workerContext deleteObject:article];
+            Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
+            [articleDataContext_.mainContext deleteObject:article];
         }
 
     } errorBlock:^(NSError *error){
@@ -1596,8 +1595,8 @@ typedef enum {
         [self showAlert:errorMsg];
         if (articleID) {
             // Remove the article so it doesn't get saved.
-            Article *article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
-            [articleDataContext_.workerContext deleteObject:article];
+            Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
+            [articleDataContext_.mainContext deleteObject:article];
         }
         
         // @TODO potentially do this in the difFailWithError in MWNetworkOp

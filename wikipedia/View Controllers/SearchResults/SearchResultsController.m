@@ -127,7 +127,7 @@
     // Titles thumbnail urls retrieval op (dependent on search op)
     SearchThumbUrlsOp *searchThumbURLsOp = [[SearchThumbUrlsOp alloc] initWithCompletionBlock: ^(NSDictionary *searchThumbUrlsResults){
         
-        [articleDataContext_.workerContext performBlockAndWait:^(){
+        [articleDataContext_.mainContext performBlockAndWait:^(){
             
             for (NSMutableDictionary *searchOpResult in [self.searchResultsOrdered copy]) {
                 
@@ -145,7 +145,7 @@
                     NSNumber *height = searchOpResult[@"thumbnail"][@"height"];
                     NSNumber *width = searchOpResult[@"thumbnail"][@"width"];
                     if (src && height && width) {
-                        [self insertPlaceHolderImageEntityIntoContext: articleDataContext_.workerContext
+                        [self insertPlaceHolderImageEntityIntoContext: articleDataContext_.mainContext
                                                       forImageWithUrl: src
                                                                 width: width
                                                                height: height
@@ -155,7 +155,7 @@
             }
             
             NSError *error = nil;
-            [articleDataContext_.workerContext save:&error];
+            [articleDataContext_.mainContext save:&error];
             
         }];
         
