@@ -466,6 +466,9 @@ transformer.register( "section", function( content ) {
 } );
 
 transformer.register( "section", function( content ) {
+
+return content;
+
 	var redLinks = content.querySelectorAll( 'a.new' );
 	for ( var i = 0; i < redLinks.length; i++ ) {
 		var redLink = redLinks[i];

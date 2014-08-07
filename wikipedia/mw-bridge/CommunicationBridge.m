@@ -2,6 +2,7 @@
 //  Copyright (c) 2013 Wikimedia Foundation. Provided under MIT-style license; please copy and modify!
 
 #import "CommunicationBridge.h"
+#import "TFHpple.h"
 
 @interface CommunicationBridge (){
 
@@ -50,6 +51,46 @@
 - (void)sendMessage: (NSString *)messageType
         withPayload: (NSDictionary *)payload
 {
+
+
+
+
+
+
+
+
+CFTimeInterval startTime = CACurrentMediaTime();
+
+// Native redlinks tranform (w/o javascript!)
+if ([messageType isEqualToString:@"append"]) {
+    NSString *html = payload[@"html"];
+    NSData *htmlData = [html dataUsingEncoding:NSUTF8StringEncoding];
+    TFHpple *htmlParser = [TFHpple hppleWithHTMLData:htmlData];
+    NSString *redLinkXpathQuery = @"//a[@class='new']";
+    NSArray *redLinkNodes = [htmlParser searchWithXPathQuery:redLinkXpathQuery];
+    for (TFHppleElement *redLinkNode in redLinkNodes) {
+        if (redLinkNode.raw && (redLinkNode.raw.length > 0)) {
+        // This replace is sloooow. If we knew the range of the link text we could reconstruct
+        // the string faster...
+            html = [html stringByReplacingOccurrencesOfString:redLinkNode.raw withString:[redLinkNode text]];
+        }
+    }
+    NSMutableDictionary *d = payload.mutableCopy;
+    d[@"html"] = html;
+    payload = d;
+}
+
+CFTimeInterval elapsedTime = CACurrentMediaTime() - startTime;
+NSLog(@"elapsedTime = %f", elapsedTime);
+
+
+
+
+
+
+
+
+
     NSString *js = [NSString stringWithFormat:@"bridge.handleMessage(%@,%@)",
                     [self stringify:messageType],
                     [self stringify:payload]];
