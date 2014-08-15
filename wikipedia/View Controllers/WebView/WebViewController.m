@@ -499,8 +499,6 @@ typedef enum {
     
     [self tocViewControllerAdd];
     
-    [self.tocVC centerCellForWebViewTopMostSectionAnimated:NO];
-
     CGFloat webViewScale = [self tocGetWebViewScaleWhenTOCVisible];
     CGAffineTransform xf = CGAffineTransformMakeScale(webViewScale, webViewScale);
 

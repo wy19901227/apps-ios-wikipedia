@@ -109,88 +109,107 @@
 
     [self.sectionCells removeAllObjects];
 
-    [self setupSectionCells];
+    //CFTimeInterval begin = CACurrentMediaTime();
 
-    for (TOCSectionCellView *cell in self.sectionCells) {
-        [self.scrollContainer addSubview:cell];
-    }
+    [[ArticleDataContextSingleton sharedInstance].workerContext performBlock:^{
+        [self setupSectionCellsThen:^(){
+        
+            //NSLog(@"%f", CACurrentMediaTime() - begin);
 
-    if (self.sectionCells.count == 0) return;
-    
-    // Don't start monitoring scrollView scrolling until view has appeared.
-    self.scrollView.delegate = self;
+            for (TOCSectionCellView *cell in self.sectionCells) {
+                [self.scrollContainer addSubview:cell];
+            }
+            
+            if (self.sectionCells.count == 0) return;
+            
+            // Don't start monitoring scrollView scrolling until view has appeared.
+            self.scrollView.delegate = self;
+        
+            [self.view setNeedsUpdateConstraints];
+            [self.scrollContainer layoutIfNeeded];
+            [self.view layoutIfNeeded];
+            [self centerCellForWebViewTopMostSectionAnimated:NO];
+        }];
+    }];
 }
 
--(void)setupSectionCells
+-(void)setupSectionCellsThen:(void (^)())block
 {
     NSString *currentArticleTitle = [SessionSingleton sharedInstance].currentArticleTitle;
     NSString *currentArticleDomain = [SessionSingleton sharedInstance].currentArticleDomain;
     if(currentArticleTitle && currentArticleDomain) {
         ArticleDataContextSingleton *articleDataContext_ = [ArticleDataContextSingleton sharedInstance];
-        [articleDataContext_.mainContext performBlockAndWait:^{
-            NSManagedObjectID *articleID = [articleDataContext_.mainContext getArticleIDForTitle: currentArticleTitle
-                                                                                          domain: currentArticleDomain];
-
-            BOOL isRTL = [WikipediaAppUtils isDeviceLanguageRTL];
-
-            if (articleID) {
-                Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
-                if (article) {
-                    // Get section ids.
-                    NSArray *sections = [article getSectionsUsingContext:articleDataContext_.mainContext];
-                    for (Section *section in sections) {
+        NSManagedObjectID *articleID = [articleDataContext_.workerContext getArticleIDForTitle: currentArticleTitle
+                                                                                        domain: currentArticleDomain];
+        
+        BOOL isRTL = [WikipediaAppUtils isDeviceLanguageRTL];
+        
+        if (articleID) {
+            Article *article = (Article *)[articleDataContext_.workerContext objectWithID:articleID];
+            if (article) {
+                // Get section ids.
+                NSArray *sections = [article getSectionsUsingContext:articleDataContext_.workerContext];
+                for (Section *section in sections) {
+                    
+                    NSNumber *tag = section.sectionId;
+                    BOOL isLead = [section isLeadSection];
+                    NSNumber *sectionLevel = section.tocLevel;
+                    
+                    id title = [self getTitleForSection:section isLead:isLead];
+                    UIEdgeInsets padding = UIEdgeInsetsZero;
+                    
+                    TOCSectionCellView *cell = [[TOCSectionCellView alloc] initWithLevel:sectionLevel.integerValue isLead:isLead isRTL:isRTL];
+                    
+                    if (isLead) {
+                        // Use attributed title only for lead section to add "CONTENTS" text above the title.
+                        cell.attributedText = title;
                         
-                        NSNumber *tag = section.sectionId;
-                        NSNumber *isLead = @([section isLeadSection]);
-                        NSNumber *sectionLevel = section.tocLevel;
-                        id title = [self getTitleForSection:section];
-                        UIEdgeInsets padding = UIEdgeInsetsZero;
+                        CGFloat topPadding = 37;
+                        CGFloat leadingPadding = 12;
+                        CGFloat bottomPadding = 14;
+                        CGFloat trailingPadding = 10;
                         
-                        TOCSectionCellView *cell = [[TOCSectionCellView alloc] initWithLevel:sectionLevel.integerValue isLead:isLead.boolValue isRTL:isRTL];
+                        padding = UIEdgeInsetsMake(topPadding, leadingPadding, bottomPadding, trailingPadding);
                         
-                        if (isLead.boolValue) {
-                            // Use attributed title only for lead section to add "CONTENTS" text above the title.
-                            cell.attributedText = title;
-
-                            CGFloat topPadding = 37;
-                            CGFloat leadingPadding = 12;
-                            CGFloat bottomPadding = 14;
-                            CGFloat trailingPadding = 10;
-
-                            padding = UIEdgeInsetsMake(topPadding, leadingPadding, bottomPadding, trailingPadding);
-                            
-                        }else{
-                            // Faster to not use attributed string for non-lead sections.
-                            cell.text = title;
-
-                            // Indent subsections, but only first 3 levels.
-                            NSInteger tocLevelToUse = ((sectionLevel.integerValue - 1) < 0) ? 0 : sectionLevel.integerValue - 1;
-                            tocLevelToUse = MIN(tocLevelToUse, 3);
-                            CGFloat indent = TOC_SUBSECTION_INDENT;
-                            indent = 12 + (tocLevelToUse * indent);
-
-                            CGFloat vPadding = 16;
-                            CGFloat hPadding = 10;
-
-                            padding = UIEdgeInsetsMake(vPadding, indent, vPadding, hPadding);
-
-                        }
-                        cell.padding = padding;
-                        cell.tag = tag.integerValue;
+                    }else{
+                        // Faster to not use attributed string for non-lead sections.
+                        cell.text = title;
                         
-                        [self.sectionCells addObject:cell];
+                        // Indent subsections, but only first 3 levels.
+                        NSInteger tocLevelToUse = ((sectionLevel.integerValue - 1) < 0) ? 0 : sectionLevel.integerValue - 1;
+                        tocLevelToUse = MIN(tocLevelToUse, 3);
+                        CGFloat indent = TOC_SUBSECTION_INDENT;
+                        indent = 12 + (tocLevelToUse * indent);
+                        
+                        CGFloat vPadding = 16;
+                        CGFloat hPadding = 10;
+                        
+                        padding = UIEdgeInsetsMake(vPadding, indent, vPadding, hPadding);
+                        
                     }
+                    cell.padding = padding;
+                    cell.tag = tag.integerValue;
+                    
+                    [self.sectionCells addObject:cell];
                 }
             }
-        }];
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            block();
+        });
+        
     }
 }
 
--(id)getTitleForSection:(Section *)section
+-(id)getTitleForSection:(Section *)section isLead:(BOOL)isLead
 {
-    NSString *title = [section isLeadSection] ? section.article.title : section.title;
+    NSString *title = isLead ? section.article.title : section.title;
+
     NSString *noHtmlTitle = [title getStringWithoutHTML];
-    id titleToUse = [section isLeadSection] ? [self getLeadSectionAttributedTitleForString:noHtmlTitle] : noHtmlTitle;
+
+    id titleToUse = isLead ? [self getLeadSectionAttributedTitleForString:noHtmlTitle] : noHtmlTitle;
+
     return titleToUse;
 }
 
