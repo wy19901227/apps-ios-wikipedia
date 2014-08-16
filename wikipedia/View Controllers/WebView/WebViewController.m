@@ -192,6 +192,8 @@ typedef enum {
 
     [self.webView hideScrollGradient];
 
+    [self tocViewControllerSetup];
+
     [self reloadCurrentArticleInvalidatingCache:NO];
     
     // Restrict the web view from scrolling horizonally.
@@ -205,7 +207,6 @@ typedef enum {
                             options: NSKeyValueObservingOptionNew
                             context: nil];
     
-    [self tocSetupSwipeGestureRecognizers];
     
     // UIWebView has a bug which causes a black bar to appear at
     // bottom of the web view if toc quickly dragged on and offscreen.
@@ -225,23 +226,17 @@ typedef enum {
                                                object: nil];
 
     self.view.backgroundColor = CHROME_COLOR;
-    
 
+    self.webView.scrollView.scrollsToTop = YES;
+    self.tocVC.scrollView.scrollsToTop = NO;
 
+    // Uncomment these lines only if testing onboarding!
+    // These lines allow the onboarding to run on every app cold start.
+    //[[NSUserDefaults standardUserDefaults] setObject:@YES forKey:@"ShowOnboarding"];
+    //[[NSUserDefaults standardUserDefaults] synchronize];
 
-
-
-
-// Uncomment these lines only if testing onboarding!
-// These lines allow the onboarding to run on every app cold start.
-//[[NSUserDefaults standardUserDefaults] setObject:@YES forKey:@"ShowOnboarding"];
-//[[NSUserDefaults standardUserDefaults] synchronize];
-
-
-
-//self.referencesContainerView.layer.borderWidth = 10;
-//self.referencesContainerView.layer.borderColor = [UIColor redColor].CGColor;
-
+    //self.referencesContainerView.layer.borderWidth = 10;
+    //self.referencesContainerView.layer.borderColor = [UIColor redColor].CGColor;
 }
 
 -(void)showAlert:(NSString *)alertText
@@ -393,11 +388,11 @@ typedef enum {
 
 -(void)updateViewConstraints
 {
-    [self tocConstrainView];
-    
+    [super updateViewConstraints];
+
     [self constrainBottomMenu];
     
-    [super updateViewConstraints];
+    [self tocConstrainView];
 }
 
 #pragma mark Angle from velocity vector
@@ -423,7 +418,7 @@ typedef enum {
 
 -(void)tocHideIfSafeToToggleDuringNextRunLoopWithDuration:(NSNumber *)duration
 {
-    if(self.unsafeToToggleTOC || !self.tocVC) return;
+    if(self.unsafeToToggleTOC) return;
 
     // iOS 6 can blank out the web view this isn't scheduled for next run loop.
     [[NSRunLoop currentRunLoop] performSelector: @selector(tocHideWithDuration:)
@@ -435,8 +430,7 @@ typedef enum {
 
 -(void)tocHideWithDuration:(NSNumber *)duration
 {
-    // Ensure one exists to be hidden.
-    if (!self.tocVC) return;
+    if (![self tocDrawerIsOpen]) return;
 
     self.unsafeToToggleTOC = YES;
     
@@ -447,6 +441,7 @@ typedef enum {
     // Clear alerts
     [self fadeAlert];
 
+    [self.view setNeedsUpdateConstraints];
     [UIView animateWithDuration: duration.floatValue
                           delay: 0.0f
                         options: UIViewAnimationOptionBeginFromCurrentState
@@ -454,7 +449,6 @@ typedef enum {
 
                          // If the top menu isn't hidden, reveal the bottom menu.
                          self.bottomMenuHidden = ROOT.topMenuHidden;
-                         [self.view setNeedsUpdateConstraints];
                          
                          self.webView.transform = CGAffineTransformIdentity;
 
@@ -465,7 +459,7 @@ typedef enum {
 
                          [self.view layoutIfNeeded];
                      }completion: ^(BOOL done){
-                         if(self.tocVC) [self tocViewControllerRemove];
+                         [self.tocVC didHide];
                          self.unsafeToToggleTOC = NO;
                          self.webView.scrollView.contentOffset = origScrollPosition;
                      }];
@@ -475,7 +469,7 @@ typedef enum {
 {
     if([[SessionSingleton sharedInstance] isCurrentArticleMain]) return;
 
-    if(self.unsafeToToggleTOC || self.tocVC) return;
+    if(self.unsafeToToggleTOC) return;
 
     // iOS 6 can blank out the web view this isn't scheduled for next run loop.
     [[NSRunLoop currentRunLoop] performSelector: @selector(tocShowWithDuration:)
@@ -487,23 +481,29 @@ typedef enum {
 
 -(void)tocShowWithDuration:(NSNumber *)duration
 {
+    if ([self tocDrawerIsOpen]) return;
+
     self.unsafeToToggleTOC = YES;
 
     // Hide any alerts immediately.
     [self hideAlert];
 
-    // Ensure the toc is rebuilt from scratch! Very weird toc scroll view
-    // resizing issues (can't scroll up to bottom toc entry sometimes, etc)
-    // when choosing different article languages otherwise!
-    if(self.tocVC) [self tocViewControllerRemove];
+    // setNeedsUpdateConstraints causes updateViewConstraints to be called which is needed because
+    // it calls tocConstrainView which sets the width of the toc view. Needed before the animation
+    // block below because the device may have been rotated so the toc view may need new width.
+    // We want this new width set before the animation begins.
+    [self.view setNeedsUpdateConstraints];
+    // Layout to ensure that the width is in place before the toc view starts to animate to being
+    // onscreen.
+    [self.view layoutIfNeeded];
+    // Among other things, the willShow method then makes the toc cells be the correct size for
+    // the current (potentially new) toc view width.
+    [self.tocVC willShow];
     
-    [self tocViewControllerAdd];
-    
-    [self.tocVC centerCellForWebViewTopMostSectionAnimated:NO];
-
     CGFloat webViewScale = [self tocGetWebViewScaleWhenTOCVisible];
     CGAffineTransform xf = CGAffineTransformMakeScale(webViewScale, webViewScale);
 
+    [self.view setNeedsUpdateConstraints];
     [UIView animateWithDuration: duration.floatValue
                           delay: 0.0f
                         options: 0 // UIViewAnimationOptionBeginFromCurrentState <--Don't do this, can cause toc to jump as it appears (if top/bottom menus visibility changes)
@@ -511,50 +511,32 @@ typedef enum {
 
                          self.bottomMenuHidden = YES;
                          self.referencesHidden = YES;
-                         [self.view setNeedsUpdateConstraints];
                          self.webView.transform = xf;
                          self.referencesContainerView.transform = xf;
                          self.bottomBarView.transform = xf;
                          self.webViewRightConstraint.constant = [self tocGetWidthForWebViewScale:webViewScale];
                          [self.view layoutIfNeeded];
                      }completion: ^(BOOL done){
-                         [self.view setNeedsUpdateConstraints];
                          self.unsafeToToggleTOC = NO;
                      }];
 }
 
-- (void)tocViewControllerAdd
+- (void)tocViewControllerSetup
 {
     self.tocVC = [self.navigationController.storyboard instantiateViewControllerWithIdentifier:@"TOCViewController"];
     self.tocVC.view.translatesAutoresizingMaskIntoConstraints = NO;
     self.tocVC.webVC = self;
 
     [self addChildViewController:self.tocVC];
-
-    [self.view setNeedsUpdateConstraints];
-        
     [self.view addSubview:self.tocVC.view];
-
+    [self.view setNeedsUpdateConstraints];
     [self.tocVC didMoveToParentViewController:self];
 
-    // This ensures the toc cells assume the proper height for how many lines of text they're displaying before
-    // toc show animation. Otherwise they grow to their height as part of the show animation.
-    [self.tocVC.view layoutIfNeeded];
-
+    [self tocSetupSwipeGestureRecognizers];
+    
     // Make the toc's scroll view not scroll until the swipe recognizer fails.
     [self.tocVC.scrollView.panGestureRecognizer requireGestureRecognizerToFail:self.tocSwipeLeftRecognizer];
     [self.tocVC.scrollView.panGestureRecognizer requireGestureRecognizerToFail:self.tocSwipeRightRecognizer];
-
-    [self.view.superview layoutIfNeeded];
-}
-
-- (void)tocViewControllerRemove
-{
-    [self.tocVC willMoveToParentViewController:nil];
-    [self.tocVC.view removeFromSuperview];
-    [self.tocVC removeFromParentViewController];
-    
-    self.tocVC = nil;
 }
 
 -(void)tocHide
@@ -656,10 +638,6 @@ typedef enum {
 
 -(void)tocConstrainView
 {
-    if (!self.tocVC) return;
-    
-    [self.tocVC.view removeConstraintsOfViewFromView:self.view];
-
     CGFloat webViewScale = [self tocGetWebViewScaleWhenTOCVisible];
     
     NSDictionary *views = @{
@@ -695,6 +673,7 @@ typedef enum {
                                                 views: views]
       ];
     
+    [self.tocVC.view removeConstraintsOfViewFromView:self.view];
     [self.view addConstraints:[constraints valueForKeyPath:@"@unionOfArrays.self"]];
 }
 
@@ -705,12 +684,25 @@ typedef enum {
     return 1.0f - (fabsf(self.tocVC.view.frame.origin.x) / defaultTOCWidth);
 }
 
+-(BOOL)rectIntersectsWebViewTop:(CGRect)rect
+{
+    CGFloat elementScreenYOffset =
+        rect.origin.y - self.webView.scrollView.contentOffset.y + rect.size.height;
+    return (elementScreenYOffset > 0) && (elementScreenYOffset < rect.size.height);
+}
+
 -(void)tocScrollWebViewToSectionWithElementId: (NSString *)elementId
                                      duration: (CGFloat)duration
                                   thenHideTOC: (BOOL)hideTOC
 {
     CGRect r = [self.webView getWebViewRectForHtmlElementWithId:elementId];
     if (CGRectIsNull(r)) return;
+
+    // Determine if the element is already intersecting the top of the screen.
+    // The method below is more efficient than calling
+    // getScreenRectForHtmlElementWithId again (as it was already called by
+    // getWebViewRectForHtmlElementWithId).
+    if ([self rectIntersectsWebViewTop:r]) return;
     
     CGPoint point = r.origin;
 
@@ -991,6 +983,15 @@ typedef enum {
     [self scrollViewScrollingEnded:scrollView];
 }
 
+- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView
+{
+    // If user quickly scrolls web view make toc update when user lifts finger.
+    // (in addition to when scroll ends)
+    if (scrollView == self.webView.scrollView) {
+        [self.tocVC centerCellForWebViewTopMostSectionAnimated:YES];
+    }
+}
+
 -(void)scrollViewScrollingEnded:(UIScrollView *)scrollView
 {
     if (scrollView == self.webView.scrollView) {
@@ -1002,8 +1003,7 @@ typedef enum {
         //NSLog(@"%@", NSStringFromCGPoint(scrollView.contentOffset));
         [self saveWebViewScrollOffset];
         
-        TOCViewController *tocVC = [self searchForChildViewControllerOfClass:[TOCViewController class]];
-        if (tocVC) [tocVC centerCellForWebViewTopMostSectionAnimated:YES];
+        [self.tocVC centerCellForWebViewTopMostSectionAnimated:YES];
 
         self.pullToRefreshView.alpha = 0.0f;
     }
@@ -1131,7 +1131,7 @@ typedef enum {
 -(void)animateTopAndBottomMenuReveal
 {
     // Toggle the menus closed on tap (only if they were showing).
-    if (!self.tocVC) {
+    if (![self tocDrawerIsOpen]) {
         if (ROOT.topMenuViewController.navBarMode != NAVBAR_MODE_SEARCH) {
             if (![self tocDrawerIsOpen]){
                 [ROOT animateTopAndBottomMenuHidden:NO];
@@ -1353,6 +1353,7 @@ typedef enum {
         
         // If article with sections just show them (unless needsRefresh is YES)
         if (article.section.count > 0 && !article.needsRefresh.boolValue) {
+            [self.tocVC setTocSectionDataForSections:article.section];
             [self displayArticle:articleID mode:DISPLAY_ALL_SECTIONS];
             //[self showAlert:MWLocalizedString(@"search-loading-article-loaded", nil)];
             [self fadeAlert];
@@ -1423,6 +1424,9 @@ typedef enum {
 
             NSError *error = nil;
             [articleDataContext_.workerContext save:&error];
+
+            [self.tocVC setTocSectionDataForSections:article.section];
+
         }];
         
         [self displayArticle:articleID mode:DISPLAY_APPEND_NON_LEAD_SECTIONS];
@@ -1573,6 +1577,8 @@ typedef enum {
             // Save the article!
             NSError *error = nil;
             [articleDataContext_.workerContext save:&error];
+
+            [self.tocVC setTocSectionDataForSections:article.section];
 
             if (error) {
                 NSLog(@"error = %@", error);
