@@ -31,7 +31,7 @@
         self.isSelected = NO;
         self.isHighlighted = NO;
         self.clipsToBounds = NO;
-        self.opaque = NO;
+        self.opaque = YES;
         self.level = level;
         self.isLead = isLead;
         self.isRTL = isRTL;
