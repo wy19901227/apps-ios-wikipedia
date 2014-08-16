@@ -794,6 +794,7 @@ typedef enum {
     // The method below is more efficient than calling
     // getScreenRectForHtmlElementWithId again (as it was already called by
     // getWebViewRectForHtmlElementWithId).
+
     // if ([self rectIntersectsWebViewTop:r]) return;
     
     CGPoint point = r.origin;
