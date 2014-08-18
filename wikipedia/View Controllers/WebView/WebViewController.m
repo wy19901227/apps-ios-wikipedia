@@ -609,10 +609,6 @@ typedef enum {
     [self.tocVC didMoveToParentViewController:self];
 
     [self tocSetupSwipeGestureRecognizers];
-    
-    // Make the toc's scroll view not scroll until the swipe recognizer fails.
-    [self.tocVC.scrollView.panGestureRecognizer requireGestureRecognizerToFail:self.tocSwipeLeftRecognizer];
-    [self.tocVC.scrollView.panGestureRecognizer requireGestureRecognizerToFail:self.tocSwipeRightRecognizer];
 }
 
 -(void)tocHide
@@ -643,6 +639,11 @@ typedef enum {
     }
 }
 
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return YES;
+}
+
 -(void)tocSetupSwipeGestureRecognizers
 {
     self.tocSwipeLeftRecognizer =
@@ -671,14 +672,12 @@ typedef enum {
     recognizer.direction = direction;
     
     [self.view addGestureRecognizer:recognizer];
-
-    // Make the web view's scroll view not scroll until the swipe recognizer fails.
-    [self.webView.scrollView.panGestureRecognizer requireGestureRecognizerToFail:recognizer];
-    
 }
 
 -(void)tocSwipeLeftHandler:(UISwipeGestureRecognizer *)recognizer
 {
+    [self haltScrolling];
+    
     NSString *currentArticleTitle = [SessionSingleton sharedInstance].currentArticleTitle;
     if (!currentArticleTitle || (currentArticleTitle.length == 0)) return;
 
@@ -691,9 +690,20 @@ typedef enum {
 
 -(void)tocSwipeRightHandler:(UISwipeGestureRecognizer *)recognizer
 {
+    [self haltScrolling];
+    
     if (recognizer.state == UIGestureRecognizerStateEnded){
         [self tocHide];
     }
+}
+
+-(void)haltScrolling
+{
+    // If swipe was detected, stop vertical scrolling.
+    self.webView.scrollView.panGestureRecognizer.enabled = NO;
+    self.webView.scrollView.panGestureRecognizer.enabled = YES;
+    self.tocVC.scrollView.panGestureRecognizer.enabled = NO;
+    self.tocVC.scrollView.panGestureRecognizer.enabled = YES;
 }
 
 -(CGFloat)tocGetWebViewScaleWhenTOCVisible
