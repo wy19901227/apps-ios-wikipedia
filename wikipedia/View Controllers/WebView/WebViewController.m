@@ -66,6 +66,11 @@
 #define SCROLL_INDICATOR_BORDER_COLOR [UIColor lightGrayColor]
 #define SCROLL_INDICATOR_BACKGROUND_COLOR [UIColor whiteColor]
 
+// This controls how fast the swipe has to be (side-to-side).
+#define TOC_SWIPE_TRIGGER_MIN_X_VELOCITY 600.0f
+// This controls what angle from the horizontal axis will trigger the swipe.
+#define TOC_SWIPE_TRIGGER_MAX_ANGLE 45.0f
+
 typedef enum {
     DISPLAY_LEAD_SECTION = 0,
     DISPLAY_APPEND_NON_LEAD_SECTIONS = 1,
@@ -99,8 +104,8 @@ typedef enum {
 @property (strong, nonatomic) NSLayoutConstraint *scrollIndicatorViewHeightConstraint;
 
 @property (strong, nonatomic) TOCViewController *tocVC;
-@property (strong, nonatomic) UISwipeGestureRecognizer *tocSwipeLeftRecognizer;
-@property (strong, nonatomic) UISwipeGestureRecognizer *tocSwipeRightRecognizer;
+
+@property (strong, nonatomic) UIPanGestureRecognizer* panSwipeRecognizer;
 
 @property (strong, nonatomic) IBOutlet PaddedLabel *zeroStatusLabel;
 
@@ -188,6 +193,8 @@ typedef enum {
 
     [self constrainWebViewHeight];
     [self scrollIndicatorSetup];
+
+    self.panSwipeRecognizer = nil;
 
     self.zeroStatusLabel.text = @"";
     self.referencesVC = nil;
@@ -620,6 +627,13 @@ typedef enum {
 
 -(void)tocShow
 {
+    // Prevent toc reveal if pull to refresh in effect.
+    if (self.webView.scrollView.contentOffset.y < 0) return;
+
+    NSString *currentArticleTitle = [SessionSingleton sharedInstance].currentArticleTitle;
+    if (!currentArticleTitle || (currentArticleTitle.length == 0)) return;
+    if (!self.referencesHidden) return;
+
     if([[SessionSingleton sharedInstance] isCurrentArticleMain]) return;
 
     if(self.unsafeToToggleTOC) return;
@@ -632,6 +646,8 @@ typedef enum {
     // Clear alerts
     [self fadeAlert];
 
+    [self referencesHide];
+
     if ([self tocDrawerIsOpen]) {
         [self tocHide];
     }else{
@@ -639,71 +655,84 @@ typedef enum {
     }
 }
 
+-(BOOL)shouldPanVelocityTriggerTOC:(CGPoint)panVelocity
+{
+    CGFloat angleFromHorizontalAxis = [self getAbsoluteHorizontalDegreesFromVelocity:panVelocity];
+    if (
+        (angleFromHorizontalAxis < TOC_SWIPE_TRIGGER_MAX_ANGLE)
+        &&
+        (fabsf(panVelocity.x) > TOC_SWIPE_TRIGGER_MIN_X_VELOCITY)
+    ) {
+        return YES;
+    }
+    return NO;
+}
+
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
+    // Don't allow the web view's scroll view or the TOC's scroll view to start vertical scrolling if the
+    // angle and direction of the swipe are within tolerances to trigger TOC toggle. Needed because you
+    // don't want either of these to be scrolling vertically when the TOC is being revealed or hidden.
+    //WHOA! see this: http://stackoverflow.com/a/18834934
+    if (gestureRecognizer == self.panSwipeRecognizer) {
+        if (
+            (otherGestureRecognizer == self.webView.scrollView.panGestureRecognizer)
+            ||
+            (otherGestureRecognizer == self.tocVC.scrollView.panGestureRecognizer)
+        ){
+            UIPanGestureRecognizer *otherPanRecognizer = (UIPanGestureRecognizer *)otherGestureRecognizer;
+            CGPoint velocity = [otherPanRecognizer velocityInView:otherGestureRecognizer.view];
+            if ([self shouldPanVelocityTriggerTOC:velocity]) {
+                // Kill vertical scroll before it starts if we're going to show TOC.
+                self.webView.scrollView.panGestureRecognizer.enabled = NO;
+                self.webView.scrollView.panGestureRecognizer.enabled = YES;
+                self.tocVC.scrollView.panGestureRecognizer.enabled = NO;
+                self.tocVC.scrollView.panGestureRecognizer.enabled = YES;
+            }
+        }
+    }
     return YES;
 }
 
 -(void)tocSetupSwipeGestureRecognizers
 {
-    self.tocSwipeLeftRecognizer =
-    [[UISwipeGestureRecognizer alloc] initWithTarget: self
-                                              action: @selector(tocSwipeLeftHandler:)];
-    
-    self.tocSwipeRightRecognizer =
-    [[UISwipeGestureRecognizer alloc] initWithTarget: self
-                                              action: @selector(tocSwipeRightHandler:)];
-    
-    // Device rtl value is checked since this is what would cause the other constraints to flip.
-    BOOL isRTL = [WikipediaAppUtils isDeviceLanguageRTL];
+    // Use pan instead for swipe so we can control speed at which swipe triggers. Idea from:
+    // http://www.mindtreatstudios.com/how-its-made/ios-gesture-recognizer-tips-tricks/
 
-    [self tocSetupSwipeGestureRecognizer: self.tocSwipeLeftRecognizer
-                            forDirection: (isRTL ? UISwipeGestureRecognizerDirectionRight : UISwipeGestureRecognizerDirectionLeft)];
-
-    [self tocSetupSwipeGestureRecognizer: self.tocSwipeRightRecognizer
-                            forDirection: (isRTL ? UISwipeGestureRecognizerDirectionLeft : UISwipeGestureRecognizerDirectionRight)];
+    self.panSwipeRecognizer =
+        [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanSwipe:)];
+    self.panSwipeRecognizer.delegate = self;
+    self.panSwipeRecognizer.minimumNumberOfTouches = 1;
+    [self.view addGestureRecognizer:self.panSwipeRecognizer];
 }
 
--(void)tocSetupSwipeGestureRecognizer: (UISwipeGestureRecognizer *)recognizer
-                         forDirection: (UISwipeGestureRecognizerDirection)direction
+- (void)handlePanSwipe:(UIPanGestureRecognizer*)recognizer
 {
-    recognizer.delegate = self;
-
-    recognizer.direction = direction;
-    
-    [self.view addGestureRecognizer:recognizer];
-}
-
--(void)tocSwipeLeftHandler:(UISwipeGestureRecognizer *)recognizer
-{
-    [self haltScrolling];
-    
-    NSString *currentArticleTitle = [SessionSingleton sharedInstance].currentArticleTitle;
-    if (!currentArticleTitle || (currentArticleTitle.length == 0)) return;
-
     if (recognizer.state == UIGestureRecognizerStateEnded){
-        if (self.referencesHidden) {
-            [self tocShow];
+        
+        CGPoint velocity = [recognizer velocityInView:recognizer.view];
+
+        if (![self shouldPanVelocityTriggerTOC:velocity] || self.webView.scrollView.isDragging) return;
+        
+        // Device rtl value is checked since this is what would cause the other constraints to flip.
+        BOOL isRTL = [WikipediaAppUtils isDeviceLanguageRTL];
+
+        if (velocity.x < 0){
+            //NSLog(@"swipe left");
+            if (isRTL) {
+                [self tocHide];
+            }else{
+                [self tocShow];
+            }
+        }else if (velocity.x > 0){
+            //NSLog(@"swipe right");
+            if (isRTL) {
+                [self tocShow];
+            }else{
+                [self tocHide];
+            }
         }
     }
-}
-
--(void)tocSwipeRightHandler:(UISwipeGestureRecognizer *)recognizer
-{
-    [self haltScrolling];
-    
-    if (recognizer.state == UIGestureRecognizerStateEnded){
-        [self tocHide];
-    }
-}
-
--(void)haltScrolling
-{
-    // If swipe was detected, stop vertical scrolling.
-    self.webView.scrollView.panGestureRecognizer.enabled = NO;
-    self.webView.scrollView.panGestureRecognizer.enabled = YES;
-    self.tocVC.scrollView.panGestureRecognizer.enabled = NO;
-    self.tocVC.scrollView.panGestureRecognizer.enabled = YES;
 }
 
 -(CGFloat)tocGetWebViewScaleWhenTOCVisible
