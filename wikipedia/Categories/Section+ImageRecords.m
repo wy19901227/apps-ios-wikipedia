@@ -23,6 +23,8 @@
     [context performBlockAndWait:^(){
         Section *section = (Section *)[context objectWithID:sectionID];
         
+        if (section.html.length == 0) return;
+        
         NSData *sectionHtmlData = [section.html dataUsingEncoding:NSUTF8StringEncoding];
         TFHpple *sectionParser = [TFHpple hppleWithHTMLData:sectionHtmlData];
         //NSString *imageXpathQuery = @"//img[@src]";
