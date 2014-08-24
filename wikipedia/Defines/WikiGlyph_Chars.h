@@ -109,7 +109,9 @@
 #define WIKIGLYPH_WEB                               @"\ue873"
 #define WIKIGLYPH_NEWS                              @"\ue874"
 
-
+#define WIKIGLYPH_LIST_UNSORTED                     @"\ue877"
+#define WIKIGLYPH_INDENT_LEFT                       @"\ue878"
+#define WIKIGLYPH_INDENT_RIGHT                      @"\ue879"
 
 /* WIKI_X e900+
 */

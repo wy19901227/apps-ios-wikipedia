@@ -4,6 +4,14 @@
 #import "WikiGlyphLabel.h"
 #import "WikiGlyph_Chars_iOS.h"
 
+@interface WikiGlyphLabel()
+
+@property(nonatomic, strong) UIColor *color;
+@property(nonatomic) CGFloat size;
+@property(nonatomic) CGFloat baselineOffset;
+
+@end
+
 @implementation WikiGlyphLabel
 
 - (instancetype)initWithCoder:(NSCoder *)coder
@@ -33,6 +41,10 @@
 
 -(void)setWikiText:(NSString *)text color:(UIColor *)color size:(CGFloat)size baselineOffset:(CGFloat)baselineOffset
 {
+    self.color = color;
+    self.size = size;
+    self.baselineOffset = baselineOffset;
+    
     // Temp hack for supplemental iOS wikifont.
     BOOL isIOSFontChar = NO;
 

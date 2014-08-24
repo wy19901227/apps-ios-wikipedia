@@ -52,6 +52,8 @@
 #import "WikiGlyph_Chars.h"
 #import "UINavigationController+TopActionSheet.h"
 #import "ReferencesVC.h"
+#import "WikiGlyphButton.h"
+#import "WikiGlyphLabel.h"
 
 //#import "UIView+Debugging.h"
 
@@ -468,6 +470,10 @@ typedef enum {
                          if(self.tocVC) [self tocViewControllerRemove];
                          self.unsafeToToggleTOC = NO;
                          self.webView.scrollView.contentOffset = origScrollPosition;
+
+                         WikiGlyphButton *tocButton = [ROOT.topMenuViewController getNavBarItem:NAVBAR_BUTTON_TOC];
+                         [tocButton.label setWikiText:WIKIGLYPH_INDENT_LEFT color:tocButton.label.color size:tocButton.label.size baselineOffset:tocButton.label.baselineOffset];
+
                      }];
 }
 
@@ -520,6 +526,10 @@ typedef enum {
                      }completion: ^(BOOL done){
                          [self.view setNeedsUpdateConstraints];
                          self.unsafeToToggleTOC = NO;
+
+                         WikiGlyphButton *tocButton = [ROOT.topMenuViewController getNavBarItem:NAVBAR_BUTTON_TOC];
+                         [tocButton.label setWikiText:WIKIGLYPH_INDENT_RIGHT color:tocButton.label.color size:tocButton.label.size baselineOffset:tocButton.label.baselineOffset];
+
                      }];
 }
 

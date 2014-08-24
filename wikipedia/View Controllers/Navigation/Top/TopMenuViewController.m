@@ -248,7 +248,7 @@
     self.buttonArrowLeft =  getWikiGlyphButton(caret,                 MWLocalizedString(@"menu-back-accessibility-label", nil),    NAVBAR_BUTTON_ARROW_LEFT, size, baselineOffset - 2.0);
     self.buttonArrowRight = getWikiGlyphButton(caret,                 MWLocalizedString(@"menu-forward-accessibility-label", nil), NAVBAR_BUTTON_ARROW_RIGHT, size, baselineOffset - 2.0);
     self.buttonW =          getWikiGlyphButton(IOS_WIKIGLYPH_W,       MWLocalizedString(@"menu-w-accessibility-label", nil),       NAVBAR_BUTTON_LOGO_W, size, baselineOffset);
-    self.buttonTOC =        getWikiGlyphButton(IOS_WIKIGLYPH_TOC,     MWLocalizedString(@"menu-toc-accessibility-label", nil),     NAVBAR_BUTTON_TOC, size, baselineOffset);
+    self.buttonTOC =        getWikiGlyphButton(WIKIGLYPH_INDENT_LEFT,     MWLocalizedString(@"menu-toc-accessibility-label", nil),     NAVBAR_BUTTON_TOC, size, baselineOffset);
     self.buttonMagnify =    getWikiGlyphButton(IOS_WIKIGLYPH_MAGNIFY, MWLocalizedString(@"menu-search-accessibility-label", nil),  NAVBAR_BUTTON_MAGNIFY, size, baselineOffset);
     self.buttonBlank =      getWikiGlyphButton(@"",                   @"", NAVBAR_BUTTON_BLANK, size, baselineOffset);
     self.buttonCancel =     getWikiGlyphButton(@"",                   MWLocalizedString(@"menu-cancel-accessibility-label", nil),  NAVBAR_BUTTON_CANCEL, size, baselineOffset);
