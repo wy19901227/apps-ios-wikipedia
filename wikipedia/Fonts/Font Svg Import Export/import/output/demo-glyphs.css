@@ -1,0 +1,83 @@
+
+@font-face {
+    font-family: 'WikiFont-Glyphs';
+    src: url('WikiFont-Glyphs-iOS.eot'); /* IE9 Compat Modes */
+    src: url('WikiFont-Glyphs-iOS.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('WikiFont-Glyphs-iOS.woff') format('woff'), /* Modern Browsers */
+         url('WikiFont-Glyphs-iOS.ttf')  format('truetype'), /* Safari, Android, iOS */
+         url('WikiFont-Glyphs-iOS.svg#8088f7bbbdba5c9832b27edb3dfcdf09') format('svg'); /* Legacy iOS */
+}
+.wikiglyph {
+    display: inline-block;
+    height: 2.0em;
+    width: 2.0em;
+    text-align:center;
+    font-family: 'WikiFont-Glyphs';
+    -webkit-font-smoothing: antialiased;
+    font-size: inherit;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 2.0em;
+    overflow: visible;
+}
+.wikiglyph[dir='rtl'] {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1);
+  -webkit-transform: scale(-1, 1);
+  -moz-transform: scale(-1, 1);
+  -ms-transform: scale(-1, 1);
+  -o-transform: scale(-1, 1);
+  transform: scale(-1, 1);
+}
+
+            .IOS_WIKIGLYPH_BACKWARD:before {
+                content:"\e954";
+            }
+        
+            .IOS_WIKIGLYPH_DOWN:before {
+                content:"\e955";
+            }
+        
+            .IOS_WIKIGLYPH_FORWARD:before {
+                content:"\e953";
+            }
+        
+            .IOS_WIKIGLYPH_HEART:before {
+                content:"\e956";
+            }
+        
+            .IOS_WIKIGLYPH_HEART_OUTLINE:before {
+                content:"\e957";
+            }
+        
+            .IOS_WIKIGLYPH_MAGNIFY:before {
+                content:"\e952";
+            }
+        
+            .IOS_WIKIGLYPH_RELOAD:before {
+                content:"\e95a";
+            }
+        
+            .IOS_WIKIGLYPH_SHARE:before {
+                content:"\e951";
+            }
+        
+            .IOS_WIKIGLYPH_STAR:before {
+                content:"\e95b";
+            }
+        
+            .IOS_WIKIGLYPH_STAR_OUTLINE:before {
+                content:"\e95c";
+            }
+        
+            .IOS_WIKIGLYPH_TOC_COLLAPSED:before {
+                content:"\e958";
+            }
+        
+            .IOS_WIKIGLYPH_TOC_EXPANDED:before {
+                content:"\e959";
+            }
+        
+            .IOS_WIKIGLYPH_W:before {
+                content:"\e950";
+            }
+        
