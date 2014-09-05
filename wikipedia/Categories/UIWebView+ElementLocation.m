@@ -67,11 +67,6 @@
 - (CGRect)getWebViewRectForHtmlElementWithId:(NSString *)elementId
 {
     CGRect r = [self getScreenRectForHtmlElementWithId:elementId];
-    CGPoint p = CGPointMake(
-        r.origin.x + floor(self.scrollView.contentOffset.x),
-        r.origin.y + floor(self.scrollView.contentOffset.y)
-    );
-    r.origin = p;
     return r;
 }
 

@@ -72,8 +72,8 @@ exports.getElementRect = function(element) {
     var rect = element.getBoundingClientRect();
     var zoom = getZoomLevel();
     var zoomedRect = new Object();
-    zoomedRect['top'] = rect.top * zoom;
-    zoomedRect['left'] = rect.left * zoom;
+    zoomedRect['top'] = (rect.top + window.scrollY) * zoom;
+    zoomedRect['left'] = (rect.left + window.scrollX) * zoom;
     zoomedRect['width'] = rect.width * zoom;
     zoomedRect['height'] = rect.height * zoom;
     return zoomedRect;
