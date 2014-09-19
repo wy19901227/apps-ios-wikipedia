@@ -31,6 +31,8 @@
 		<string>WikiFont-Glyphs-iOS.ttf</string>
 		<string>WikiFont-Glyphs.ttf</string>
 	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>Main_iPhone</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main_iPhone</string>
 	<key>UIMainStoryboardFile~ipad</key>
