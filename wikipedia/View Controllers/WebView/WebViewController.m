@@ -1509,10 +1509,232 @@ typedef enum {
        invalidatingCache: invalidateCache];
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+- (void)downloadFinishedForArticle: (Article *)article
+                              type: (DownloadType)type
+                            result: (DownloadResult)result
+                             error: (NSError *)error
+{
+
+    switch (type) {
+        case ARTICLE_DOWNLOAD_TYPE_SECTIONS_LEAD:
+            
+
+            switch (result) {
+                case ARTICLE_DOWNLOAD_RESULT_SUCCESS:
+                {
+                
+
+// There should only be a single history item (at most).
+History *history = [article.history anyObject];
+NSString *discoveryMethod =
+    (history) ? history.discoveryMethod : [NAV getStringForDiscoveryMethod:DISCOVERY_METHOD_SEARCH];
+                
+                    NSString *redirectedTitle = article.redirected;
+                    // Redirect if the pageTitle which triggered this call to "retrieveArticleForPageTitle"
+                    // differs from titleReflectingAnyRedirects.
+                    if (redirectedTitle.length > 0) {
+
+                        // Remove the article so it doesn't get saved.
+                        [article.managedObjectContext deleteObject:article];
+
+                        MWPageTitle *newTitle = [MWPageTitle titleWithString:redirectedTitle];
+                        
+                        [self retrieveArticleForPageTitle: newTitle
+                                                   domain: article.domain
+                                          discoveryMethod: discoveryMethod];
+
+                        return;
+                    }
+
+
+
+
+
+
+
+
+// Don't add multiple history items for the same article or back-forward button
+// behavior becomes a confusing mess.
+
+if(article.history.count == 0){
+    // Add history for article
+    History *history0 = [NSEntityDescription insertNewObjectForEntityForName:@"History" inManagedObjectContext:article.managedObjectContext];
+    history0.dateVisited = [NSDate date];
+    //history0.dateVisited = [NSDate dateWithDaysBeforeNow:31];
+    history0.discoveryMethod = discoveryMethod;
+    [article addHistoryObject:history0];
+}
+
+
+
+
+// Associate thumbnail with article.
+// If search result for this pageTitle had a thumbnail url associated with it, see if
+// a core data image object exists with a matching sourceURL. If so make the article
+// thumbnailImage property point to that core data image object. This associates the
+// search result thumbnail with the article.
+
+NSPredicate *articlePredicate =
+    [NSPredicate predicateWithFormat:@"(title == %@) AND (thumbnail.source.length > 0)", article.titleObj.text /*pageTitle.text*/];
+NSDictionary *articleDictFromSearchResults =
+    [ROOT.topMenuViewController.currentSearchResultsOrdered firstMatchForPredicate:articlePredicate];
+if (articleDictFromSearchResults) {
+    NSString *thumbURL = articleDictFromSearchResults[@"thumbnail"][@"source"];
+    thumbURL = [thumbURL getUrlWithoutScheme];
+    Image *thumb = (Image *)[article.managedObjectContext getEntityForName: @"Image" withPredicateFormat:@"sourceUrl == %@", thumbURL];
+    if (thumb) article.thumbnailImage = thumb;
+}
+
+
+
+
+
+
+                
+                
+                    NSError *err = nil;
+                    [article.managedObjectContext save:&err];
+                    if (err) NSLog(@"Lead section save error = %@", err);
+
+[self.tocVC setTocSectionDataForSections:article.section];
+[self displayArticle:article.objectID mode:DISPLAY_LEAD_SECTION];
+
+                }
+                    break;
+                case ARTICLE_DOWNLOAD_RESULT_FAILED:
+                {
+                    NSString *errorMsg = error.localizedDescription;
+                    [self showAlert:errorMsg type:ALERT_TYPE_TOP duration:-1];
+
+                    // Remove the article so it doesn't get saved.
+                    [article.managedObjectContext deleteObject:article];
+                    
+                    // @TODO potentially do this in the difFailWithError in MWNetworkOp
+                    // It seems safe enough, but we didn't want to cause any sort of memory leak
+                    if (error.domain == NSStreamSocketSSLErrorDomain ||
+                        (error.domain == NSURLErrorDomain &&
+                         (error.code == NSURLErrorSecureConnectionFailed ||
+                          error.code == NSURLErrorServerCertificateHasBadDate ||
+                          error.code == NSURLErrorServerCertificateUntrusted ||
+                          error.code == NSURLErrorServerCertificateHasUnknownRoot ||
+                          error.code == NSURLErrorServerCertificateNotYetValid)
+                         )
+                        ) {
+                        [SessionSingleton sharedInstance].fallback = true;
+                    }
+                }
+                    break;
+                case ARTICLE_DOWNLOAD_RESULT_CANCELLED:
+                {
+                    // Remove the article so it doesn't get saved.
+                    [article.managedObjectContext deleteObject:article];
+                }
+                    break;
+                    
+                default:
+                    break;
+            }
+            
+            
+            break;
+            
+        case ARTICLE_DOWNLOAD_TYPE_SECTIONS_NONLEAD:
+
+
+            switch (result) {
+                case ARTICLE_DOWNLOAD_RESULT_SUCCESS:
+                {
+                    NSError *err = nil;
+                    [article.managedObjectContext save:&err];
+                    if (err) NSLog(@"Non-lead section save error = %@", err);
+
+
+[self.tocVC setTocSectionDataForSections:article.section];
+[self displayArticle:article.objectID mode:DISPLAY_APPEND_NON_LEAD_SECTIONS];
+                    
+                }
+                    break;
+                case ARTICLE_DOWNLOAD_RESULT_FAILED:
+                {
+                    NSString *errorMsg = error.localizedDescription;
+                    if(error.code != 555){ // Quick hack for hiding MWNetworkOp cancel messages.
+                        [self showAlert:errorMsg type:ALERT_TYPE_TOP duration:-1];
+                    }
+                }
+                    break;
+                case ARTICLE_DOWNLOAD_RESULT_CANCELLED:
+                    [self fadeAlert];
+                    break;
+                    
+                default:
+                    break;
+            }
+            
+            
+            break;
+        default:
+            break;
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 - (void)retrieveArticleForPageTitle: (MWPageTitle *)pageTitle
                              domain: (NSString *)domain
                     discoveryMethod: (NSString *)discoveryMethod
 {
+
+
+
+
     // Cancel any in-progress article retrieval operations
     [[QueuesSingleton sharedInstance].articleRetrievalQ cancelAllOperations];
     [[QueuesSingleton sharedInstance].searchQ cancelAllOperations];
@@ -1523,8 +1745,13 @@ typedef enum {
                                                    domain: domain];
     BOOL needsRefresh = NO;
 
+Article *article = nil;
+
     if (articleID) {
-        Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
+
+//        Article *article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
+
+article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
 
         // Update the history dateVisited timestamp of the article to be visited only
         // if the article was NOT loaded via back or forward buttons.
@@ -1546,12 +1773,101 @@ typedef enum {
         needsRefresh = article.needsRefresh.boolValue;
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (!articleID) {
+    article = [NSEntityDescription
+        insertNewObjectForEntityForName:@"Article"
+        inManagedObjectContext:articleDataContext_.mainContext
+    ];
+    article.title = pageTitle.prefixedText;
+    article.dateCreated = [NSDate date];
+    article.site = [SessionSingleton sharedInstance].site;
+    article.domain = [SessionSingleton sharedInstance].currentArticleDomain;
+    article.domainName = [SessionSingleton sharedInstance].currentArticleDomainName;
+    articleID = article.objectID;
+//}else{
+//    article = (Article *)[articleDataContext_.mainContext objectWithID:articleID];
+}
+
+if (needsRefresh) {
+    // If and article needs refreshing remove its sections so they get reloaded too.
+    for (Section *thisSection in [article.section copy]) {
+        [articleDataContext_.mainContext deleteObject:thisSection];
+    }
+}
+
+
+
+
+
+
+article.delegate = self;
+
+//articleDownloadable.pageTitleText = pageTitle.text;
+
+[article downloadWithQueuePriority:NSOperationQueuePriorityHigh];
+
+
+
+
+
+return;
+
+
+
+
+
+
+
+
+
+
+/*
+
+tell the op articleID
+have op have webview delegate, if not nil updates it after download,
+else does headless and kick off image retrieval
+
+so should "refresh" then be a method off the article object?
+if the article doesn't have a web view delegate it will get images?
+
+*/
+
+
+
+
+
+
     // Retrieve remaining sections op (dependent on first section op)
     DownloadSectionsOp *remainingSectionsOp =
     [[DownloadSectionsOp alloc] initForPageTitle: pageTitle.prefixedText
                                           domain: [SessionSingleton sharedInstance].currentArticleDomain
                                  leadSectionOnly: NO
                                  completionBlock: ^(NSDictionary *results){
+
+
+
+
+
+
+
+
+
+
+
         
         // Just in case the article wasn't created during the "parent" operation.
         if (!articleID) return;
@@ -1617,6 +1933,16 @@ typedef enum {
         //[self showAlert:MWLocalizedString(@"search-loading-article-loaded", nil) type:ALERT_TYPE_TOP duration:-1];
         //[self fadeAlert];
 
+
+
+
+
+
+
+
+
+
+
     } cancelledBlock:^(NSError *error){
         [self fadeAlert];
     } errorBlock:^(NSError *error){
@@ -1629,12 +1955,31 @@ typedef enum {
     remainingSectionsOp.delegate = self;
 
 
+
+
+
+
+
+
+
+
+
+
     // Retrieve first section op
     DownloadSectionsOp *firstSectionOp =
     [[DownloadSectionsOp alloc] initForPageTitle: pageTitle.prefixedText
                                           domain: [SessionSingleton sharedInstance].currentArticleDomain
                                  leadSectionOnly: YES
                                  completionBlock: ^(NSDictionary *dataRetrieved){
+
+
+
+
+
+
+
+
+
 
 
         NSString *redirectedTitle = [dataRetrieved[@"redirected"] copy];
@@ -1775,6 +2120,17 @@ typedef enum {
         [self displayArticle:articleID mode:DISPLAY_LEAD_SECTION];
         //[self showAlert:MWLocalizedString(@"search-loading-section-remaining", nil) type:ALERT_TYPE_TOP duration:-1];
 
+
+
+
+
+
+
+
+
+
+
+
     } cancelledBlock:^(NSError *error){
 
         // Remove the article so it doesn't get saved.
@@ -1816,6 +2172,38 @@ typedef enum {
     [[QueuesSingleton sharedInstance].articleRetrievalQ addOperation:remainingSectionsOp];
     [[QueuesSingleton sharedInstance].articleRetrievalQ addOperation:firstSectionOp];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #pragma mark Progress report
 
