@@ -161,6 +161,13 @@
                                             }.mutableCopy;
 
 
+/*
+
+maybe for DownloadSectionsOp don't pass completion, cancellation and error blocks - instead
+when the op completes set a results property here?
+
+*/
+
 
             completionBlock(output);
         };

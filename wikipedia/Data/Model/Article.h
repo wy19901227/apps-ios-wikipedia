@@ -9,9 +9,29 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class GalleryImage, History, Image, Saved, Section;
+@class GalleryImage, History, Image, Saved, Section, Article;
 
-@interface Article : NSManagedObject
+// Enums for the ArticleDownloadDelegate protocol method.
+typedef NS_ENUM(NSInteger, DownloadType) {
+    ARTICLE_DOWNLOAD_TYPE_SECTIONS_LEAD,
+    ARTICLE_DOWNLOAD_TYPE_SECTIONS_NONLEAD
+};
+
+typedef NS_ENUM(NSInteger, DownloadResult) {
+    ARTICLE_DOWNLOAD_RESULT_SUCCESS,
+    ARTICLE_DOWNLOAD_RESULT_CANCELLED,
+    ARTICLE_DOWNLOAD_RESULT_FAILED
+};
+
+@protocol ArticleDownloadDelegate <NSObject>
+// Protocol for notifying a listener that download has completed.
+- (void)downloadFinishedForArticle: (Article *)article
+                              type: (DownloadType)type
+                            result: (DownloadResult)result
+                             error: (NSError *)error;
+@end
+
+@interface Article : NSManagedObject <NetworkOpDelegate>
 
 @property (nonatomic, retain) NSNumber * articleId;
 @property (nonatomic, retain) NSDate * dateCreated;
@@ -34,6 +54,10 @@
 @property (nonatomic, retain) NSSet *saved;
 @property (nonatomic, retain) NSSet *section;
 @property (nonatomic, retain) Image *thumbnailImage;
+
+// The object to receive download notifications.
+@property (nonatomic, assign) id <ArticleDownloadDelegate> delegate;
+
 @end
 
 @interface Article (CoreDataGeneratedAccessors)
@@ -57,5 +81,15 @@
 - (void)removeSectionObject:(Section *)value;
 - (void)addSection:(NSSet *)values;
 - (void)removeSection:(NSSet *)values;
+
+// Method to kick of download, results are reported to "delegate"
+// via the ArticleDownloadDelegate protocol method.
+// Note: the WebViewController should use a higher priority than
+// background downloads by the Saved Pages view controller.
+// Also, be sure if the web view controller cancels downloads aleady
+// in the q, it does so only for the higher priority downloads that
+// it added rather cancelling all downloads, which would wipe out
+// any lower priority Saved Pages downloads.
+-(void)downloadWithQueuePriority:(NSOperationQueuePriority)queuePriority;
 
 @end
