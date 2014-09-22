@@ -3,26 +3,28 @@
 
 #import <Foundation/Foundation.h>
 
+#import "AFHTTPRequestOperationManager.h"
+
 @interface QueuesSingleton : NSObject
 
-@property (strong, nonatomic) NSOperationQueue *loginQ;
-@property (strong, nonatomic) NSOperationQueue *articleRetrievalQ;
-@property (strong, nonatomic) NSOperationQueue *searchQ;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *loginFetchManager;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *articleFetchManager;
+@property (strong, nonatomic) NSOperationQueue *savedPagesQ;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *searchResultsFetchManager;
 @property (strong, nonatomic) NSOperationQueue *thumbnailQ;
 @property (strong, nonatomic) NSOperationQueue *zeroRatedMessageStringQ;
 
 @property (strong, nonatomic) NSOperationQueue *sectionWikiTextDownloadQ;
 @property (strong, nonatomic) NSOperationQueue *sectionWikiTextUploadQ;
-@property (strong, nonatomic) NSOperationQueue *sectionWikiTextPreviewQ;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *sectionPreviewHtmlFetchManager;
 @property (strong, nonatomic) NSOperationQueue *langLinksQ;
-@property (strong, nonatomic) NSOperationQueue *accountCreationQ;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *accountCreationFetchManager;
 
 @property (strong, nonatomic) NSOperationQueue *randomArticleQ;
 
-@property (strong, nonatomic) NSOperationQueue *eventLoggingQ;
-@property (strong, nonatomic) NSOperationQueue *pageHistoryQ;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *pageHistoryFetchManager;
 
-@property (strong, nonatomic) NSOperationQueue *assetsFileSyncQ;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *assetsFetchManager;
 @property (strong, nonatomic) NSOperationQueue *nearbyQ;
 
 + (QueuesSingleton *)sharedInstance;

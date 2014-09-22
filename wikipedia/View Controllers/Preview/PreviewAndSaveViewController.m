@@ -3,7 +3,7 @@
 
 #import "PreviewAndSaveViewController.h"
 #import "WikipediaAppUtils.h"
-#import "PreviewWikiTextOp.h"
+#import "PreviewHtmlFetcher.h"
 #import "UIViewController+Alert.h"
 #import "ArticleCoreDataObjects.h"
 #import "ArticleDataContextSingleton.h"
@@ -440,63 +440,61 @@ typedef enum {
     [super viewWillDisappear:animated];
 }
 
-- (void)preview
+- (void)fetchFinished: (id)sender
+             userData: (id)userData
+               status: (FetchFinalStatus)status
+                 type: (NSInteger)type
+                error: (NSError *)error
 {
-    ArticleDataContextSingleton *articleDataContext_ = [ArticleDataContextSingleton sharedInstance];
-
-    // Use static flag to prevent preview when preview already in progress.
-    static BOOL isAleadyPreviewing = NO;
-    if (isAleadyPreviewing) return;
-    isAleadyPreviewing = YES;
-
-    [self showAlert:MWLocalizedString(@"wikitext-preview-changes", nil) type:ALERT_TYPE_TOP duration:-1];
-    Section *section = (Section *)[articleDataContext_.mainContext objectWithID:self.sectionID];
-
+    
+    Section *section = (Section *)[[ArticleDataContextSingleton sharedInstance].mainContext objectWithID:self.sectionID];
     MWLanguageInfo *languageInfo = [MWLanguageInfo languageInfoForCode:section.article.domain];
     NSString *uidir = ([WikipediaAppUtils isDeviceLanguageRTL] ? @"rtl" : @"ltr");
-
-    PreviewWikiTextOp *previewWikiTextOp =
-    [[PreviewWikiTextOp alloc] initWithDomain: section.article.domain
-                                        title: section.article.title
-                                     wikiText: self.wikiText
-                              completionBlock: ^(NSString *result){
-
-        [[NSOperationQueue mainQueue] addOperationWithBlock: ^ {
-
+    
+    switch (status) {
+        case FETCH_FINAL_STATUS_SUCCEEDED:{
             [self fadeAlert];
-
+            
             [self resetBridge];
-
+            
             [self.bridge sendMessage: @"setLanguage"
                          withPayload: @{
                                         @"lang": languageInfo.code,
                                         @"dir": languageInfo.dir,
                                         @"uidir": uidir
                                         }];
-
-            [self.bridge sendMessage:@"append" withPayload:@{@"html": result ? result : @""}];
-
-            isAleadyPreviewing = NO;
             
-        }];
-        
-    } cancelledBlock:^(NSError *error){
-        NSString *errorMsg = error.localizedDescription;
-        [self showAlert:errorMsg type:ALERT_TYPE_TOP duration:-1];
-        isAleadyPreviewing = NO;
-        
-    } errorBlock:^(NSError *error){
-        NSString *errorMsg = error.localizedDescription;
-        
-        [self showAlert:errorMsg type:ALERT_TYPE_TOP duration:-1];
-        
-        isAleadyPreviewing = NO;
-    }];
+            [self.bridge sendMessage:@"append" withPayload:@{@"html": userData ? userData : @""}];
+        }
+            break;
+        case FETCH_FINAL_STATUS_FAILED:{
+            NSString *errorMsg = error.localizedDescription;
+            
+            [self showAlert:errorMsg type:ALERT_TYPE_TOP duration:-1];
+            
+        }
+            break;
+        case FETCH_FINAL_STATUS_CANCELLED:{
+            NSString *errorMsg = error.localizedDescription;
+            [self showAlert:errorMsg type:ALERT_TYPE_TOP duration:-1];
+        }
+            break;
+    }
+}
 
-    previewWikiTextOp.delegate = self;
+- (void)preview
+{
+    [self showAlert:MWLocalizedString(@"wikitext-preview-changes", nil) type:ALERT_TYPE_TOP duration:-1];
+ 
+    Section *section = (Section *)[[ArticleDataContextSingleton sharedInstance].mainContext objectWithID:self.sectionID];
 
-    [[QueuesSingleton sharedInstance].sectionWikiTextPreviewQ cancelAllOperations];
-    [[QueuesSingleton sharedInstance].sectionWikiTextPreviewQ addOperation:previewWikiTextOp];
+    [[QueuesSingleton sharedInstance].sectionPreviewHtmlFetchManager.operationQueue cancelAllOperations];
+
+    (void)[[PreviewHtmlFetcher alloc] initAndFetchHtmlForWikiText: self.wikiText
+                                                            title: section.article.title
+                                                           domain: section.article.domain
+                                                      withManager: [QueuesSingleton sharedInstance].sectionPreviewHtmlFetchManager
+                                               thenNotifyDelegate: self];
 }
 
 - (void)didReceiveMemoryWarning

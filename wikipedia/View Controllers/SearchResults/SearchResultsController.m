@@ -15,7 +15,7 @@
 #import "NSString+Extras.h"
 #import "UIViewController+HideKeyboard.h"
 #import "CenterNavController.h"
-#import "SearchOp.h"
+#import "SearchResultFetcher.h"
 
 #import "RootViewController.h"
 #import "TopMenuViewController.h"
@@ -80,7 +80,7 @@
 {
     [super viewWillDisappear:animated];
     [[QueuesSingleton sharedInstance].thumbnailQ cancelAllOperations];
-    [[QueuesSingleton sharedInstance].searchQ cancelAllOperations];
+    [[QueuesSingleton sharedInstance].searchResultsFetchManager.operationQueue cancelAllOperations];
 }
 
 -(void)refreshSearchResults
@@ -123,11 +123,38 @@
     self.searchResultsOrdered = @[];
     [self.searchResultsTable reloadData];
     
-    [[QueuesSingleton sharedInstance].articleRetrievalQ cancelAllOperations];
+    [[QueuesSingleton sharedInstance].articleFetchManager.operationQueue cancelAllOperations];
     [[QueuesSingleton sharedInstance].thumbnailQ cancelAllOperations];
     
-    // Cancel any in-progress article retrieval operations
-    [[QueuesSingleton sharedInstance].searchQ cancelAllOperations];
+    // Cancel any in-progress searches.
+    [[QueuesSingleton sharedInstance].searchResultsFetchManager.operationQueue cancelAllOperations];
+}
+
+- (void)fetchFinished: (id)sender
+             userData: (id)userData
+               status: (FetchFinalStatus)status
+                 type: (NSInteger)type
+                error: (NSError *)error;
+{
+    
+    switch (status) {
+        case FETCH_FINAL_STATUS_SUCCEEDED:{
+            [self fadeAlert];
+            self.searchResultsOrdered = userData;
+            ROOT.topMenuViewController.currentSearchResultsOrdered = self.searchResultsOrdered.copy;
+            
+            // We have search titles! Show them right away!
+            // NSLog(@"FIRE ONE! Show search result titles.");
+            [self.searchResultsTable reloadData];
+        }
+            break;
+        case FETCH_FINAL_STATUS_CANCELLED:
+            [self fadeAlert];
+            break;
+        case FETCH_FINAL_STATUS_FAILED:
+            [self showAlert:error.localizedDescription type:ALERT_TYPE_TOP duration:-1];
+            break;
+    }
 }
 
 - (void)searchForTerm:(NSString *)searchTerm
@@ -137,35 +164,10 @@
     // Show "Searching..." message.
     [self showAlert:MWLocalizedString(@"search-searching", nil) type:ALERT_TYPE_TOP duration:-1];
     
-    // Search for titles op.
-    SearchOp *searchOp =
-    [[SearchOp alloc] initWithSearchTerm: searchTerm
-                         completionBlock: ^(NSArray *searchResults){
-                             
-                             [self fadeAlert];
-                             
-                             self.searchResultsOrdered = searchResults;
-                             
-                             ROOT.topMenuViewController.currentSearchResultsOrdered = self.searchResultsOrdered.copy;
-                             
-                             dispatch_async(dispatch_get_main_queue(), ^(){
-                                 // We have search titles! Show them right away!
-                                 // NSLog(@"FIRE ONE! Show search result titles.");
-                                 [self.searchResultsTable reloadData];
-                             });
-                             
-                         } cancelledBlock: ^(NSError *error){
-                             
-                             [self fadeAlert];
-                             
-                         } errorBlock: ^(NSError *error){
-                             
-                             [self showAlert:error.localizedDescription type:ALERT_TYPE_TOP duration:-1];
-                             
-                         }];
-    
-    searchOp.delegate = self;
-    [[QueuesSingleton sharedInstance].searchQ addOperation:searchOp];
+    // Search for titles.
+    (void)[[SearchResultFetcher alloc] initAndSearchForTerm: searchTerm
+                                                withManager: [QueuesSingleton sharedInstance].searchResultsFetchManager
+                                         thenNotifyDelegate: self];
 }
 
 #pragma mark Search term highlighting

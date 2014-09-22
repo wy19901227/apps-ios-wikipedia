@@ -19,20 +19,20 @@
 {
     self = [super init];
     if (self) {
-        self.loginQ = [[NSOperationQueue alloc] init];
-        self.articleRetrievalQ = [[NSOperationQueue alloc] init];
-        self.searchQ = [[NSOperationQueue alloc] init];
+        self.loginFetchManager = [AFHTTPRequestOperationManager manager];
+        self.articleFetchManager = [AFHTTPRequestOperationManager manager];
+        self.savedPagesQ = [[NSOperationQueue alloc] init];
+        self.searchResultsFetchManager = [AFHTTPRequestOperationManager manager];
         self.thumbnailQ = [[NSOperationQueue alloc] init];
         self.sectionWikiTextDownloadQ = [[NSOperationQueue alloc] init];
         self.sectionWikiTextUploadQ = [[NSOperationQueue alloc] init];
-        self.sectionWikiTextPreviewQ = [[NSOperationQueue alloc] init];
+        self.sectionPreviewHtmlFetchManager = [AFHTTPRequestOperationManager manager];
         self.langLinksQ = [[NSOperationQueue alloc] init];
         self.zeroRatedMessageStringQ = [[NSOperationQueue alloc] init];
-        self.accountCreationQ = [[NSOperationQueue alloc] init];
+        self.accountCreationFetchManager = [AFHTTPRequestOperationManager manager];
         self.randomArticleQ = [[NSOperationQueue alloc] init];
-        self.eventLoggingQ = [[NSOperationQueue alloc] init];
-        self.pageHistoryQ = [[NSOperationQueue alloc] init];
-        self.assetsFileSyncQ = [[NSOperationQueue alloc] init];
+        self.pageHistoryFetchManager = [AFHTTPRequestOperationManager manager];
+        self.assetsFetchManager = [AFHTTPRequestOperationManager manager];
         self.nearbyQ = [[NSOperationQueue alloc] init];
         //[self setupQMonitorLogging];
     }
@@ -42,8 +42,8 @@
 -(void)setupQMonitorLogging
 {
     // Listen in on the Q's op counts to ensure they go away properly.
-    [self.articleRetrievalQ addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
-    [self.searchQ addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
+    [self.articleFetchManager.operationQueue addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
+    [self.searchResultsFetchManager.operationQueue addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
     [self.thumbnailQ addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
 }
 
@@ -52,9 +52,9 @@
     if ([keyPath isEqualToString:@"operationCount"]) {
         dispatch_async(dispatch_get_main_queue(), ^(){
             NSLog(@"QUEUE OP COUNTS: Search %lu, Thumb %lu, Article %lu",
-                (unsigned long)self.searchQ.operationCount,
+                (unsigned long)self.searchResultsFetchManager.operationQueue.operationCount,
                 (unsigned long)self.thumbnailQ.operationCount,
-                (unsigned long)self.articleRetrievalQ.operationCount
+                (unsigned long)self.articleFetchManager.operationQueue.operationCount
             );
         });
     }
