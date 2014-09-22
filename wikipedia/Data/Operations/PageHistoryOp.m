@@ -22,25 +22,25 @@
     
         __weak PageHistoryOp *weakSelf = self;
         
+        NSMutableDictionary *parameters = [@{
+                                             @"action": @"query",
+                                             @"prop": @"revisions",
+                                             @"action": @"query",
+                                             @"rvprop": @"ids|timestamp|user|size|parsedcomment",
+                                             @"rvlimit": @50,
+                                             @"rvdir": @"older",
+                                             @"titles": title,
+                                             @"format": @"json"
+                                             } mutableCopy];
+
+        //NSLog(@"parameters = %@", parameters);
+
+        weakSelf.request =
+        [NSURLRequest getRequestWithURL: [[SessionSingleton sharedInstance] urlForDomain:domain]
+                             parameters: parameters];
+
         self.aboutToStart = ^{
             [[MWNetworkActivityIndicatorManager sharedManager] push];
-            
-            NSMutableDictionary *parameters = [@{
-                                                 @"action": @"query",
-                                                 @"prop": @"revisions",
-                                                 @"action": @"query",
-                                                 @"rvprop": @"ids|timestamp|user|size|parsedcomment",
-                                                 @"rvlimit": @50,
-                                                 @"rvdir": @"older",
-                                                 @"titles": title,
-                                                 @"format": @"json"
-                                                 } mutableCopy];
-            
-            //NSLog(@"parameters = %@", parameters);
-            
-            weakSelf.request = [NSURLRequest getRequestWithURL: [[SessionSingleton sharedInstance] urlForDomain:domain]
-                                                 parameters: parameters
-                            ];
         };
         
         self.completionBlock = ^(){

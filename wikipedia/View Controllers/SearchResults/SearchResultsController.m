@@ -123,7 +123,7 @@
     self.searchResultsOrdered = @[];
     [self.searchResultsTable reloadData];
     
-    [[QueuesSingleton sharedInstance].articleRetrievalQ cancelAllOperations];
+    [[QueuesSingleton sharedInstance].articleRetrievalManager.operationQueue cancelAllOperations];
     [[QueuesSingleton sharedInstance].thumbnailQ cancelAllOperations];
     
     // Cancel any in-progress article retrieval operations

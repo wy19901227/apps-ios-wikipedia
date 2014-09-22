@@ -13,7 +13,6 @@
 #import "Saved.h"
 #import "Section.h"
 
-
 @implementation Article
 
 @dynamic articleId;
@@ -37,5 +36,10 @@
 @dynamic saved;
 @dynamic section;
 @dynamic thumbnailImage;
+
+-(void)dealloc
+{
+    //NSLog(@"DEALLOC'ING ARTICLE!");
+}
 
 @end
