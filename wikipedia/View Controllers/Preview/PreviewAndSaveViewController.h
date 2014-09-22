@@ -5,10 +5,11 @@
 #import "MWNetworkOp.h"
 #import "CaptchaViewController.h"
 #import "EditFunnel.h"
+#import "FetcherBase.h"
 
 @class NSManagedObjectID;
 
-@interface PreviewAndSaveViewController : UIViewController <NetworkOpDelegate, UITextFieldDelegate, CaptchaViewControllerRefresh, UIScrollViewDelegate>
+@interface PreviewAndSaveViewController : UIViewController <NetworkOpDelegate, FetchFinishedDelegate, UITextFieldDelegate, CaptchaViewControllerRefresh, UIScrollViewDelegate>
 
 @property (strong, nonatomic) NSManagedObjectID *sectionID;
 @property (strong, nonatomic) NSString *wikiText;

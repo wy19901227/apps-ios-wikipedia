@@ -19,21 +19,31 @@
 {
     self = [super init];
     if (self) {
-        self.loginQ = [[NSOperationQueue alloc] init];
-        self.articleRetrievalQ = [[NSOperationQueue alloc] init];
-        self.searchQ = [[NSOperationQueue alloc] init];
-        self.thumbnailQ = [[NSOperationQueue alloc] init];
+        self.loginFetchManager = [AFHTTPRequestOperationManager manager];
+        self.articleFetchManager = [AFHTTPRequestOperationManager manager];
+        self.savedPagesQ = [[NSOperationQueue alloc] init];
+        self.searchResultsFetchManager = [AFHTTPRequestOperationManager manager];
         self.sectionWikiTextDownloadQ = [[NSOperationQueue alloc] init];
         self.sectionWikiTextUploadQ = [[NSOperationQueue alloc] init];
-        self.sectionWikiTextPreviewQ = [[NSOperationQueue alloc] init];
+        self.sectionPreviewHtmlFetchManager = [AFHTTPRequestOperationManager manager];
         self.langLinksQ = [[NSOperationQueue alloc] init];
         self.zeroRatedMessageStringQ = [[NSOperationQueue alloc] init];
-        self.accountCreationQ = [[NSOperationQueue alloc] init];
+        self.accountCreationFetchManager = [AFHTTPRequestOperationManager manager];
         self.randomArticleQ = [[NSOperationQueue alloc] init];
-        self.eventLoggingQ = [[NSOperationQueue alloc] init];
-        self.pageHistoryQ = [[NSOperationQueue alloc] init];
-        self.assetsFileSyncQ = [[NSOperationQueue alloc] init];
-        self.nearbyQ = [[NSOperationQueue alloc] init];
+        self.pageHistoryFetchManager = [AFHTTPRequestOperationManager manager];
+        self.assetsFetchManager = [AFHTTPRequestOperationManager manager];
+        self.nearbyFetchManager = [AFHTTPRequestOperationManager manager];
+
+        // Set the responseSerializer to AFHTTPResponseSerializer, so that it will no longer
+        // try to parse the JSON - needed because we use the following managers to fetch both
+        // nearby json api data *and* thumbnails. Thumb responses are not json!
+        // From: http://stackoverflow.com/a/21621530
+        self.nearbyFetchManager.responseSerializer = [AFHTTPResponseSerializer serializer];
+        self.searchResultsFetchManager.responseSerializer = [AFHTTPResponseSerializer serializer];
+        
+        // The assetsFetchManager doesn't retreive json either.
+        self.assetsFetchManager.responseSerializer = [AFHTTPResponseSerializer serializer];
+
         //[self setupQMonitorLogging];
     }
     return self;
@@ -42,19 +52,17 @@
 -(void)setupQMonitorLogging
 {
     // Listen in on the Q's op counts to ensure they go away properly.
-    [self.articleRetrievalQ addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
-    [self.searchQ addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
-    [self.thumbnailQ addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
+    [self.articleFetchManager.operationQueue addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
+    [self.searchResultsFetchManager.operationQueue addObserver:self forKeyPath:@"operationCount" options:NSKeyValueObservingOptionNew context:nil];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     if ([keyPath isEqualToString:@"operationCount"]) {
         dispatch_async(dispatch_get_main_queue(), ^(){
-            NSLog(@"QUEUE OP COUNTS: Search %lu, Thumb %lu, Article %lu",
-                (unsigned long)self.searchQ.operationCount,
-                (unsigned long)self.thumbnailQ.operationCount,
-                (unsigned long)self.articleRetrievalQ.operationCount
+            NSLog(@"QUEUE OP COUNTS: Search %lu, Article %lu",
+                (unsigned long)self.searchResultsFetchManager.operationQueue.operationCount,
+                (unsigned long)self.articleFetchManager.operationQueue.operationCount
             );
         });
     }

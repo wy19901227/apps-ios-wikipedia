@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>BE7F6A08-79E5-4584-924A-C2FDA58874F2</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Wikipedia</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>6F58B18C33AC36B5D9F9521B586BF8F1E76E5C24</key>
+		<string>https://github.com/montehurd/apps-ios-wikipedia.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Wikipedia.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>6F58B18C33AC36B5D9F9521B586BF8F1E76E5C24</key>
+		<string>..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/montehurd/apps-ios-wikipedia.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>6F58B18C33AC36B5D9F9521B586BF8F1E76E5C24</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>6F58B18C33AC36B5D9F9521B586BF8F1E76E5C24</string>
+			<key>IDESourceControlWCCName</key>
+			<string>wikipedia</string>
+		</dict>
+	</array>
+</dict>
+</plist>
