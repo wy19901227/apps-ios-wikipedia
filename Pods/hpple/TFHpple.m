@@ -30,82 +30,43 @@
 #import "TFHpple.h"
 #import "XPathQuery.h"
 
-@interface TFHpple ()
-{
-    NSData * data;
-    NSString * encoding;
-    BOOL isXML;
-}
-
-@end
-
-
 @implementation TFHpple
 
 @synthesize data;
-@synthesize encoding;
 
 
-- (id) initWithData:(NSData *)theData encoding:(NSString *)theEncoding isXML:(BOOL)isDataXML
+- (id) initWithData:(NSData *)theData isXML:(BOOL)isDataXML
 {
   if (!(self = [super init])) {
     return nil;
   }
 
   data = theData;
-  encoding = theEncoding;
   isXML = isDataXML;
 
   return self;
 }
 
-- (id) initWithData:(NSData *)theData isXML:(BOOL)isDataXML
-{
-    return [self initWithData:theData encoding:nil isXML:isDataXML];
-}
-
-- (id) initWithXMLData:(NSData *)theData encoding:(NSString *)theEncoding
-{
-  return [self initWithData:theData encoding:theEncoding isXML:YES];
-}
-
 - (id) initWithXMLData:(NSData *)theData
 {
-  return [self initWithData:theData encoding:nil isXML:YES];
-}
-
-- (id) initWithHTMLData:(NSData *)theData encoding:(NSString *)theEncoding
-{
-    return [self initWithData:theData encoding:theEncoding isXML:NO];
+  return [self initWithData:theData isXML:YES];
 }
 
 - (id) initWithHTMLData:(NSData *)theData
 {
-  return [self initWithData:theData encoding:nil isXML:NO];
-}
-
-+ (TFHpple *) hppleWithData:(NSData *)theData encoding:(NSString *)theEncoding isXML:(BOOL)isDataXML {
-  return [[[self class] alloc] initWithData:theData encoding:theEncoding isXML:isDataXML];
+  return [self initWithData:theData isXML:NO];
 }
 
 + (TFHpple *) hppleWithData:(NSData *)theData isXML:(BOOL)isDataXML {
-  return [[self class] hppleWithData:theData encoding:nil isXML:isDataXML];
-}
-
-+ (TFHpple *) hppleWithHTMLData:(NSData *)theData encoding:(NSString *)theEncoding {
-  return [[self class] hppleWithData:theData encoding:theEncoding isXML:NO];
+  return [[[self class] alloc] initWithData:theData isXML:isDataXML];
 }
 
 + (TFHpple *) hppleWithHTMLData:(NSData *)theData {
-  return [[self class] hppleWithData:theData encoding:nil isXML:NO];
-}
-
-+ (TFHpple *) hppleWithXMLData:(NSData *)theData encoding:(NSString *)theEncoding {
-  return [[self class] hppleWithData:theData encoding:theEncoding isXML:YES];
+  return [[self class] hppleWithData:theData isXML:NO];
 }
 
 + (TFHpple *) hppleWithXMLData:(NSData *)theData {
-  return [[self class] hppleWithData:theData encoding:nil isXML:YES];
+  return [[self class] hppleWithData:theData isXML:YES];
 }
 
 #pragma mark -
@@ -115,14 +76,14 @@
 {
   NSArray * detailNodes = nil;
   if (isXML) {
-    detailNodes = PerformXMLXPathQueryWithEncoding(data, xPathOrCSS, encoding);
+    detailNodes = PerformXMLXPathQuery(data, xPathOrCSS);
   } else {
-    detailNodes = PerformHTMLXPathQueryWithEncoding(data, xPathOrCSS, encoding);
+    detailNodes = PerformHTMLXPathQuery(data, xPathOrCSS);
   }
 
   NSMutableArray * hppleElements = [NSMutableArray array];
   for (id node in detailNodes) {
-    [hppleElements addObject:[TFHppleElement hppleElementWithNode:node isXML:isXML withEncoding:encoding]];
+    [hppleElements addObject:[TFHppleElement hppleElementWithNode:node]];
   }
   return hppleElements;
 }

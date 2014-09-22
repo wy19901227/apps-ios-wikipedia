@@ -3,10 +3,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "AFHTTPRequestOperationManager.h"
+
 @interface QueuesSingleton : NSObject
 
 @property (strong, nonatomic) NSOperationQueue *loginQ;
-@property (strong, nonatomic) NSOperationQueue *articleRetrievalQ;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *articleRetrievalManager;
+@property (strong, nonatomic) NSOperationQueue *savedPagesQ;
 @property (strong, nonatomic) NSOperationQueue *searchQ;
 @property (strong, nonatomic) NSOperationQueue *thumbnailQ;
 @property (strong, nonatomic) NSOperationQueue *zeroRatedMessageStringQ;

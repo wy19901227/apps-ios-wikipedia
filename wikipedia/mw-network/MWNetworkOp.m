@@ -12,14 +12,19 @@
 @property (copy, readwrite) NSNumber *bytesWritten;
 @property (copy, readwrite) NSNumber *bytesExpectedToWrite;
 
+// In concurrent operations, we have to manage the operation's state
+@property (nonatomic, readwrite, getter = isExecuting) BOOL executing;
+@property (nonatomic, readwrite, getter = isFinished)  BOOL finished;
+
 @end
 
 @implementation MWNetworkOp
 {
-    // In concurrent operations, we have to manage the operation's state
-    BOOL executing_;
-    BOOL finished_;
+
 }
+
+@synthesize finished  = _finished;
+@synthesize executing = _executing;
 
 #pragma mark - Init / dealloc
 
@@ -52,8 +57,8 @@
         self.initializationTime = [NSDate timeIntervalSinceReferenceDate];
         _bytesWritten = nil;
         _bytesExpectedToWrite = nil;
-        finished_ = NO;
-        executing_ = NO;
+        self.finished = NO;
+        self.executing = NO;
         self.aboutToStart = nil;
         self.aboutToDealloc = nil;
         self.tag = NSUIntegerMax;
@@ -98,7 +103,7 @@
         }
     }
 
-    if(finished_ || [self isCancelled]) {
+    if(self.finished || [self isCancelled]) {
 		[self finishWithError:@"Start method aborted early because op was marked finished or cancelled."];
 		return;
 	}
@@ -120,9 +125,7 @@
     
     // From this point on, the operation is officially executing--remember, isExecuting
     // needs to be KVO compliant!
-    [self willChangeValueForKey:@"isExecuting"];
-    executing_ = YES;
-    [self didChangeValueForKey:@"isExecuting"];
+    self.executing = YES;
     
     // Create the NSURLConnection. Could have done so in init, but delayed until now in case the
     // operation was never enqueued or was cancelled before starting
@@ -135,14 +138,18 @@
     while(!self.isFinished){[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:distantFutureDate];}
 }
 
--(BOOL)isExecuting
+-(void)setExecuting:(BOOL)executing
 {
-	return executing_;
+    [self willChangeValueForKey:@"isExecuting"];
+    _executing = executing;
+    [self didChangeValueForKey:@"isExecuting"];
 }
 
--(BOOL)isFinished
+-(void)setFinished:(BOOL)finished
 {
-	return finished_;
+    [self willChangeValueForKey:@"isFinished"];
+    _finished = finished;
+    [self didChangeValueForKey:@"isFinished"];
 }
 
 -(BOOL)isConcurrent
@@ -274,14 +281,10 @@
     self.completionBlock = nil;
 
 	// Alert anyone that we are finished
-	[self willChangeValueForKey:@"isExecuting"];
-	executing_ = NO;
-	[self didChangeValueForKey:@"isExecuting"];
+	self.executing = NO;
 
     if (actuallyStarted) { // <-- This prevents iOS 6 "went isFinished=YES without being started by the queue it is in" bug
-        [self willChangeValueForKey:@"isFinished"];
-        finished_  = YES;
-        [self didChangeValueForKey:@"isFinished"];
+        self.finished = YES;
     }
 
 }

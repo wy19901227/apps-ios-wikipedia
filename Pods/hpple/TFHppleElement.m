@@ -29,7 +29,6 @@
 
 
 #import "TFHppleElement.h"
-#import "XPathQuery.h"
 
 static NSString * const TFHppleNodeContentKey           = @"nodeContent";
 static NSString * const TFHppleNodeNameKey              = @"nodeName";
@@ -40,36 +39,25 @@ static NSString * const TFHppleNodeAttributeNameKey     = @"attributeName";
 static NSString * const TFHppleTextNodeName            = @"text";
 
 @interface TFHppleElement ()
-{    
-    NSDictionary * node;
-    BOOL isXML;
-    NSString *encoding;
-    __unsafe_unretained TFHppleElement *parent;
-}
-
 @property (nonatomic, unsafe_unretained, readwrite) TFHppleElement *parent;
-
 @end
 
 @implementation TFHppleElement
 @synthesize parent;
 
 
-- (id) initWithNode:(NSDictionary *) theNode isXML:(BOOL)isDataXML withEncoding:(NSString *)theEncoding
+- (id) initWithNode:(NSDictionary *) theNode
 {
   if (!(self = [super init]))
     return nil;
 
-    isXML = isDataXML;
-    node = theNode;
-    encoding = theEncoding;
+  node = theNode;
 
   return self;
 }
 
-+ (TFHppleElement *) hppleElementWithNode:(NSDictionary *) theNode isXML:(BOOL)isDataXML withEncoding:(NSString *)theEncoding
-{
-  return [[[self class] alloc] initWithNode:theNode isXML:isDataXML withEncoding:theEncoding];
++ (TFHppleElement *) hppleElementWithNode:(NSDictionary *) theNode {
+  return [[[self class] alloc] initWithNode:theNode];
 }
 
 #pragma mark -
@@ -94,7 +82,7 @@ static NSString * const TFHppleTextNodeName            = @"text";
 {
   NSMutableArray *children = [NSMutableArray array];
   for (NSDictionary *child in [node objectForKey:TFHppleNodeChildrenKey]) {
-      TFHppleElement *element = [TFHppleElement hppleElementWithNode:child isXML:isXML withEncoding:encoding];
+      TFHppleElement *element = [TFHppleElement hppleElementWithNode:child];
       element.parent = self;
       [children addObject:element];
   }
@@ -198,7 +186,7 @@ static NSString * const TFHppleTextNodeName            = @"text";
     return nil;
 }
 
-- (TFHppleElement *) firstTextChild
+- (TFHppleElement *) firstTextChild;
 {
     for (TFHppleElement* child in self.children)
     {
@@ -212,32 +200,6 @@ static NSString * const TFHppleTextNodeName            = @"text";
 - (NSString *) text
 {
     return self.firstTextChild.content;
-}
-
-// Returns all elements at xPath.
-- (NSArray *) searchWithXPathQuery:(NSString *)xPathOrCSS
-{
-    
-    NSData *data = [self.raw dataUsingEncoding:NSUTF8StringEncoding];
-
-    NSArray * detailNodes = nil;
-    if (isXML) {
-        detailNodes = PerformXMLXPathQueryWithEncoding(data, xPathOrCSS, encoding);
-    } else {
-        detailNodes = PerformHTMLXPathQueryWithEncoding(data, xPathOrCSS, encoding);
-    }
-    
-    NSMutableArray * hppleElements = [NSMutableArray array];
-    for (id newNode in detailNodes) {
-        [hppleElements addObject:[TFHppleElement hppleElementWithNode:newNode isXML:isXML withEncoding:encoding]];
-    }
-    return hppleElements;
-}
-
-// Custom keyed subscripting
-- (id)objectForKeyedSubscript:(id)key
-{
-    return [self objectForKey:key];
 }
 
 @end
