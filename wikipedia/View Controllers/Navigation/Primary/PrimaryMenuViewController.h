@@ -3,8 +3,9 @@
 
 #import <UIKit/UIKit.h>
 #import "TopMenuViewController.h"
+#import "FetcherBase.h"
 
-@interface PrimaryMenuViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface PrimaryMenuViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, FetchFinishedDelegate>
 
 @property (nonatomic) NavBarMode navBarMode;
 @property (nonatomic) NavBarStyle navBarStyle;

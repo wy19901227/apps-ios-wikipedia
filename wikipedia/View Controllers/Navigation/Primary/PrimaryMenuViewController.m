@@ -14,7 +14,7 @@
 #import "PageHistoryViewController.h"
 #import "UIViewController+Alert.h"
 #import "QueuesSingleton.h"
-#import "DownloadTitlesForRandomArticlesOp.h"
+#import "RandomArticleFetcher.h"
 #import "TopMenuContainerView.h"
 #import "UIViewController+StatusBarHeight.h"
 #import "Defines.h"
@@ -102,7 +102,7 @@ typedef NS_ENUM(NSInteger, PrimaryMenuItemTag) {
     [self setupTableData];
     [self.tableView reloadData];
     
-    [[QueuesSingleton sharedInstance].randomArticleQ cancelAllOperations];
+    [[QueuesSingleton sharedInstance].randomArticleFetchManager.operationQueue cancelAllOperations];
 }
 
 -(void)viewWillDisappear:(BOOL)animated
@@ -312,31 +312,43 @@ typedef NS_ENUM(NSInteger, PrimaryMenuItemTag) {
     }
 }
 
+- (void)fetchFinished: (id)sender
+             userData: (id)userData
+               status: (FetchFinalStatus)status
+                error: (NSError *)error
+{
+    if ([sender isKindOfClass:[RandomArticleFetcher class]]) {
+        switch (status) {
+            case FETCH_FINAL_STATUS_SUCCEEDED:{
+                NSString *title = (NSString *)userData;
+                if (title) {
+                    MWPageTitle *pageTitle = [MWPageTitle titleWithString:title];
+                    [NAV loadArticleWithTitle: pageTitle
+                                       domain: [SessionSingleton sharedInstance].domain
+                                     animated: YES
+                              discoveryMethod: DISCOVERY_METHOD_RANDOM
+                            invalidatingCache: NO
+                                   popToWebVC: NO]; // Don't pop - popModal was already called above.
+                }
+            }
+                break;
+            case FETCH_FINAL_STATUS_CANCELLED:
+                [self fadeAlert];
+                break;
+            case FETCH_FINAL_STATUS_FAILED:
+                [self showAlert:error.localizedDescription type:ALERT_TYPE_TOP duration:-1];
+                break;
+        }
+    }
+}
+
 -(void)fetchRandomArticle {
 
-    [[QueuesSingleton sharedInstance].randomArticleQ cancelAllOperations];
+    [[QueuesSingleton sharedInstance].randomArticleFetchManager.operationQueue cancelAllOperations];
 
-    DownloadTitlesForRandomArticlesOp *downloadTitlesForRandomArticlesOp =
-        [[DownloadTitlesForRandomArticlesOp alloc] initForDomain: [SessionSingleton sharedInstance].domain
-                                                 completionBlock: ^(NSString *title) {
-                                                     if (title) {
-                                                         MWPageTitle *pageTitle = [MWPageTitle titleWithString:title];
-                                                         dispatch_async(dispatch_get_main_queue(), ^(){
-                                                             [NAV loadArticleWithTitle: pageTitle
-                                                                                domain: [SessionSingleton sharedInstance].domain
-                                                                              animated: YES
-                                                                       discoveryMethod: DISCOVERY_METHOD_RANDOM
-                                                                     invalidatingCache: NO
-                                                                            popToWebVC: NO]; // Don't pop - popModal was already called above.
-                                                         });
-                                                     }
-                                                 } cancelledBlock: ^(NSError *errorCancel) {
-                                                    [self fadeAlert];
-                                                 } errorBlock: ^(NSError *error) {
-                                                    [self showAlert:error.localizedDescription type:ALERT_TYPE_TOP duration:-1];
-                                                 }];
-
-    [[QueuesSingleton sharedInstance].randomArticleQ addOperation:downloadTitlesForRandomArticlesOp];
+    (void)[[RandomArticleFetcher alloc] initAndFetchRandomArticleForDomain: [SessionSingleton sharedInstance].domain
+                                                               withManager: [QueuesSingleton sharedInstance].randomArticleFetchManager
+                                                        thenNotifyDelegate: self];
 }
 
 /*
