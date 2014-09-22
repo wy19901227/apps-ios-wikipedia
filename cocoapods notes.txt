@@ -1,0 +1,28 @@
+
+Presently, the script "run-cocoapods.sh" calls "pod install --no-integrate"
+which causes the projects in "Podfile" to be downloaded and placed in the
+"Cocoapods/Pods/" directory. The needed source files were then dragged into
+the project manually.
+
+This is less than perfect, but the workspace file and other project 
+integration which happens without the "--no-integrate" flag is still too
+messy. As Cocoapods approaches version 1.0 we can re-assess.
+
+Note: the "Cocoapods/Pods/" directory is wiped every time "run-cocoapods.sh"
+runs. So don't manually place any files in this directory.
+
+The "Podfile" may still be edited to include new Cocoapod dependencies,
+and they will be automatically downloaded on each time "run-cocoapods.sh"
+runs, but for the project to actually used them their source files will 
+have to be manually dragged into the project (once) so Xcode can reference
+them. Be sure to drag them into the existing "Cocoapods/Pods" group in Xcode.
+
+Also note: the "run-cocoapods.sh" script only runs during a build if it
+is un-commented out: "Targets > Wikipedia > Build Phases" then expand the 
+first "Run Script" entry and change "#scripts/run-cocoapods.sh" to
+"scripts/run-cocoapods.sh".
+
+For now comment "run-cocoapods.sh" back out after running it
+to do an update. Update is only needed if new versions are available.
+In this case update "Podfile" to specify what new version to retrieve
+before uncommenting the "run-cocoapods.sh" build script.
