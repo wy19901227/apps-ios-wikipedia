@@ -2,7 +2,6 @@
 //  Copyright (c) 2013 Wikimedia Foundation. Provided under MIT-style license; please copy and modify!
 
 #import "PageHistoryResultCell.h"
-#import "WikipediaAppUtils.h"
 
 @implementation PageHistoryResultCell
 
@@ -27,12 +26,6 @@
     //self.backgroundColor = [UIColor greenColor];
     
     self.separatorHeightConstraint.constant = 1.0f / [UIScreen mainScreen].scale;
-
-    self.summaryLabel.textAlignment = [WikipediaAppUtils rtlSafeAlignment];
-    self.nameLabel.textAlignment = [WikipediaAppUtils rtlSafeAlignment];
-    self.timeLabel.textAlignment = [WikipediaAppUtils rtlSafeAlignment];
-    self.deltaLabel.textAlignment = [WikipediaAppUtils rtlSafeAlignment];
-    self.iconLabel.textAlignment = [WikipediaAppUtils rtlSafeAlignment];
 }
 
 -(void)prepareForReuse

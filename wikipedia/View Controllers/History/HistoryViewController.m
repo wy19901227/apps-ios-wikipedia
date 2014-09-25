@@ -343,7 +343,7 @@
 
     NSMutableAttributedString *(^styleText)(NSString *, CGFloat, UIColor *) = ^NSMutableAttributedString *(NSString *str, CGFloat size, UIColor *color){
         return [[NSMutableAttributedString alloc] initWithString:str attributes: @{
-            NSFontAttributeName : [UIFont boldSystemFontOfSize:size],
+            NSFontAttributeName : [UIFont boldSystemFontOfSize:size * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)],
             NSParagraphStyleAttributeName : paragraphStyle,
             NSForegroundColorAttributeName : color,
         }];
@@ -447,12 +447,12 @@
     NSRange rangeOfDateString = NSMakeRange(title.length + 1, dateString.length);
     
     [attributedHeader addAttributes:@{
-                                      NSFontAttributeName : [UIFont boldSystemFontOfSize:12.0],
+                                      NSFontAttributeName : [UIFont boldSystemFontOfSize:12.0 * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)],
                                       NSForegroundColorAttributeName : HISTORY_DATE_HEADER_TEXT_COLOR
                                       } range:rangeOfTitle];
     
     [attributedHeader addAttributes:@{
-                                      NSFontAttributeName : [UIFont systemFontOfSize:12.0],
+                                      NSFontAttributeName : [UIFont systemFontOfSize:12.0 * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)],
                                       NSForegroundColorAttributeName : HISTORY_DATE_HEADER_TEXT_COLOR
                                       } range:rangeOfDateString];
     return attributedHeader;
@@ -530,7 +530,7 @@
     }
     
     UIColor *iconColor = [UIColor lightGrayColor];
-    CGFloat fontSize = 20;
+    CGFloat fontSize = 20.0f * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT);
     NSDictionary *attributes =
         @{
             NSFontAttributeName: [UIFont fontWithName:@"WikiFont-Glyphs" size:fontSize],

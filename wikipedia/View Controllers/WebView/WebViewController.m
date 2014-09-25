@@ -134,6 +134,8 @@ typedef enum {
 @property (strong, nonatomic) NSString *currentTitle;
 @property (strong, nonatomic) NSString *currentDomain;
 
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomNavHeightConstraint;
+
 @end
 
 #pragma mark Internal variables
@@ -168,6 +170,8 @@ typedef enum {
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
+    self.bottomNavHeightConstraint.constant = CHROME_MENUS_HEIGHT;
 
     self.scrollingToTop = NO;
 

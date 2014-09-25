@@ -215,7 +215,7 @@
 
     NSMutableAttributedString *(^styleText)(NSString *, CGFloat, UIColor *) = ^NSMutableAttributedString *(NSString *str, CGFloat size, UIColor *color){
         return [[NSMutableAttributedString alloc] initWithString:str attributes: @{
-            NSFontAttributeName : [UIFont fontWithName:@"Georgia" size:size],
+            NSFontAttributeName : [UIFont fontWithName:@"Georgia" size:size * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)],
             NSParagraphStyleAttributeName : paragraphStyle,
             NSForegroundColorAttributeName : color,
         }];

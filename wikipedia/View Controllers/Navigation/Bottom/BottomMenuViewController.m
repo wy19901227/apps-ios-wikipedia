@@ -24,6 +24,8 @@
 #import "UIViewController+ModalPresent.h"
 #import "UIViewController+ModalsSearch.h"
 #import "UIViewController+ModalPop.h"
+#import "UIView+Debugging.h"
+#import "UIView+ConstraintsScale.h"
 
 typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     BOTTOM_MENU_BUTTON_UNKNOWN,
@@ -54,6 +56,11 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
 
 }
 
+-(CGFloat)getTextSize
+{
+    return (CHROME_MENUS_HEIGHT * ICON_PERCENT_OF_CHROME_MENUS_HEIGHT);
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -62,7 +69,7 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     articleDataContext_ = [ArticleDataContextSingleton sharedInstance];
 
     UIColor *buttonColor = [UIColor blackColor];
-    CGFloat buttonTextSize = 34;
+    CGFloat buttonTextSize = [self getTextSize];
 
     BOOL isRTL = [WikipediaAppUtils isDeviceLanguageRTL];
 
@@ -109,6 +116,12 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
                                                   action: @selector(saveButtonLongPressed:)];
     longPressRecognizer.minimumPressDuration = 0.5f;
     [self.saveButton addGestureRecognizer:longPressRecognizer];
+
+    CGFloat multiplier = (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT);
+    [self.backButton adjustConstraintsByMultiplier:multiplier];
+    [self.forwardButton adjustConstraintsByMultiplier:multiplier];
+    [self.saveButton adjustConstraintsByMultiplier:multiplier];
+    [self.rightButton adjustConstraintsByMultiplier:multiplier];
 }
 
 -(void)addTapRecognizersToAllButtons
@@ -329,7 +342,7 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     
     [self.saveButton.label setWikiText: saveIconString
                                  color: saveIconColor
-                                  size: 34
+                                  size: [self getTextSize]
                         baselineOffset: 0];
 }
 

@@ -30,6 +30,7 @@
 #import "LoginViewController.h"
 #import "AccountCreationViewController.h"
 #import "WMF_Colors.h"
+#import "UIView+ConstraintsScale.h"
 
 @interface TopMenuViewController (){
 
@@ -96,6 +97,9 @@
 -(void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    [self.view randomlyColorSubviews];
+    
 }
 
 -(void)viewDidAppear:(BOOL)animated
@@ -179,15 +183,21 @@
         view.hidden = NO;
 
         [self.navBarContainer addConstraints:
-         [NSLayoutConstraint constraintsWithVisualFormat: @"V:|-(topMargin)-[view(TOP_MENU_INITIAL_HEIGHT)]"
+         [NSLayoutConstraint constraintsWithVisualFormat: @"V:|-(topMargin)-[view(CHROME_MENUS_HEIGHT)]"
                                                  options: 0
                                                  metrics: @{
                                                     @"topMargin": @(topMargin),
-                                                    @"TOP_MENU_INITIAL_HEIGHT": @(TOP_MENU_INITIAL_HEIGHT)
+                                                    @"CHROME_MENUS_HEIGHT": @(CHROME_MENUS_HEIGHT * ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)
                                                     }
                                                    views: NSDictionaryOfVariableBindings(view)
           ]
          ];
+    }
+    
+    // Adjust constraints relative to screen size.
+    for (UIView *v in [self.navBarContainer.subviews copy]) {
+        CGFloat multiplier = (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT);
+        [v adjustConstraintsByMultiplier:multiplier];
     }
 }
 
@@ -226,7 +236,7 @@
     ^WikiGlyphButton *(NSString *character, NSString *accessLabel, NavBarItemTag tag, CGFloat size) {
         WikiGlyphButton *button = [[WikiGlyphButton alloc] init];
 
-        [button.label setWikiText:character color:[UIColor blackColor] size:size baselineOffset:0];
+        [button.label setWikiText:character color:[UIColor blackColor] size:size * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT) baselineOffset:0];
         button.translatesAutoresizingMaskIntoConstraints = NO;
 
         [button addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget: self
@@ -258,14 +268,14 @@
         self.buttonTOC.transform = CGAffineTransformScale(CGAffineTransformIdentity, -1.0, 1.0);
     }
 
-    self.buttonCancel.label.font = [UIFont systemFontOfSize:17.0];
+    self.buttonCancel.label.font = [UIFont systemFontOfSize:17.0 * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)];
     self.buttonCancel.label.text = MWLocalizedString(@"search-cancel", nil);
 
     MenuButton *(^getMenuButton)(NSString *, NavBarItemTag, CGFloat, UIColor *, UIEdgeInsets, UIEdgeInsets) =
     ^MenuButton *(NSString *string, NavBarItemTag tag, CGFloat size, UIColor *color, UIEdgeInsets padding, UIEdgeInsets margin) {
         
         MenuButton *button = [[MenuButton alloc] initWithText: string
-                                                     fontSize: size
+                                                     fontSize: size * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)
                                                          bold: YES
                                                         color: color
                                                       padding: padding
@@ -325,7 +335,7 @@
     self.label.text = @"";
     self.label.translatesAutoresizingMaskIntoConstraints = NO;
     self.label.tag = NAVBAR_LABEL;
-    self.label.font = [UIFont systemFontOfSize:19.0];
+    self.label.font = [UIFont systemFontOfSize:19.0 * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)];
     self.label.textAlignment = NSTextAlignmentCenter;
     
     self.label.adjustsFontSizeToFitWidth = YES;

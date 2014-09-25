@@ -39,7 +39,8 @@
     NSMutableAttributedString *str = [[NSMutableAttributedString alloc] initWithString:string];
     
     [str addAttributes: @{
-                          NSForegroundColorAttributeName : SEARCH_FIELD_PLACEHOLDER_TEXT_COLOR
+                          NSForegroundColorAttributeName : SEARCH_FIELD_PLACEHOLDER_TEXT_COLOR,
+                          NSFontAttributeName : self.font
                           }
                  range: NSMakeRange(0, string.length)];
     return str;

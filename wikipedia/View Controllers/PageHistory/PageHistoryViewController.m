@@ -179,7 +179,7 @@
     cell.iconLabel.attributedText =
     [[NSAttributedString alloc] initWithString: row[@"anon"] ? WIKIGLYPH_USER_SLEEP : WIKIGLYPH_USER_SMILE
                                     attributes: @{
-                                                  NSFontAttributeName: [UIFont fontWithName:@"WikiFont-Glyphs" size:23],
+                                                  NSFontAttributeName: [UIFont fontWithName:@"WikiFont-Glyphs" size:23.0f * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)],
                                                   NSForegroundColorAttributeName : [UIColor colorWithRed:0.78 green:0.78 blue:0.78 alpha:1.0],
                                                   NSBaselineOffsetAttributeName: @1
                                                   }];
@@ -228,7 +228,7 @@
     CGFloat leadingIndent = 10;
     label.padding = UIEdgeInsetsMake(0, leadingIndent, 0, 0);
 
-    label.font = [UIFont boldSystemFontOfSize:12];
+    label.font = [UIFont boldSystemFontOfSize:12 * (1.0f / ICON_PERCENT_OF_CHROME_MENUS_HEIGHT)];
     label.textColor = [UIColor darkGrayColor];
     label.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     label.backgroundColor = [UIColor clearColor];

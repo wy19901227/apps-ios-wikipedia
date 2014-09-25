@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6245" systemVersion="13E28" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="1qV-3k-dN1">
     <dependencies>
-        <deployment defaultVersion="1536" identifier="iOS"/>
         <development version="5100" identifier="xcode"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6238"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
@@ -1158,6 +1157,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="bottomBarView" destination="F4Q-Xc-ImV" id="U8K-lV-PiW"/>
+                        <outlet property="bottomNavHeightConstraint" destination="dTu-be-0cU" id="X5J-Ao-CQv"/>
                         <outlet property="referencesContainerView" destination="gB8-UC-wuQ" id="f7G-jI-SWO"/>
                         <outlet property="referencesContainerViewBottomConstraint" destination="nMr-wt-aMC" id="z1X-xR-f8n"/>
                         <outlet property="referencesContainerViewHeightConstraint" destination="Z6r-VJ-hik" id="vdX-Ye-y6G"/>
@@ -1180,10 +1180,10 @@
                         <viewControllerLayoutGuide type="bottom" id="zQu-e4-iuw"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="dqC-fj-jbQ">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="65"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="60"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pwC-Nc-ZzD" customClass="TopMenuContainerView">
+                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pwC-Nc-ZzD" customClass="TopMenuContainerView">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="65"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
@@ -1791,7 +1791,7 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
+        <segue reference="ZQB-DP-tFv"/>
         <segue reference="ca4-hw-8WK"/>
-        <segue reference="lfF-8A-MqZ"/>
     </inferredMetricsTieBreakers>
 </document>
