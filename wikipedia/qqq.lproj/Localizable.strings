@@ -107,6 +107,7 @@
 "main-menu-heading-legal" = "Header text for the legal section of the menu. Consider using something informal, but feel free to use a more literal translation of \"Legal info\" if it seems more appropriate.";
 "main-menu-show-today" = "Button text for showing mobile version of main page\n{{Identical|Today}}";
 "main-menu-nearby" = "Button for showing nearby articles.\n{{Identical|Nearby}}";
+"menu-more-label" = "Button for showing additional settings and menu items.";
 "saved-pages-title" = "Header text for Saved Pages interface.\n{{Identical|Saved page}}";
 "saved-pages-clear-confirmation-heading" = "Heading text of delete all confirmation dialog";
 "saved-pages-clear-confirmation-sub-heading" = "Sub-heading text of delete all confirmation dialog";
@@ -194,7 +195,6 @@
 "menu-search-accessibility-label" = "Accessible label text for toolbar search icon button\n{{Identical|Search}}";
 "menu-cancel-accessibility-label" = "Accessible label text for toolbar cancel button\n{{Identical|Cancel}}";
 "menu-share-accessibility-label" = "Accessible label text for toolbar share button\n{{Identical|Share}}";
-"menu-more-accessibility-label" = "Accessible label for more/... button in 'W' menu";
 "menu-trash-accessibility-label" = "Accessible label for trash button\n{{Identical|Delete}}";
 "nearby-title" = "Title for page showing nearby geotagged articles\n{{Identical|Nearby}}";
 "nearby-distance-label-meters" = "Label for showing distance in meters to nearby geotagged articles.\n\nParameters:\n* $1 - the number of meters. (The iOS app doesn't support pluralization syntax yet.)\n{{Related|Wikipedia-ios-nearby-distance-label}}";

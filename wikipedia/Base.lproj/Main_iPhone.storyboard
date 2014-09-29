@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6245" systemVersion="13E28" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="1qV-3k-dN1">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6245" systemVersion="13F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="1qV-3k-dN1">
     <dependencies>
         <deployment defaultVersion="1536" identifier="iOS"/>
         <development version="5100" identifier="xcode"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6238"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--Languages View Controller-->
@@ -919,7 +920,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="z4O-h7-mfv">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="m9e-S5-3FD" userLabel="Empty marker">
+                                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="m9e-S5-3FD" userLabel="Empty marker">
                                         <rect key="frame" x="0.0" y="165" width="320" height="238"/>
                                         <subviews>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SavedPagesEmpty" translatesAutoresizingMaskIntoConstraints="NO" id="Nki-Th-pdU">
@@ -1237,7 +1238,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HLl-qz-Bgx">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Yc2-71-IOD" userLabel="Empty marker">
+                                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Yc2-71-IOD" userLabel="Empty marker">
                                         <rect key="frame" x="0.0" y="200" width="320" height="168"/>
                                         <subviews>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="RecentPagesEmpty" translatesAutoresizingMaskIntoConstraints="NO" id="o1U-9i-KeG">
@@ -1518,7 +1519,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <tableView opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" showsSelectionImmediatelyOnTouchBegin="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="k1z-U9-PgQ">
+                            <tableView opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" showsSelectionImmediatelyOnTouchBegin="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="k1z-U9-PgQ">
                                 <rect key="frame" x="15" y="0.0" width="290" height="518"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -1558,23 +1559,21 @@
                                     <outlet property="delegate" destination="kv0-ra-y1C" id="eFw-8y-9Cu"/>
                                 </connections>
                             </tableView>
-                            <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="724-e2-4qa" userLabel="More Button" customClass="WikiGlyphButton">
-                                <rect key="frame" x="0.0" y="518" width="320" height="50"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="724-e2-4qa" userLabel="More Button" customClass="PaddedLabel">
+                                <rect key="frame" x="22" y="518" width="72" height="30"/>
+                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="KaQ-m0-QVN"/>
+                                    <constraint firstAttribute="height" constant="30" id="Fbq-wn-sKi"/>
                                 </constraints>
                             </view>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="724-e2-4qa" secondAttribute="trailing" id="14C-e5-SFb"/>
-                            <constraint firstItem="724-e2-4qa" firstAttribute="leading" secondItem="T6V-mj-ox6" secondAttribute="leading" id="4cd-5z-eqF"/>
+                            <constraint firstItem="ms6-Ce-U0I" firstAttribute="top" secondItem="724-e2-4qa" secondAttribute="bottom" constant="20" id="A97-jb-dun"/>
                             <constraint firstAttribute="trailing" secondItem="k1z-U9-PgQ" secondAttribute="trailing" constant="15" id="Hj4-yb-Ji3"/>
-                            <constraint firstItem="ms6-Ce-U0I" firstAttribute="top" secondItem="724-e2-4qa" secondAttribute="bottom" id="OA3-4T-ZFO"/>
+                            <constraint firstItem="724-e2-4qa" firstAttribute="leading" secondItem="T6V-mj-ox6" secondAttribute="leadingMargin" constant="6" id="hjd-3N-YVV"/>
                             <constraint firstItem="k1z-U9-PgQ" firstAttribute="leading" secondItem="T6V-mj-ox6" secondAttribute="leading" constant="15" id="riH-wG-jgQ"/>
                             <constraint firstItem="k1z-U9-PgQ" firstAttribute="top" secondItem="l0x-rC-7XB" secondAttribute="bottom" id="uju-5f-pRC"/>
-                            <constraint firstItem="724-e2-4qa" firstAttribute="top" secondItem="k1z-U9-PgQ" secondAttribute="bottom" id="vOo-ZB-1q5"/>
                         </constraints>
                     </view>
                     <connections>

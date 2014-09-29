@@ -36,7 +36,7 @@ typedef NS_ENUM(NSInteger, PrimaryMenuItemTag) {
 
 @interface PrimaryMenuViewController ()
 
-@property (weak, nonatomic) IBOutlet WikiGlyphButton *moreButton;
+@property (weak, nonatomic) IBOutlet PaddedLabel *moreButton;
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 
@@ -69,17 +69,15 @@ typedef NS_ENUM(NSInteger, PrimaryMenuItemTag) {
     //[self setupTableData];
     //[self randomizeTitles];
 
-    [self.moreButton.label setWikiText: WIKIGLYPH_ELLIPSIS
-                                 color: [UIColor darkGrayColor]
-                                  size: 64
-                        baselineOffset: 2.0
-                                  ];
-    self.moreButton.accessibilityLabel = MWLocalizedString(@"menu-more-accessibility-label", nil);
+    self.moreButton.text = MWLocalizedString(@"menu-more-label", nil);
 
-    self.moreButton.label.textAlignment = [WikipediaAppUtils rtlSafeAlignment];
+    self.moreButton.textAlignment = [WikipediaAppUtils rtlSafeAlignment];
 
-    self.moreButton.label.padding = UIEdgeInsetsMake(0, 12, 0, 12);
-
+    self.moreButton.padding = UIEdgeInsetsMake(0, 12, 0, 12);
+    
+    self.moreButton.textColor = [UIColor colorWithWhite:1.0f alpha:1.0f];
+    self.moreButton.backgroundColor = [UIColor colorWithWhite:1.0f alpha:0.25f];
+    
     [self addTableHeaderView];
     
     [self.moreButton addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(moreButtonTapped:)]];
