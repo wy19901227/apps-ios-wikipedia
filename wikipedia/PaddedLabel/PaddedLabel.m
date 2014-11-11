@@ -70,6 +70,7 @@
 {
     [super setText:text];
     [self invalidateIntrinsicContentSize];
+    [self layoutIfNeeded];
 }
 
 -(void)setPadding:(UIEdgeInsets)padding
