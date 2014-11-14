@@ -110,4 +110,16 @@
     return [self stringByReplacingOccurrencesOfString:@" " withString:@"_"];
 }
 
+- (NSString *)capitalizeFirstLetter
+{
+    // Capitalize first character of WikiData description.
+    if (self.length > 1){
+        NSString *firstChar = [self substringToIndex:1];
+        NSString *remaininChars = [self substringFromIndex:1];
+        firstChar = [firstChar capitalizedStringWithLocale:[NSLocale currentLocale]];
+        return [firstChar stringByAppendingString:remaininChars];
+    }
+    return self;
+}
+
 @end
