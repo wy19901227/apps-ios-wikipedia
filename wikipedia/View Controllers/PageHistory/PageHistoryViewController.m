@@ -16,12 +16,17 @@
 #import "Defines.h"
 #import "PaddedLabel.h"
 #import "FetcherBase.h"
+#import "UITableViewCell+DynamicCellHeight.h"
+#import "PageHistoryLabel.h"
+
+#define TABLE_CELL_ID @"PageHistoryResultCell"
 
 @interface PageHistoryViewController (){
 
 }
 
 @property (strong, nonatomic) __block NSMutableArray *pageHistoryDataArray;
+@property (strong, nonatomic) PageHistoryResultCell *offScreenSizingCell;
 
 @end
 
@@ -92,7 +97,10 @@
     self.tableView.tableFooterView.backgroundColor = [UIColor whiteColor];
     
     [self.tableView registerNib:[UINib nibWithNibName: @"PageHistoryResultPrototypeView" bundle: nil]
-         forCellReuseIdentifier: @"PageHistoryResultCell"];
+         forCellReuseIdentifier: TABLE_CELL_ID];
+
+    // Single off-screen cell for determining dynamic cell height.
+    self.offScreenSizingCell = (PageHistoryResultCell *)[self.tableView dequeueReusableCellWithIdentifier:TABLE_CELL_ID];
     
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 }
@@ -146,9 +154,16 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *cellID = @"PageHistoryResultCell";
+    static NSString *cellID = TABLE_CELL_ID;
     PageHistoryResultCell *cell = (PageHistoryResultCell *)[tableView dequeueReusableCellWithIdentifier:cellID];
+
+    [self updateViewsInCell:cell forIndexPath:indexPath];
     
+    return cell;
+}
+
+-(void)updateViewsInCell:(PageHistoryResultCell *)cell forIndexPath:(NSIndexPath *)indexPath
+{
     NSDictionary *sectionDict = self.pageHistoryDataArray[indexPath.section];
     NSArray *rows = sectionDict[@"revisions"];
     NSDictionary *row = rows[indexPath.row];
@@ -190,27 +205,15 @@
                                                   }];
     
     cell.nameLabel.text = row[@"user"];
-
-    return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // Getting dynamic cell height which respects auto layout constraints is tricky.
+    // Update the sizing cell with any data which could change the cell height.
+    [self updateViewsInCell:self.offScreenSizingCell forIndexPath:indexPath];
 
-    // First get the cell configured exactly as it is for display.
-    PageHistoryResultCell *cell =
-        (PageHistoryResultCell *)[self tableView:tableView cellForRowAtIndexPath:indexPath];
-
-    // Then coax the cell into taking on the size that would satisfy its layout constraints (and
-    // return that size's height).
-    // From: http://stackoverflow.com/a/18746930/135557
-    [cell setNeedsUpdateConstraints];
-    [cell updateConstraintsIfNeeded];
-    cell.bounds = CGRectMake(0.0f, 0.0f, tableView.bounds.size.width, cell.bounds.size.height);
-    [cell setNeedsLayout];
-    [cell layoutIfNeeded];
-    return ([cell.contentView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height + 1.0f);
+    // Determine height for the current configuration of the sizing cell.
+    return [self.offScreenSizingCell heightForSizingCellInTableView:tableView];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
