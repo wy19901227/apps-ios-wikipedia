@@ -25,6 +25,7 @@
 #import "SearchMessageLabel.h"
 #import "RecentSearchesViewController.h"
 #import "NSArray+Predicate.h"
+#import "SearchResultAttributedString.h"
 
 @interface SearchResultsController (){
     CGFloat scrollViewDragBeganVerticalOffset_;
@@ -50,9 +51,57 @@
 
 @property (nonatomic) BOOL ignoreScrollEvents;
 
+@property (strong, nonatomic) NSDictionary *attributesTitle;
+@property (strong, nonatomic) NSDictionary *attributesDescription;
+@property (strong, nonatomic) NSDictionary *attributesHighlight;
+@property (strong, nonatomic) NSDictionary *attributesSnippet;
+@property (strong, nonatomic) NSDictionary *attributesSnippetHighlight;
+
 @end
 
 @implementation SearchResultsController
+
+-(void)setupStringAttributes
+{
+    NSMutableParagraphStyle *descriptionParagraphStyle = [[NSMutableParagraphStyle alloc] init];
+    descriptionParagraphStyle.paragraphSpacingBefore = SEARCH_RESULT_PADDING_ABOVE_DESCRIPTION;
+
+    NSMutableParagraphStyle *snippetParagraphStyle = [[NSMutableParagraphStyle alloc] init];
+    snippetParagraphStyle.paragraphSpacingBefore = SEARCH_RESULT_PADDING_ABOVE_SNIPPET;
+    
+    self.attributesDescription =
+    @{
+      NSFontAttributeName : SEARCH_RESULT_DESCRIPTION_FONT,
+      NSForegroundColorAttributeName : SEARCH_RESULT_DESCRIPTION_FONT_COLOR,
+      NSParagraphStyleAttributeName : descriptionParagraphStyle
+      };
+    
+    self.attributesTitle =
+    @{
+      NSFontAttributeName : SEARCH_RESULT_FONT,
+      NSForegroundColorAttributeName : SEARCH_RESULT_FONT_COLOR
+      };
+
+    self.attributesSnippet =
+    @{
+      NSParagraphStyleAttributeName : snippetParagraphStyle,
+      NSFontAttributeName : SEARCH_RESULT_SNIPPET_FONT,
+      NSForegroundColorAttributeName : SEARCH_RESULT_SNIPPET_FONT_COLOR
+      };
+
+    self.attributesSnippetHighlight =
+    @{
+      NSParagraphStyleAttributeName : snippetParagraphStyle,
+      NSFontAttributeName : SEARCH_RESULT_SNIPPET_FONT,
+      NSForegroundColorAttributeName : SEARCH_RESULT_SNIPPET_HIGHLIGHT_COLOR
+      };
+    
+    self.attributesHighlight =
+    @{
+      NSFontAttributeName : SEARCH_RESULT_FONT_HIGHLIGHTED,
+      NSForegroundColorAttributeName : SEARCH_RESULT_FONT_HIGHLIGHTED_COLOR
+      };
+}
 
 -(void)setSearchString:(NSString *)searchString
 {
@@ -95,6 +144,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
+    [self setupStringAttributes];
 
     self.ignoreScrollEvents = NO;
     self.searchString = @"";
@@ -279,6 +330,26 @@
     [[QueuesSingleton sharedInstance].searchResultsFetchManager.operationQueue cancelAllOperations];
 }
 
+-(void)updateAttributeTextForSearchType: (SearchType) searchType
+{
+    for (NSMutableDictionary *result in self.searchResults) {
+        //TODO: change name of "SearchResultAttributedString" to "SearchResultStringStyler" or something... it's an NSObject!
+        SearchResultAttributedString *attributedResult =
+        [SearchResultAttributedString initWithTitle: result[@"title"]
+                                            snippet: result[@"snippet"]
+                                wikiDataDescription: result[@"wikidata_description"]
+                                     highlightWords: self.searchStringWordsToHighlight
+                                         resultType: searchType
+                                    attributesTitle: self.attributesTitle
+                              attributesDescription: self.attributesDescription
+                                attributesHighlight: self.attributesHighlight
+                                  attributesSnippet: self.attributesSnippet
+                         attributesSnippetHighlight: self.attributesSnippetHighlight];
+        
+        result[@"attributedText"] = attributedResult;
+    }
+}
+
 - (void)fetchFinished: (id)sender
           fetchedData: (id)fetchedData
                status: (FetchFinalStatus)status
@@ -296,6 +367,8 @@
                 self.searchResults = searchResultFetcher.searchResults;
 
                 //NSLog(@"self.searchResultsOrdered = %@", self.searchResultsOrdered);
+
+                [self updateAttributeTextForSearchType:searchResultFetcher.searchType];
                 
                 // We have search titles! Show them right away!
                 // NSLog(@"FIRE ONE! Show search result titles.");
@@ -313,6 +386,7 @@
                 // Fetch WikiData short descriptions.
                 if (wikiDataIds.count > 0){
                     (void)[[WikiDataShortDescriptionFetcher alloc] initAndFetchDescriptionsForIds: wikiDataIds
+                                                                                       searchType: searchResultFetcher.searchType
                                                                                       withManager: [QueuesSingleton sharedInstance].searchResultsFetchManager
                                                                                thenNotifyDelegate: self];
                 }
@@ -394,6 +468,7 @@
                 break;
         }
     }else if ([sender isKindOfClass:[WikiDataShortDescriptionFetcher class]]) {
+        WikiDataShortDescriptionFetcher *wikiDataShortDescriptionFetcher = (WikiDataShortDescriptionFetcher*)sender;
         switch (status) {
             case FETCH_FINAL_STATUS_SUCCEEDED:{
                 NSDictionary *wikiDataShortDescriptions = (NSDictionary *)fetchedData;
@@ -410,6 +485,8 @@
                         }
                     }
                 }
+
+                [self updateAttributeTextForSearchType:wikiDataShortDescriptionFetcher.searchType];
                 
                 [self.searchResultsTable reloadData];
             }
@@ -468,7 +545,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return SEARCH_RESULT_HEIGHT;
+    //return SEARCH_RESULT_HEIGHT;
     
     /*
     NSString *height = self.searchResultsOrdered[indexPath.row][@"thumbnail"][@"height"];
@@ -476,6 +553,22 @@
     //if (h < SEARCH_THUMBNAIL_WIDTH) h = SEARCH_THUMBNAIL_WIDTH;
     return h;
     */
+
+    // Getting dynamic cell height which respects auto layout constraints is tricky.
+
+    // First get the cell configured exactly as it is for display.
+    SearchResultCell *cell =
+        (SearchResultCell *)[self tableView:tableView cellForRowAtIndexPath:indexPath];
+
+    // Then coax the cell into taking on the size that would satisfy its layout constraints (and
+    // return that size's height).
+    // From: http://stackoverflow.com/a/18746930/135557
+    [cell setNeedsUpdateConstraints];
+    [cell updateConstraintsIfNeeded];
+    cell.bounds = CGRectMake(0.0f, 0.0f, tableView.bounds.size.width, cell.bounds.size.height);
+    [cell setNeedsLayout];
+    [cell layoutIfNeeded];
+    return ([cell.contentView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height + 1.0f);
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -483,17 +576,14 @@
     static NSString *cellID = @"SearchResultCell";
     SearchResultCell *cell = (SearchResultCell *)[tableView dequeueReusableCellWithIdentifier:cellID];
 
-    NSString *title = self.searchResults[indexPath.row][@"title"];
-
-    NSString *wikidata_description = self.searchResults[indexPath.row][@"wikidata_description"];
-
-    [cell setTitle:title description:wikidata_description highlightWords:self.searchStringWordsToHighlight];
+    // For performance reasons, "attributedText" is build when data is retrieved, not here when the cell
+    // is about to be displayed.
+    cell.textLabel.attributedText = self.searchResults[indexPath.row][@"attributedText"];
     
     NSString *thumbURL = self.searchResults[indexPath.row][@"thumbnail"][@"source"];
 
     // Set thumbnail placeholder
     cell.imageView.image = self.placeholderImage;
-    cell.useField = NO;
     if (!thumbURL){
         // Don't bother downloading if no thumbURL
         return cell;

@@ -272,6 +272,7 @@
                 // Fetch WikiData short descriptions.
                 if (wikiDataIds.count > 0){
                     (void)[[WikiDataShortDescriptionFetcher alloc] initAndFetchDescriptionsForIds: wikiDataIds
+                                                                                       searchType: SEARCH_TYPE_NEARBY
                                                                                       withManager: [QueuesSingleton sharedInstance].nearbyFetchManager
                                                                                thenNotifyDelegate: self];
                 }

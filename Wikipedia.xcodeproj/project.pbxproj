@@ -76,6 +76,8 @@
 		045EFF1A19A25FEB00D0EDBB /* logo-placeholder-search.png in Resources */ = {isa = PBXBuildFile; fileRef = 045EFF1819A25FEB00D0EDBB /* logo-placeholder-search.png */; };
 		045EFF1B19A25FEB00D0EDBB /* logo-placeholder-search@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 045EFF1919A25FEB00D0EDBB /* logo-placeholder-search@2x.png */; };
 		0460F8DC19B0F932001BC59B /* CenteredPathView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0460F8DB19B0F932001BC59B /* CenteredPathView.m */; };
+		0462A6D11A1FE016009412D4 /* SearchResultAttributedString.m in Sources */ = {isa = PBXBuildFile; fileRef = 0462A6D01A1FE016009412D4 /* SearchResultAttributedString.m */; };
+		0462A6D41A1FF41B009412D4 /* SearchResultImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0462A6D31A1FF41B009412D4 /* SearchResultImageView.m */; };
 		0463639818A844570049EE4F /* KeychainCredentials.m in Sources */ = {isa = PBXBuildFile; fileRef = 0463639718A844570049EE4F /* KeychainCredentials.m */; };
 		0472BC18193AD88C00C40BDA /* Section+DisplayHtml.m in Sources */ = {isa = PBXBuildFile; fileRef = 0472BC17193AD88C00C40BDA /* Section+DisplayHtml.m */; };
 		047528AF19107DAA00F2CDA8 /* Section.m in Sources */ = {isa = PBXBuildFile; fileRef = 047528AE19107DAA00F2CDA8 /* Section.m */; };
@@ -381,6 +383,10 @@
 		045EFF1919A25FEB00D0EDBB /* logo-placeholder-search@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-placeholder-search@2x.png"; sourceTree = "<group>"; };
 		0460F8DA19B0F932001BC59B /* CenteredPathView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CenteredPathView.h; sourceTree = "<group>"; };
 		0460F8DB19B0F932001BC59B /* CenteredPathView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CenteredPathView.m; sourceTree = "<group>"; };
+		0462A6CF1A1FE016009412D4 /* SearchResultAttributedString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchResultAttributedString.h; sourceTree = "<group>"; };
+		0462A6D01A1FE016009412D4 /* SearchResultAttributedString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchResultAttributedString.m; sourceTree = "<group>"; };
+		0462A6D21A1FF41B009412D4 /* SearchResultImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchResultImageView.h; sourceTree = "<group>"; };
+		0462A6D31A1FF41B009412D4 /* SearchResultImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchResultImageView.m; sourceTree = "<group>"; };
 		0463639618A844570049EE4F /* KeychainCredentials.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeychainCredentials.h; sourceTree = "<group>"; };
 		0463639718A844570049EE4F /* KeychainCredentials.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeychainCredentials.m; sourceTree = "<group>"; };
 		04649CA619F72B360071E8FA /* libPods.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPods.a; path = "Pods/build/Debug-iphoneos/libPods.a"; sourceTree = "<group>"; };
@@ -902,9 +908,13 @@
 			children = (
 				04292FF6185FBB0B002A13FC /* SearchResultsController.h */,
 				04292FF7185FBB0B002A13FC /* SearchResultsController.m */,
+				0462A6CF1A1FE016009412D4 /* SearchResultAttributedString.h */,
+				0462A6D01A1FE016009412D4 /* SearchResultAttributedString.m */,
 				04292FEF185FBA70002A13FC /* SearchResultCell.h */,
 				04292FF0185FBA70002A13FC /* SearchResultCell.m */,
 				04292FF1185FBA70002A13FC /* SearchResultPrototypeView.xib */,
+				0462A6D21A1FF41B009412D4 /* SearchResultImageView.h */,
+				0462A6D31A1FF41B009412D4 /* SearchResultImageView.m */,
 				043F8BED1A1146B300D1AE44 /* SearchTypeMenu.h */,
 				043F8BEE1A1146B300D1AE44 /* SearchTypeMenu.m */,
 				04414DD91A140FAF00A41B4E /* SearchDidYouMeanButton.h */,
@@ -2052,6 +2062,7 @@
 				D49B2ED2196C687C002F035D /* PullToRefreshViewController.m in Sources */,
 				0449E63518A9845C00D51524 /* LoginViewController.m in Sources */,
 				04DB0BEA18BD37F900B4BCF3 /* UIScrollView+ScrollSubviewToLocation.m in Sources */,
+				0462A6D41A1FF41B009412D4 /* SearchResultImageView.m in Sources */,
 				043F8BEF1A1146B300D1AE44 /* SearchTypeMenu.m in Sources */,
 				0487048B19F8262600B7D307 /* RandomArticleFetcher.m in Sources */,
 				04D34DBD1863F6A400610A87 /* GalleryImage.m in Sources */,
@@ -2066,6 +2077,7 @@
 				C9180EC418AED30C006C1DCA /* WikipediaAppUtils.m in Sources */,
 				04CFA126194B94A10088269A /* MenuLabel.m in Sources */,
 				04B0EA4A190B2348007458AF /* PreviewLicenseView.m in Sources */,
+				0462A6D11A1FE016009412D4 /* SearchResultAttributedString.m in Sources */,
 				0487047F19F8262600B7D307 /* AccountCreator.m in Sources */,
 				04038E701A15734B00DBD1DF /* SearchMessageLabel.m in Sources */,
 				0487048619F8262600B7D307 /* LanguageLinksFetcher.m in Sources */,

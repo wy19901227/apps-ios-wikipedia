@@ -6,10 +6,6 @@
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UIView *bottomBorder;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomBorderHeight;
-@property (nonatomic) BOOL useField;
-
--(void)setTitle: (NSString *)title
-    description: (NSString *)description
- highlightWords: (NSArray *)wordsToHighlight;
+@property (weak, nonatomic) IBOutlet UILabel *textLabel;
 
 @end

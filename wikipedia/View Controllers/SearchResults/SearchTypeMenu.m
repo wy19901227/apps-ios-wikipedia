@@ -47,6 +47,8 @@
             self.searchButtonTitles.font = [UIFont systemFontOfSize:FONT_SIZE];
             self.searchButtonWithinArticles.font = [UIFont boldSystemFontOfSize:FONT_SIZE];
             break;
+        default:
+            break;
     }
 }
 

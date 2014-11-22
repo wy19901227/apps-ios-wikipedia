@@ -22,6 +22,8 @@
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) NSString *searchSuggestion;
 
+@property (nonatomic, strong) NSRegularExpression *spaceCollapsingRegex;
+
 @end
 
 @implementation SearchResultFetcher
@@ -40,6 +42,8 @@
         self.searchType = searchType;
         self.searchReason = searchReason;
         self.fetchFinishedDelegate = delegate;
+        self.spaceCollapsingRegex =
+            [NSRegularExpression regularExpressionWithPattern:@"\\s{2,}+" options:NSRegularExpressionCaseInsensitive error:nil];
         [self searchWithManager:manager];
     }
     return self;
@@ -153,7 +157,7 @@
                      @"srnamespace": @0,
                      @"srwhat": @"text",
                      @"srinfo": @"suggestion",
-                     @"srprop": @"",
+                     @"srprop": @"snippet",
                      @"sroffset": @0,
                      @"srlimit": @(SEARCH_MAX_RESULTS),
                      @"piprop": @"thumbnail",
@@ -161,6 +165,9 @@
                      @"pilimit": @(SEARCH_MAX_RESULTS),
                      @"format": @"json"
                      };
+            break;
+        default:
+            return @{};
             break;
     }
 }
@@ -191,6 +198,17 @@
                     // Add thumb placeholder.
                     mutablePrefixPage[@"thumbnail"] = @{}.mutableCopy;
                     
+                    NSString *snippet = prefixPage[@"snippet"] ? prefixPage[@"snippet"] : @"";
+                    // Strip HTML and collapse repeating spaces in snippet.
+                    if (snippet.length > 0) {
+                        snippet = [snippet getStringWithoutHTML];
+                        snippet = [self.spaceCollapsingRegex stringByReplacingMatchesInString: snippet
+                                                                                      options: 0
+                                                                                        range: NSMakeRange(0, [snippet length])
+                                                                                 withTemplate: @" "];
+                    }
+                    mutablePrefixPage[@"snippet"] = snippet;
+
                     // Grab thumbnail and pageprops info from non-prefixsearch result for this pageid.
                     for (NSDictionary *page in pages.allValues) {
 
