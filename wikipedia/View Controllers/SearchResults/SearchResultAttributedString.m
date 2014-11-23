@@ -7,7 +7,7 @@
 
 @implementation SearchResultAttributedString
 
-+(instancetype)initWithTitle: (NSString *)title
++(NSAttributedString *)attributedStringWithTitle: (NSString *)title
                      snippet: (NSString *)snippet
          wikiDataDescription: (NSString *)description
               highlightWords: (NSArray *)wordsToHighlight
@@ -18,8 +18,8 @@
            attributesSnippet: (NSDictionary *)attributesSnippet
   attributesSnippetHighlight: (NSDictionary *)attributesSnippetHighlight
 {
-    SearchResultAttributedString *s = (SearchResultAttributedString *)[[NSMutableAttributedString alloc] initWithString:title attributes:nil];
-    if (self) {
+    NSMutableAttributedString *s = [[NSMutableAttributedString alloc] initWithString:title attributes:nil];
+    if (s) {
         
         // Set base color and font of the entire result title
         [s setAttributes: attributesTitle
@@ -92,8 +92,8 @@
         
         
     }
-    
-    return s;
+    NSAttributedString *nas = [[NSAttributedString alloc] initWithAttributedString:s];
+    return nas;
 }
 
 @end

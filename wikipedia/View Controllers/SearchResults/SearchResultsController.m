@@ -334,8 +334,8 @@
 {
     for (NSMutableDictionary *result in self.searchResults) {
         //TODO: change name of "SearchResultAttributedString" to "SearchResultStringStyler" or something... it's an NSObject!
-        SearchResultAttributedString *attributedResult =
-        [SearchResultAttributedString initWithTitle: result[@"title"]
+        NSAttributedString *attributedResult =
+        [SearchResultAttributedString attributedStringWithTitle: result[@"title"]
                                             snippet: result[@"snippet"]
                                 wikiDataDescription: result[@"wikidata_description"]
                                      highlightWords: self.searchStringWordsToHighlight

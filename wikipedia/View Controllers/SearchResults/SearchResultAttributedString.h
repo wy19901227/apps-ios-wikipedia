@@ -3,9 +3,9 @@
 
 #import "SearchResultFetcher.h"
 
-@interface SearchResultAttributedString : NSMutableAttributedString
+@interface SearchResultAttributedString : NSObject
 
-+(instancetype)initWithTitle: (NSString *)title
++(NSAttributedString *)attributedStringWithTitle: (NSString *)title
                      snippet: (NSString *)snippet
          wikiDataDescription: (NSString *)description
               highlightWords: (NSArray *)wordsToHighlight
