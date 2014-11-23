@@ -5,7 +5,7 @@
 
 @interface SearchResultAttributedString : NSMutableAttributedString
 
-+(instancetype)initWithTitle: (NSString *)title
+-(instancetype)initWithTitle: (NSString *)title
                      snippet: (NSString *)snippet
          wikiDataDescription: (NSString *)description
               highlightWords: (NSArray *)wordsToHighlight
@@ -16,5 +16,10 @@
          attributesHighlight: (NSDictionary *)attributesHighlight
            attributesSnippet: (NSDictionary *)attributesSnippet
   attributesSnippetHighlight: (NSDictionary *)attributesSnippetHighlight;
+
+@property (readonly, copy) NSString *string;
+- (NSDictionary *)attributesAtIndex:(NSUInteger)location effectiveRange:(NSRangePointer)range;
+- (void)replaceCharactersInRange:(NSRange)range withString:(NSString *)str;
+- (void)setAttributes:(NSDictionary *)attrs range:(NSRange)range;
 
 @end

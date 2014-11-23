@@ -5,9 +5,16 @@
 #import "Defines.h"
 #import "NSString+Extras.h"
 
+@interface SearchResultAttributedString()
+{
+    @private
+    NSMutableAttributedString *s;
+}
+@end
+
 @implementation SearchResultAttributedString
 
-+(instancetype)initWithTitle: (NSString *)title
+-(instancetype)initWithTitle: (NSString *)title
                      snippet: (NSString *)snippet
          wikiDataDescription: (NSString *)description
               highlightWords: (NSArray *)wordsToHighlight
@@ -18,8 +25,9 @@
            attributesSnippet: (NSDictionary *)attributesSnippet
   attributesSnippetHighlight: (NSDictionary *)attributesSnippetHighlight
 {
-    SearchResultAttributedString *s = (SearchResultAttributedString *)[[NSMutableAttributedString alloc] initWithString:title attributes:nil];
-    if (self) {
+    self = [super init];
+    s = [[NSMutableAttributedString alloc] initWithString:title attributes:nil];
+    if (self && s) {
         
         // Set base color and font of the entire result title
         [s setAttributes: attributesTitle
@@ -92,8 +100,29 @@
         
         
     }
-    
-    return s;
+    return self;
+}
+
+#pragma mark - required NSMutableAttributedString, NSAttributedString methods
+- (NSString *) string
+{
+    return [s string];
+}
+
+- (NSDictionary *)attributesAtIndex:(NSUInteger)location effectiveRange:(NSRangePointer)range
+{
+    return [s attributesAtIndex:location effectiveRange:range];
+}
+
+- (void)replaceCharactersInRange:(NSRange)range withString:(NSString *)str
+{
+    [s replaceCharactersInRange:range withString:str];
+}
+
+- (void)setAttributes:(NSDictionary *)attrs range:(NSRange)range
+{
+    [s setAttributes:attrs range:range];
+
 }
 
 @end
