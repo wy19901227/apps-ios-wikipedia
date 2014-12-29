@@ -6,6 +6,12 @@
 #import "ReadingActionFunnel.h"
 #import "SessionSingleton.h"
 
+@interface QueuesSingleton() {
+@private
+    NSArray *managersWithHeaders;
+}
+@end
+
 @implementation QueuesSingleton
 
 + (QueuesSingleton *)sharedInstance
@@ -24,8 +30,7 @@
     if (self) {
 
         [self setupManagers];
-
-        [self setRequestHeadersForManagers:@[
+        managersWithHeaders = @[
             self.loginFetchManager,
             self.articleFetchManager,
             self.savedPagesFetchManager,
@@ -39,8 +44,8 @@
             self.pageHistoryFetchManager,
             self.assetsFetchManager,
             self.nearbyFetchManager
-        ]];
-
+        ];
+        [self updateRequestHeadersForManagers];
         [self setDefaultSerializerForManagers:@[
             self.articleFetchManager,
             self.nearbyFetchManager,
@@ -70,9 +75,9 @@
     self.nearbyFetchManager = [AFHTTPRequestOperationManager manager];
 }
 
--(void)setRequestHeadersForManagers:(NSArray *)managers
+-(void)updateRequestHeadersForManagers
 {
-    for (AFHTTPRequestOperationManager *manager in managers.copy) {
+    for (AFHTTPRequestOperationManager *manager in managersWithHeaders) {
         [self setRequestHeadersForManager:manager];
     }
 }
@@ -95,10 +100,12 @@
     [manager.requestSerializer setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
     [manager.requestSerializer setValue:[WikipediaAppUtils versionedUserAgent] forHTTPHeaderField:@"User-Agent"];
     // Add the app install ID to the header, but only if the user has not opted out of logging
+    NSString *xWmfUuid;
     if ([SessionSingleton sharedInstance].sendUsageReports) {
         ReadingActionFunnel *funnel = [[ReadingActionFunnel alloc] init];
-        [manager.requestSerializer setValue:funnel.appInstallID forHTTPHeaderField:@"X-WMF-UUID"];
+        xWmfUuid = funnel.appInstallID;
     }
+    [manager.requestSerializer setValue:xWmfUuid forHTTPHeaderField:@"X-WMF-UUID"];
 
     // x-www-form-urlencoded is default, so probably don't need it.
     // See: http://www.w3.org/TR/html401/interact/forms.html#h-17.13.4.1

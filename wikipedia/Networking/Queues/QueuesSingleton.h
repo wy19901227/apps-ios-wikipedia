@@ -22,5 +22,6 @@
 @property (strong, nonatomic) AFHTTPRequestOperationManager *nearbyFetchManager;
 
 + (QueuesSingleton *)sharedInstance;
+-(void)updateRequestHeadersForManagers;
 
 @end
