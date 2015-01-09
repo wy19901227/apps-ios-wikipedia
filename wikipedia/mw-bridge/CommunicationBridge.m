@@ -153,4 +153,14 @@ static NSString *bridgeURLPrefix = @"x-wikipedia-bridge:";
     [self.webView loadHTML:string withAssetsFile:fileName];
 }
 
+- (void)webViewDidFinishLoad:(UIWebView *)webView
+{
+    // TODO: localization of "Share"
+    NSMutableArray *extraItems = [[NSMutableArray alloc] init];
+    UIMenuItem *share = [[UIMenuItem alloc] initWithTitle:@"Share"
+                                                   action:@selector(share:)];
+    [extraItems addObject:share];
+    [UIMenuController sharedMenuController].menuItems = extraItems;
+}
+
 @end

@@ -20,6 +20,8 @@
 #import "UIViewController+ModalsSearch.h"
 #import "UIViewController+ModalPop.h"
 #import "NSObject+ConstraintsScale.h"
+#import "LeadImageTitleLabel.h"
+#import "MWLanguageInfo.h"
 
 typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     BOTTOM_MENU_BUTTON_UNKNOWN,
@@ -115,6 +117,11 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     [self.forwardButton addGestureRecognizer:forwardLongPressRecognizer];
 
     [self adjustConstraintsScaleForViews:@[self.backButton, self.forwardButton, self.saveButton, self.rightButton]];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(shareButtonPushed:)
+                                                 name:@"SelectionShare"
+                                               object:nil];
 }
 
 -(void)addTapRecognizersToAllButtons
@@ -156,7 +163,8 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
             [self forwardButtonPushed];
             break;
         case BOTTOM_MENU_BUTTON_SHARE:
-            [self shareButtonPushed];
+            // [self shareButtonPushed];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectionShare" object:self userInfo:nil];
             break;
         case BOTTOM_MENU_BUTTON_SAVE:
             [[NSNotificationCenter defaultCenter] postNotificationName:@"SavePage" object:self userInfo:nil];
@@ -185,65 +193,222 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     }
 }
 
-- (void)shareButtonPushed
+- (void)shareButtonPushed:(NSNotification *)notification
 {
     NSString *title = @"";
     NSURL *desktopURL = nil;
     UIImage *image = nil;
-
+    
     MWKArticle *article = [SessionSingleton sharedInstance].article;
     if (article) {
         desktopURL = article.title.desktopURL;
-        title = article.title.prefixedText;
+        if (!desktopURL) {
+            NSLog(@"Could not retrieve desktop URL for article.");
+            return;
+        }
         
-        MWKImage *thumbnail = article.thumbnail;
-        if (thumbnail) {
-            image = [thumbnail asUIImage];
+        title = [[NSString alloc] initWithFormat:@"\"%@\" on @Wikipedia", article.title.prefixedText];
+        BOOL isPortrait = UIDeviceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation);
+        WebViewController *webVC = nil;
+        UIView *lead = nil;
+        CGContextRef ctx;
+        
+        // TODO: deal with Main Page
+        
+        NSScanner *scanner = [NSScanner scannerWithString:@"111111"];
+        unsigned hex;
+        [scanner scanHexInt:&hex];
+        UIColor *bg = UIColorFromRGBWithAlpha(hex, 1.0);
+        scanner = [NSScanner scannerWithString:@"ededed"];
+        [scanner scanHexInt:&hex];
+        UIColor *fg = UIColorFromRGBWithAlpha(hex, 1.0);
+        scanner = [NSScanner scannerWithString:@"cccccc"];
+        [scanner scanHexInt:&hex];
+        UIColor *quoteColor = UIColorFromRGBWithAlpha(hex, 1.0);
+        
+        webVC = [NAV searchNavStackForViewControllerOfClass:[WebViewController class]];
+        
+        MWLanguageInfo *languageInfo = [MWLanguageInfo languageInfoForCode:article.title.site.language];
+        NSTextAlignment textAlignment = [languageInfo.dir isEqualToString:@"rtl"] ? NSTextAlignmentRight : NSTextAlignmentLeft;
+        
+        // TODO: deal with case of no lead image even when in portrait mode
+        if (!notification.userInfo) {
+            MWKImage *bestImage = article.image;
+            if (!bestImage) {
+                bestImage = article.thumbnail;
+            }
+            if (bestImage) {
+                image = [bestImage asUIImage];
+            }
+        } else if (isPortrait &&
+                   [(LeadImageContainer*)webVC.leadImageContainer imageExists]) {
+
+            lead = webVC.leadImageContainer;
+            UIGraphicsBeginImageContext(CGSizeMake(lead.frame.size.width, lead.frame.size.height));
+            ctx = UIGraphicsGetCurrentContext();
+            [lead.layer renderInContext:ctx];
+            image = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
+        } else {
+            // deal with landscape
+            // make a padded label and assign it to *lead
+            // lead needs to become a standard webview
+            // LeadImageTitleLabel *lit
+            LeadImageTitleLabel *lit = [[LeadImageTitleLabel alloc] init];
+            [lit setTitle:article.displaytitle description:article.description];
+            lit.padding = UIEdgeInsetsMake(16.0, 16.0, 16.0, 16.0);
+            lit.textColor = fg;
+            lit.textAlignment = textAlignment;
+
+            //lit.shadowColor = [UIColor colorWithWhite:0.0f alpha:0.08];
+            lead = lit;
+            lead.bounds = CGRectMake(0,
+                                     0,
+                                     [UIScreen mainScreen].bounds.size.width,
+                                     0);
+            lead.frame = CGRectMake(0, 0, lead.bounds.size.width, lead.intrinsicContentSize.height);
+            lead.backgroundColor = bg;
+            UIGraphicsBeginImageContext(CGSizeMake(lead.frame.size.width, lead.frame.size.height));
+            ctx = UIGraphicsGetCurrentContext();
+            [lead.layer renderInContext:ctx];
+            image = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
+            
+        }
+
+        if (notification.userInfo) {
+            CGFloat heightWidthRatio = lead.frame.size.height / lead.frame.size.width;
+            CGFloat scaledDownWidth = MIN(320.0, lead.frame.size.width);
+            CGFloat adjustedHeight = heightWidthRatio * scaledDownWidth;
+            
+            UIImageView *leadImageView = [[UIImageView alloc] initWithImage:image];
+            leadImageView.frame = CGRectMake(0, 0, scaledDownWidth, adjustedHeight);
+            
+            
+            PaddedLabel *snippet = [[PaddedLabel alloc] init];
+            snippet.lineBreakMode = NSLineBreakByTruncatingTail;
+            snippet.numberOfLines = 10;
+            
+            
+            NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+            paragraphStyle.lineSpacing = 18.0 * 0.6;
+            // paragraphStyle.lineBreakMode = NSLineBreakByTruncatingTail;
+            NSDictionary *attributes =
+            @{
+              NSFontAttributeName : [UIFont systemFontOfSize:18.0],
+              NSParagraphStyleAttributeName : paragraphStyle,
+              NSForegroundColorAttributeName : fg,
+              };
+            
+            
+            // snippet.attributedText = [[NSAttributedString alloc] initWithString:@"She skipped high school altogether, enrolling in an alternative junior high in the public school system that took her through tenth grade, when she passed the GED." attributes:attributes];
+            // snippet.attributedText = [[NSAttributedString alloc] initWithString:@"Skipped school." attributes:attributes];
+            
+            
+            snippet.attributedText = [[NSAttributedString alloc]
+                                      initWithString: notification.userInfo[@"selectedText"] attributes:attributes];
+            snippet.textAlignment = textAlignment;
+            
+            snippet.backgroundColor = bg;
+            snippet.padding = UIEdgeInsetsMake(42.0, 18.0, 18.0, 36.0);
+            //        snippet.textColor = [UIColor whiteColor];
+            //        snippet.font = [UIFont systemFontOfSize:(32.0 / snippet.contentScaleFactor)];
+            
+            //        snippet.bounds = CGRectMake(0, 0, lead.frame.size.width, 0);
+            //        snippet.frame = CGRectMake(0, lead.frame.size.height, lead.frame.size.width, snippet.intrinsicContentSize.height);
+            snippet.bounds = CGRectMake(0, 0, leadImageView.bounds.size.width, 0);
+            snippet.frame = CGRectMake(0, 0, leadImageView.bounds.size.width, snippet.intrinsicContentSize.height);
+            
+            PaddedLabel *quotationMark = [[PaddedLabel alloc] init];
+            NSDictionary *quotationMarkAttributes =
+            @{
+              NSFontAttributeName : [UIFont fontWithName:@"Times New Roman" size:60.0],
+              NSForegroundColorAttributeName : quoteColor,
+              };
+            quotationMark.attributedText = [[NSAttributedString alloc] initWithString:@"“" attributes:quotationMarkAttributes];
+            quotationMark.bounds = CGRectZero;
+            quotationMark.frame = CGRectMake(0, 0, quotationMark.intrinsicContentSize.width, quotationMark.intrinsicContentSize.height);
+            quotationMark.padding = UIEdgeInsetsMake(0,
+                                                     textAlignment == NSTextAlignmentLeft ? 18.0 : 0,
+                                                     0,
+                                                     textAlignment == NSTextAlignmentRight ? 18.0 : 0);
+            
+            UIImage *logoImage = [UIImage imageNamed:@"Wikipedia_wordmark_gray.png"];
+            UIImageView *logo = [[UIImageView alloc] initWithImage:logoImage];
+            heightWidthRatio = logoImage.size.height / logoImage.size.width;
+            scaledDownWidth = (logoImage.size.width / 4.5);
+            adjustedHeight = heightWidthRatio * scaledDownWidth;
+            logo.bounds = CGRectMake(0, 0, scaledDownWidth, adjustedHeight);
+            UIView *logoContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, snippet.frame.size.width, logo.bounds.size.height + 36)];
+            logoContainer.backgroundColor = snippet.backgroundColor;
+            [logoContainer addSubview:logo];
+            logo.frame = CGRectMake(18.0, 12.0, logo.bounds.size.width, logo.bounds.size.height);
+            UIGraphicsBeginImageContext(CGSizeMake(leadImageView.bounds.size.width, leadImageView.bounds.size.height + snippet.bounds.size.height + logoContainer.frame.size.height));
+            ctx = UIGraphicsGetCurrentContext();
+            [leadImageView.layer renderInContext:ctx];
+            // TODO: There's a strange gray border below the "lead image" when
+            // it's just the title, so -2 instead of -1
+            CGContextTranslateCTM(ctx, 0, leadImageView.bounds.size.height - 2.0);
+            [snippet.layer renderInContext:ctx];
+            CGFloat rightOffset = textAlignment == NSTextAlignmentRight ? leadImageView.bounds.size.width - quotationMark.bounds.size.width : 0.0;
+            CGContextTranslateCTM(ctx, rightOffset, 0.0);
+            [quotationMark.layer renderInContext:ctx];
+            CGContextTranslateCTM(ctx, rightOffset == 0 ? rightOffset : -(rightOffset), 0.0);
+            CGContextTranslateCTM(ctx, 0, snippet.frame.size.height - 1.0);
+            [logoContainer.layer renderInContext:ctx];
+            image = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
         }
     }
     
-    if (!desktopURL) {
-        NSLog(@"Could not retrieve desktop URL for article.");
-        return;
-    }
-    
     //ShareMenuSavePageActivity *shareMenuSavePageActivity = [[ShareMenuSavePageActivity alloc] init];
-
+    
     NSMutableArray *activityItemsArray = @[title, desktopURL].mutableCopy;
     if (image) {
         [activityItemsArray addObject:image];
     }
-
+    
     UIActivityViewController *shareActivityVC =
-        [[UIActivityViewController alloc] initWithActivityItems: activityItemsArray
-                                          applicationActivities: @[/*shareMenuSavePageActivity*/]];
+    [[UIActivityViewController alloc] initWithActivityItems: activityItemsArray
+                                      applicationActivities: @[/*shareMenuSavePageActivity*/]];
     NSMutableArray *exclusions = @[
-        UIActivityTypePrint,
-        UIActivityTypeAssignToContact,
-        UIActivityTypeSaveToCameraRoll
-    ].mutableCopy;
+                                   UIActivityTypePrint,
+                                   UIActivityTypeAssignToContact,
+                                   UIActivityTypeSaveToCameraRoll
+                                   ].mutableCopy;
     
     if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
         [exclusions addObject:UIActivityTypeAirDrop];
         [exclusions addObject:UIActivityTypeAddToReadingList];
     }
-
+    
     shareActivityVC.excludedActivityTypes = exclusions;
-
+    
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
         [self presentViewController:shareActivityVC animated:YES completion:nil];
     } else {
         // iPad crashes if you present share dialog modally. Whee!
         self.popover = [[UIPopoverController alloc] initWithContentViewController:shareActivityVC];
         [self.popover presentPopoverFromRect:self.saveButton.frame
-                                 inView:self.view
-               permittedArrowDirections:UIPopoverArrowDirectionAny
-                               animated:YES];
+                                      inView:self.view
+                    permittedArrowDirections:UIPopoverArrowDirectionAny
+                                    animated:YES];
     }
     
-    [shareActivityVC setCompletionHandler:^(NSString *activityType, BOOL completed) {
-        NSLog(@"activityType = %@", activityType);
-    }];
+    
+    // TODO: Extract out the essential stuff. Really,
+    // at this point we only care about the activityType and completed status
+    if ([shareActivityVC respondsToSelector:@selector(setCompletionWithItemsHandler:)]) {
+        [shareActivityVC setCompletionWithItemsHandler:^(NSString *activityType, BOOL completed, NSArray *returnedItems, NSError *activityError) {
+            NSLog(@"activityType = %@", activityType);
+        }];
+    } else if ([shareActivityVC respondsToSelector:@selector(setCompletionHandler:)]) {
+        [shareActivityVC setCompletionHandler:^(NSString *activityType, BOOL completed) {
+            NSLog(@"activityType = %@", activityType);
+        }];
+    }
+    
+    
 }
 
 - (void)backButtonPushed

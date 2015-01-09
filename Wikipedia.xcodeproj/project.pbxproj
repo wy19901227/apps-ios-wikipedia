@@ -180,6 +180,8 @@
 		04F27B7818FE0F2E00EDD838 /* PageHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F27B7418FE0F2E00EDD838 /* PageHistoryViewController.m */; };
 		04F39590186CF80100B0D6FC /* TOCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F3958F186CF80100B0D6FC /* TOCViewController.m */; };
 		C9180EC418AED30C006C1DCA /* WikipediaAppUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = C9180EC318AED30C006C1DCA /* WikipediaAppUtils.m */; };
+		C92B1E541A64AE08008A1D99 /* SharableWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = C92B1E531A64AE08008A1D99 /* SharableWebView.m */; };
+		C9A6506E1A67053800293648 /* Wikipedia_wordmark_gray.png in Resources */ = {isa = PBXBuildFile; fileRef = C9A6506D1A67053800293648 /* Wikipedia_wordmark_gray.png */; };
 		D42E75EB18D11237002EA7E5 /* MWLanguageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D42E75EA18D11237002EA7E5 /* MWLanguageInfo.m */; };
 		D46CD8C418A1AC4F0042959E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D46CD8C018A1AC4F0042959E /* InfoPlist.strings */; };
 		D46CD8C518A1AC4F0042959E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D46CD8C218A1AC4F0042959E /* Localizable.strings */; };
@@ -604,6 +606,9 @@
 		04F3958F186CF80100B0D6FC /* TOCViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TOCViewController.m; sourceTree = "<group>"; };
 		C9180EC218AED30C006C1DCA /* WikipediaAppUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WikipediaAppUtils.h; sourceTree = "<group>"; };
 		C9180EC318AED30C006C1DCA /* WikipediaAppUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WikipediaAppUtils.m; sourceTree = "<group>"; };
+		C92B1E521A64AE08008A1D99 /* SharableWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SharableWebView.h; sourceTree = "<group>"; };
+		C92B1E531A64AE08008A1D99 /* SharableWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SharableWebView.m; sourceTree = "<group>"; };
+		C9A6506D1A67053800293648 /* Wikipedia_wordmark_gray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Wikipedia_wordmark_gray.png; sourceTree = "<group>"; };
 		D42E75E918D11237002EA7E5 /* MWLanguageInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MWLanguageInfo.h; path = "mw-support/MWLanguageInfo.h"; sourceTree = "<group>"; };
 		D42E75EA18D11237002EA7E5 /* MWLanguageInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MWLanguageInfo.m; path = "mw-support/MWLanguageInfo.m"; sourceTree = "<group>"; };
 		D442F58619709E540013A2CA /* qqq */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = qqq; path = qqq.lproj/Main_iPhone.strings; sourceTree = "<group>"; };
@@ -1128,6 +1133,7 @@
 			isa = PBXGroup;
 			children = (
 				0424874E1A54A93C00A5C905 /* lead-default.png */,
+				C9A6506D1A67053800293648 /* Wikipedia_wordmark_gray.png */,
 				04082B5118ADA25A00FAF3D6 /* text_field_x_circle_gray.png */,
 				04082B5218ADA25A00FAF3D6 /* text_field_x_circle_gray@2x.png */,
 				04123624189C29EA00E0CF8E /* abuse-filter-disallowed.png */,
@@ -1345,6 +1351,8 @@
 			children = (
 				04C43AAA18344131006C643B /* CommunicationBridge.h */,
 				04C43AAB18344131006C643B /* CommunicationBridge.m */,
+				C92B1E521A64AE08008A1D99 /* SharableWebView.h */,
+				C92B1E531A64AE08008A1D99 /* SharableWebView.m */,
 			);
 			path = "mw-bridge";
 			sourceTree = "<group>";
@@ -1988,6 +1996,7 @@
 				047E74141860509000916964 /* SavedPagesResultPrototypeView.xib in Resources */,
 				04123630189C29EA00E0CF8E /* abuse-filter-disallowed@2x.png in Resources */,
 				D4BC22B4181E9E6300CAC673 /* empty.png in Resources */,
+				C9A6506E1A67053800293648 /* Wikipedia_wordmark_gray.png in Resources */,
 				04123636189C29EA00E0CF8E /* abuse-filter-flag-white.png in Resources */,
 				04C7576F1A1AA2D00084AC39 /* RecentSearchCell.xib in Resources */,
 				041E588319B2D2C500AC140C /* logo-placeholder-saved@2x.png in Resources */,
@@ -2155,6 +2164,7 @@
 				0447866F1852B5010050563B /* SessionSingleton.m in Sources */,
 				D4E8A8A4190835C100DA4765 /* DataMigrator.m in Sources */,
 				0443961B1A3C11A30081557D /* NearbyResultCollectionCell.m in Sources */,
+				C92B1E541A64AE08008A1D99 /* SharableWebView.m in Sources */,
 				0487048519F8262600B7D307 /* EditTokenFetcher.m in Sources */,
 				04CCCFF71935094000E3F60C /* PrimaryMenuTableViewCell.m in Sources */,
 				0487048F19F8262600B7D307 /* WikiTextSectionFetcher.m in Sources */,

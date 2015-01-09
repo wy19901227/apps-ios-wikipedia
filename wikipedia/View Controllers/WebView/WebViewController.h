@@ -6,17 +6,20 @@
 #import "PullToRefreshViewController.h"
 #import "ArticleFetcher.h"
 #import "LeadImageContainer.h"
+#import "SharableWebView.h"
 
 @class BottomMenuViewController, CommunicationBridge;
 
 @interface WebViewController : PullToRefreshViewController <UIWebViewDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, UIAlertViewDelegate, FetchFinishedDelegate, LeadImageHeightDelegate>
 
-@property (weak, nonatomic) IBOutlet UIWebView *webView;
+
+@property (weak, nonatomic) IBOutlet SharableWebView *webView;
 @property (nonatomic) BOOL bottomMenuHidden;
 @property (nonatomic) BOOL referencesHidden;
 @property (nonatomic) BOOL scrollingToTop;
 
 @property (weak, nonatomic) BottomMenuViewController *bottomMenuViewController;
+@property (strong, nonatomic) LeadImageContainer *leadImageContainer;
 
 -(void)referencesShow:(NSDictionary *)payload;
 -(void)referencesHide;

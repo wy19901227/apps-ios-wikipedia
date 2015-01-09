@@ -127,8 +127,6 @@
 @property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 @property (strong, nonatomic) UIView *activityIndicatorBackgroundView;
 
-@property (strong, nonatomic) LeadImageContainer *leadImageContainer;
-
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *webViewBottomConstraint;
 
 @end

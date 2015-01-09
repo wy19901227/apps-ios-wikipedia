@@ -12,6 +12,7 @@
 @interface LeadImageContainer : UIView <FetchFinishedDelegate>
 
 -(void)showForArticle:(MWKArticle *)article;
+-(BOOL)imageExists;
 
 @property (nonatomic, weak) id <LeadImageHeightDelegate> delegate;
 
