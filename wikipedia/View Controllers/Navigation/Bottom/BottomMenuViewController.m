@@ -20,6 +20,7 @@
 #import "UIViewController+ModalsSearch.h"
 #import "UIViewController+ModalPop.h"
 #import "NSObject+ConstraintsScale.h"
+#import "ShareCardViewController.h"
 
 typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     BOTTOM_MENU_BUTTON_UNKNOWN,
@@ -200,6 +201,9 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
         if (thumbnail) {
             image = [thumbnail asUIImage];
         }
+        ShareCardViewController *shareCard = [[ShareCardViewController alloc] initWithNibName:@"ShareCardViewController" bundle:nil];
+        UIView *tempView = shareCard.view;
+        NSString *whatev = @"foo";
     }
     
     if (!desktopURL) {

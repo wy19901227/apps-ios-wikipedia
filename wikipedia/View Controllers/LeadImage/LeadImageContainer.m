@@ -43,7 +43,7 @@ Do *not* leave this set to YES for release.
     self.isPlaceholder = NO;
     self.clipsToBounds = YES;
     self.backgroundColor = [UIColor clearColor];
-    [self adjustConstraintsScaleForViews:@[self.titleLabel]];
+    // [self adjustConstraintsScaleForViews:@[self.titleLabel]];
 
     self.rotationObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName: UIDeviceOrientationDidChangeNotification
@@ -243,6 +243,7 @@ Do *not* leave this set to YES for release.
         NSString *title = [self.article.displaytitle getStringWithoutHTML];
         [self.titleLabel setTitle:title description:[self getCurrentArticleDescription]];
     }
+    [self adjustConstraintsScaleForViews:@[self.titleLabel]];
 
     if (!self.article.image.asUIImage && [self imageExists]) {
         
