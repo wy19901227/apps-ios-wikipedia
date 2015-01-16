@@ -19,6 +19,12 @@
 #import "UIViewController+ModalsSearch.h"
 #import "UIViewController+ModalPop.h"
 #import "NSObject+ConstraintsScale.h"
+#import "ShareCardViewController.h"
+#import "ShareOptionsView.h"
+#import "AppDelegate.h"
+#import "ShareOptionsView.h"
+#import "ShareFunnel.h"
+#import "ShareOptionsViewController.h"
 
 typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     BOTTOM_MENU_BUTTON_UNKNOWN,
@@ -40,6 +46,13 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
 @property (strong, nonatomic) NSArray *allButtons;
 
 @property (strong, nonatomic) UIPopoverController *popover;
+@property (strong, nonatomic) UIView *grayOverlay;
+@property (strong, nonatomic) ShareOptionsView *shareOptions;
+@property (strong, nonatomic) UIImage *shareImage;
+@property (strong, nonatomic) NSString *shareText;
+@property (strong, nonatomic) ShareFunnel *funnel;
+
+@property (strong, nonatomic) ShareOptionsViewController *sovc;
 
 @end
 
@@ -112,6 +125,15 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
                                                   action: @selector(backForwardButtonsLongPressed:)];
     forwardLongPressRecognizer.minimumPressDuration = 0.5f;
     [self.forwardButton addGestureRecognizer:forwardLongPressRecognizer];
+    
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                             selector: @selector(shareButtonPushedWithNotification:)
+                                                 name: WebViewControllerWillShareNotification
+                                               object: nil];
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                             selector: @selector(textWasHighlighted)
+                                                 name: WebViewControllerTextWasHighlighted
+                                               object: nil];
 
     [self adjustConstraintsScaleForViews:@[self.backButton, self.forwardButton, self.saveButton, self.rightButton]];
 }
@@ -134,12 +156,32 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
         if([recognizer.view isKindOfClass:[WikiGlyphButton class]]){
             WikiGlyphButton *button = (WikiGlyphButton *)recognizer.view;
             if (!button.enabled)return;
+            if (button.tag == BOTTOM_MENU_BUTTON_SHARE) {
+                // Let's not have people accidentally tapping left/right, or
+                // double tapping the share (up arrow button) button,
+                // because it would be confusing
+                for (WikiGlyphButton *b in self.allButtons) {
+                    b.userInteractionEnabled = NO;
+                }
+                button.userInteractionEnabled = NO;
+            }
             CGFloat animationScale = 1.25f;
             [button.label animateAndRewindXF: CATransform3DMakeScale(animationScale, animationScale, 1.0f)
                                   afterDelay: 0.0
                                     duration: 0.06f
                                         then: ^{
                                             [self performActionForButton:button];
+                                            if (button.tag == BOTTOM_MENU_BUTTON_SHARE) {
+                                                // Bring the buttons back to life.
+                                                // Note that the custom sharing activity
+                                                // spawned in this class makes a dimmed
+                                                // background that makes the buttons
+                                                // in the collection in effect non-tappable
+                                                // so we don't have to do more than this.
+                                                for (WikiGlyphButton *b in self.allButtons) {
+                                                    b.userInteractionEnabled = YES;
+                                                }
+                                            }
                                         }];
         }
     }
@@ -155,7 +197,7 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
             [self forwardButtonPushed];
             break;
         case BOTTOM_MENU_BUTTON_SHARE:
-            [self shareButtonPushed];
+            [self shareUpArrowButtonPushed];
             break;
         case BOTTOM_MENU_BUTTON_SAVE:
             [[NSNotificationCenter defaultCenter] postNotificationName:@"SavePage" object:self userInfo:nil];
@@ -184,64 +226,129 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     }
 }
 
-- (void)shareButtonPushed
+- (void) textWasHighlighted
 {
-    NSString *title = @"";
-    NSURL *desktopURL = nil;
-    UIImage *image = nil;
+    if (!self.funnel) {
+        self.funnel = [[ShareFunnel alloc] initWithArticle:[SessionSingleton sharedInstance].article];
+        [self.funnel logHighlight];
+    }
+}
 
-    MWKArticle *article = [SessionSingleton sharedInstance].article;
-    if (article) {
-        desktopURL = article.title.desktopURL;
-        title = article.title.prefixedText;
-        
-        MWKImage *thumbnail = article.thumbnail;
-        if (thumbnail) {
-            image = [thumbnail asUIImage];
+- (void) shareUpArrowButtonPushed
+{
+    WebViewController *webVC = [NAV searchNavStackForViewControllerOfClass:[WebViewController class]];
+    NSString *selectedText = [webVC getSelectedtext];
+    if ([selectedText isEqualToString:@""]) {
+        MWKSectionList *sections = [SessionSingleton sharedInstance].article.sections;
+        for (MWKSection *section in sections) {
+            NSString *sectionText = section.text;
+            NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:@"<p>(.+)</p>" options:0 error:nil];
+            NSArray *matches = [re matchesInString:sectionText options:0 range:NSMakeRange(0, sectionText.length)];
+            if ([matches count]) {
+                sectionText = [sectionText substringWithRange:[matches[0] rangeAtIndex:1]];
+                selectedText = [[sectionText getStringWithoutHTML] stringByReplacingOccurrencesOfString:@"\n\n" withString:@"\n"];
+                if (selectedText.length > 77) {
+                    selectedText = [NSString stringWithFormat:@"%@%@",
+                                    [selectedText substringToIndex:77],
+                                    @"..."];
+                }
+                break;
+            }
+        }
+        if ([selectedText isEqualToString:@""]) {
+            if (sections[0]) {
+                selectedText = [[sections[0].text getStringWithoutHTML] stringByReplacingOccurrencesOfString:@"\n\n" withString:@"\n"];
+            }
         }
     }
-    
-    if (!desktopURL) {
-        NSLog(@"Could not retrieve desktop URL for article.");
-        return;
-    }
-    
-    //ShareMenuSavePageActivity *shareMenuSavePageActivity = [[ShareMenuSavePageActivity alloc] init];
+    [self shareButtonPushedWithSnippet:selectedText];
+}
 
-    NSMutableArray *activityItemsArray = @[title, desktopURL].mutableCopy;
-    if (image) {
-        [activityItemsArray addObject:image];
-    }
+- (void)shareButtonPushedWithNotification:(NSNotification *)notification
+{
+    [self shareButtonPushedWithSnippet:notification.userInfo[WebViewControllerShareSelectedText]];
+}
 
+- (void)shareButtonPushedWithSnippet:(NSString*) snippet
+{
+    // Force suppress selection and menu buttons now that we don't need them.
+    WebViewController *webVC = [NAV searchNavStackForViewControllerOfClass:[WebViewController class]];
+    webVC.webView.userInteractionEnabled = NO; // ttfn
+    webVC.webView.userInteractionEnabled = YES; // c u l8r
+    
+    MWKArticle *article = [SessionSingleton sharedInstance].article;
+    
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    UIViewController *rootVC = appDelegate.window.rootViewController;
+    UIView *rootView = rootVC.view;
+    
+    self.sovc = [[ShareOptionsViewController alloc] initWithMWKArticle:article snippet:snippet backgroundView:rootView delegate:self];
+}
+
+-(void) didShowSharePreviewForMWKArticle: (MWKArticle*) article withText: (NSString*) text
+{
+    if (!self.funnel) {
+        self.funnel = [[ShareFunnel alloc] initWithArticle:article];
+    }
+    [self.funnel logShareIntentWithSelection:text];
+    
+}
+
+-(void) tappedToAbandonWithText: (NSString*) text
+{
+    [self.funnel logShareWithSelection:text
+                       platformOutcome:@"abandoned_before_choosing"];
+    self.funnel = nil;
+}
+
+-(void) tappedForCardWithText:(NSString *)text
+{
+    [self.funnel logShareWithSelection:text
+                       platformOutcome:@"entered_card"];
+}
+
+-(void) tappedForTextWithText:(NSString *)text
+{
+    [self.funnel logShareWithSelection:text
+                       platformOutcome:@"entered_snippet"];
+}
+
+
+-(void) finishShareWithActivityItemsArray: (NSArray*) activityItemsArray text: (NSString*) text
+{
     UIActivityViewController *shareActivityVC =
-        [[UIActivityViewController alloc] initWithActivityItems: activityItemsArray
-                                          applicationActivities: @[/*shareMenuSavePageActivity*/]];
+    [[UIActivityViewController alloc] initWithActivityItems: activityItemsArray
+                                      applicationActivities: @[/*shareMenuSavePageActivity*/]];
     NSMutableArray *exclusions = @[
-        UIActivityTypePrint,
-        UIActivityTypeAssignToContact,
-        UIActivityTypeSaveToCameraRoll
-    ].mutableCopy;
+                                   UIActivityTypePrint,
+                                   UIActivityTypeAssignToContact,
+                                   UIActivityTypeSaveToCameraRoll
+                                   ].mutableCopy;
     
     if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
         [exclusions addObject:UIActivityTypeAirDrop];
         [exclusions addObject:UIActivityTypeAddToReadingList];
     }
-
+    
     shareActivityVC.excludedActivityTypes = exclusions;
-
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
         [self presentViewController:shareActivityVC animated:YES completion:nil];
     } else {
         // iPad crashes if you present share dialog modally. Whee!
         self.popover = [[UIPopoverController alloc] initWithContentViewController:shareActivityVC];
         [self.popover presentPopoverFromRect:self.saveButton.frame
-                                 inView:self.view
-               permittedArrowDirections:UIPopoverArrowDirectionAny
-                               animated:YES];
+                                      inView:self.view
+                    permittedArrowDirections:UIPopoverArrowDirectionAny
+                                    animated:YES];
     }
     
     [shareActivityVC setCompletionHandler:^(NSString *activityType, BOOL completed) {
+        [self.funnel logShareWithSelection:text
+                           platformOutcome: [NSString stringWithFormat:@"finished_%@_%@",
+                                             completed ? @"success" : @"unknown",
+                                             activityType]];
         NSLog(@"activityType = %@", activityType);
+        self.funnel = nil;
     }];
 }
 
@@ -307,6 +414,7 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
                                  color: saveIconColor
                                   size: MENU_BOTTOM_GLYPH_FONT_SIZE
                         baselineOffset: 0];
+    self.funnel = nil;
 }
 
 - (void)didReceiveMemoryWarning
