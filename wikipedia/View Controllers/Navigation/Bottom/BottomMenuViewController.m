@@ -20,6 +20,11 @@
 #import "UIViewController+ModalsSearch.h"
 #import "UIViewController+ModalPop.h"
 #import "NSObject+ConstraintsScale.h"
+#import "ShareCardViewController.h"
+#import "ShareCardView.h"
+#import "ShareOptionsView.h"
+#import "AppDelegate.h"
+#import "ShareOptionsView.h"
 
 typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     BOTTOM_MENU_BUTTON_UNKNOWN,
@@ -41,6 +46,10 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
 @property (strong, nonatomic) NSArray *allButtons;
 
 @property (strong, nonatomic) UIPopoverController *popover;
+@property (strong, nonatomic) UIView *grayOverlay;
+@property (strong, nonatomic) ShareOptionsView *shareOptions;
+@property (strong, nonatomic) UIImage *shareImage;
+@property (strong, nonatomic) NSString *shareText;
 
 @end
 
@@ -113,6 +122,11 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
                                                   action: @selector(backForwardButtonsLongPressed:)];
     forwardLongPressRecognizer.minimumPressDuration = 0.5f;
     [self.forwardButton addGestureRecognizer:forwardLongPressRecognizer];
+    
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                             selector: @selector(shareButtonPushed:)
+                                                 name: ShareableWebViewWillShareNotification
+                                               object: nil];
 
     [self adjustConstraintsScaleForViews:@[self.backButton, self.forwardButton, self.saveButton, self.rightButton]];
 }
@@ -156,8 +170,42 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
             [self forwardButtonPushed];
             break;
         case BOTTOM_MENU_BUTTON_SHARE:
-            [self shareButtonPushed];
+        {
+            WebViewController *webVC = [NAV searchNavStackForViewControllerOfClass:[WebViewController class]];
+            ShareableWebView *swv = webVC.webView;
+            NSString *selectedText = [swv getSelectedtext];
+            if ([selectedText isEqualToString:@""]) {
+                MWKSectionList *sections = [SessionSingleton sharedInstance].article.sections;
+                for (MWKSection *section in sections) {
+                    NSString *sectionText = section.text;
+                    NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:@"<p>(.+)</p>" options:0 error:nil];
+                    NSArray *matches = [re matchesInString:sectionText options:0 range:NSMakeRange(0, sectionText.length)];
+                    if ([matches count]) {
+                        sectionText = [sectionText substringWithRange:[matches[0] rangeAtIndex:1]];
+                        selectedText = [[sectionText getStringWithoutHTML] stringByReplacingOccurrencesOfString:@"\n\n" withString:@"\n"];
+                        if (selectedText.length > 77) {
+                            selectedText = [NSString stringWithFormat:@"%@%@",
+                                            [selectedText substringToIndex:77],
+                                            @"..."];
+                        }
+                        break;
+                    }
+                }
+                if (!selectedText) {
+                    if (sections[0]) {
+                        selectedText = [[sections[0].text getStringWithoutHTML] stringByReplacingOccurrencesOfString:@"\n\n" withString:@"\n"];
+                    }
+                }
+            }
+            [[NSNotificationCenter defaultCenter] postNotificationName:ShareableWebViewWillShareNotification
+                                                                object:self
+                                                              userInfo:@{
+                                                                         @"beginShare" : @YES,
+                                                                         @"selectedText" : selectedText
+                                                                         }];
+            
             break;
+        }
         case BOTTOM_MENU_BUTTON_SAVE:
             [[NSNotificationCenter defaultCenter] postNotificationName:@"SavePage" object:self userInfo:nil];
             [self updateBottomBarButtonsEnabledState];
@@ -185,7 +233,7 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     }
 }
 
-- (void)shareButtonPushed
+- (void)shareButtonPushed:(NSNotification *)notification
 {
     NSString *title = @"";
     NSURL *desktopURL = nil;
@@ -193,25 +241,162 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
 
     MWKArticle *article = [SessionSingleton sharedInstance].article;
     if (article) {
-        desktopURL = article.title.desktopURL;
+        desktopURL = [[NSURL alloc] initWithString:[NSString stringWithFormat:@"%@%@",
+                                                    article.title.desktopURL.absoluteString,
+                                                    @"?source=app"]];
+        
+        if (!desktopURL) {
+            NSLog(@"Could not retrieve desktop URL for article.");
+            return;
+        }
         title = article.title.prefixedText;
         
-        MWKImage *thumbnail = article.thumbnail;
-        if (thumbnail) {
-            image = [thumbnail asUIImage];
+        if ([notification.userInfo[@"beginShare"] boolValue]) {
+            ShareCardViewController* cardViewController = [[ShareCardViewController alloc] initWithNibName:@"ShareCard" bundle:nil];
+            UIView *cardView = cardViewController.view;
+            self.shareText = notification.userInfo[@"selectedText"];
+            [cardViewController fillCardWithMWKArticle:article snippet:notification.userInfo[@"selectedText"]];
+            UIGraphicsBeginImageContext(CGSizeMake(cardView.frame.size.width, cardView.frame.size.height));
+            CGContextRef ctx = UIGraphicsGetCurrentContext();
+            [cardView.layer renderInContext:ctx];
+            image = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
+            AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            UIViewController *rootVC = appDelegate.window.rootViewController;
+            UIView *grayOverlay = [[UIView alloc] initWithFrame:rootVC.view.frame];
+            grayOverlay.backgroundColor = [UIColor blackColor];
+            grayOverlay.alpha = 0.42;
+            [rootVC.view addSubview:grayOverlay];
+            self.grayOverlay = grayOverlay;
+            UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]
+                                                     initWithTarget:self action:@selector(respondToDimAreaTapGesture:)];
+            [grayOverlay addGestureRecognizer:tapRecognizer];
+            grayOverlay.translatesAutoresizingMaskIntoConstraints = NO;
+            [rootVC.view addConstraints:[NSLayoutConstraint
+                                         constraintsWithVisualFormat:@"H:|[grayOverlay]|"
+                                         options:NSLayoutFormatDirectionLeadingToTrailing
+                                         metrics:nil
+                                         views:NSDictionaryOfVariableBindings(grayOverlay)]];
+            [rootVC.view addConstraints:[NSLayoutConstraint
+                                         constraintsWithVisualFormat:@"V:|[grayOverlay]|"
+                                         options:NSLayoutFormatDirectionLeadingToTrailing
+                                         metrics:nil
+                                         views:NSDictionaryOfVariableBindings(grayOverlay)]];
+            ShareOptionsView *sov = [[[NSBundle mainBundle] loadNibNamed:@"ShareOptions" owner:self options:nil] objectAtIndex:0];
+            sov.cardImageViewContainer.userInteractionEnabled = YES;
+            // http://stackoverflow.com/questions/10316902/rounded-corners-only-on-top-of-a-uiview
+            CAShapeLayer *topRoundingMaskLayer = [CAShapeLayer layer];
+            topRoundingMaskLayer.path = [UIBezierPath bezierPathWithRoundedRect: sov.cardImageViewContainer.bounds byRoundingCorners: UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii: (CGSize){7.0, 7.0f}].CGPath;
+            sov.cardImageViewContainer.layer.mask = topRoundingMaskLayer;
+            
+            sov.shareAsCardLabel.userInteractionEnabled = YES;
+            CAShapeLayer *bottomRoundingMaskLayer = [CAShapeLayer layer];
+            bottomRoundingMaskLayer.path = [UIBezierPath bezierPathWithRoundedRect: sov.shareAsCardLabel.bounds byRoundingCorners: UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii: (CGSize){7.0, 7.0f}].CGPath;
+            sov.shareAsCardLabel.layer.mask = bottomRoundingMaskLayer;
+            
+            sov.shareAsTextLabel.userInteractionEnabled = YES;
+            sov.shareAsTextLabel.layer.cornerRadius = 7.0f;
+            sov.shareAsTextLabel.layer.masksToBounds = YES;
+            
+            sov.cardImageView.image = image;
+            [rootVC.view addSubview:sov];
+            self.shareImage = image;
+            self.shareOptions = sov;
+            sov.translatesAutoresizingMaskIntoConstraints = NO;
+            [rootVC.view addConstraint:[NSLayoutConstraint
+                                        constraintWithItem:sov
+                                        attribute:NSLayoutAttributeCenterX
+                                        relatedBy:NSLayoutRelationEqual
+                                        toItem:rootVC.view
+                                        attribute:NSLayoutAttributeCenterX
+                                        multiplier:1.0f
+                                        constant:0.0f]];
+            
+            [rootVC.view addConstraint:[NSLayoutConstraint
+                                        constraintWithItem:sov
+                                        attribute:NSLayoutAttributeTop
+                                        relatedBy:NSLayoutRelationEqual
+                                        toItem:rootVC.view
+                                        attribute:NSLayoutAttributeBottom
+                                        multiplier:1.0f
+                                        constant:0.0f]];
+            
+            [rootVC.view addConstraint:[NSLayoutConstraint
+                                        constraintWithItem:sov
+                                        attribute:NSLayoutAttributeWidth
+                                        relatedBy:NSLayoutRelationEqual
+                                        toItem:nil
+                                        attribute:NSLayoutAttributeNotAnAttribute
+                                        multiplier:1.0f
+                                        constant:sov.bounds.size.width]];
+            
+            [rootVC.view addConstraint:[NSLayoutConstraint
+                                        constraintWithItem:sov
+                                        attribute:NSLayoutAttributeHeight
+                                        relatedBy:NSLayoutRelationEqual
+                                        toItem:nil
+                                        attribute:NSLayoutAttributeNotAnAttribute
+                                        multiplier:1.0f
+                                        constant:sov.bounds.size.height]];
+            
+            [rootVC.view layoutIfNeeded];
+            
+            [UIView animateWithDuration:0.42 animations:^{
+                [rootVC.view addConstraint:[NSLayoutConstraint
+                                            constraintWithItem:sov
+                                            attribute:NSLayoutAttributeBottom
+                                            relatedBy:NSLayoutRelationEqual
+                                            toItem:rootVC.view
+                                            attribute:NSLayoutAttributeBottom
+                                            multiplier:1.0f
+                                            constant:0.0f]];
+                [rootVC.view layoutIfNeeded];
+            } completion:^(BOOL finished) {
+                UITapGestureRecognizer *tapForCardOnCardImageViewRecognizer = [[UITapGestureRecognizer alloc]
+                                                                initWithTarget:self action:@selector(respondToTapForCardGesture:)];
+                UITapGestureRecognizer *tapForCardOnButtonRecognizer = [[UITapGestureRecognizer alloc]
+                                                                               initWithTarget:self action:@selector(respondToTapForCardGesture:)];
+                UITapGestureRecognizer *tapForTextRecognizer = [[UITapGestureRecognizer alloc]
+                                                                initWithTarget:self action:@selector(respondToTapForTextGesture:)];
+                [self.shareOptions.cardImageViewContainer addGestureRecognizer:tapForCardOnCardImageViewRecognizer];
+                [self.shareOptions.shareAsCardLabel addGestureRecognizer:tapForCardOnButtonRecognizer];
+
+                [self.shareOptions.shareAsTextLabel addGestureRecognizer:tapForTextRecognizer];
+            }];
+            return;
+
+        } else if ([notification.userInfo[@"useCard"] boolValue]) {
+            title = [MWLocalizedString(@"share-article-name-on-wikipedia", nil)
+                     stringByReplacingOccurrencesOfString:@"$1" withString:title];
+        } else if ([notification.userInfo[@"useText"] boolValue]) {
+            // Conventional share
+            if ([self.shareText isEqualToString:@""]) {
+                title = [MWLocalizedString(@"share-article-name-on-wikipedia", nil)
+                          stringByReplacingOccurrencesOfString:@"$1" withString:title];
+            } else {
+                title = [[MWLocalizedString(@"share-article-name-on-wikipedia-with-selected-text", nil)
+                          stringByReplacingOccurrencesOfString:@"$1" withString:title]
+                         stringByReplacingOccurrencesOfString:@"$2" withString:self.shareText];
+            }
+            MWKImage *bestImage = article.image;
+            if (!bestImage) {
+                bestImage = article.thumbnail;
+            }
+            if (bestImage) {
+                self.shareImage = [bestImage asUIImage];
+            } else {
+                // Well, there's no image and the user didn't want a card
+                self.shareImage = nil;
+            }
         }
     }
-    
-    if (!desktopURL) {
-        NSLog(@"Could not retrieve desktop URL for article.");
-        return;
-    }
+
     
     //ShareMenuSavePageActivity *shareMenuSavePageActivity = [[ShareMenuSavePageActivity alloc] init];
 
     NSMutableArray *activityItemsArray = @[title, desktopURL].mutableCopy;
-    if (image) {
-        [activityItemsArray addObject:image];
+    if (self.shareImage) {
+        [activityItemsArray addObject:self.shareImage];
     }
 
     UIActivityViewController *shareActivityVC =
@@ -229,7 +414,7 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     }
 
     shareActivityVC.excludedActivityTypes = exclusions;
-
+    [self fadeOutCardChoice];
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
         [self presentViewController:shareActivityVC animated:YES completion:nil];
     } else {
@@ -242,9 +427,60 @@ typedef NS_ENUM(NSInteger, BottomMenuItemTag) {
     }
     
     [shareActivityVC setCompletionHandler:^(NSString *activityType, BOOL completed) {
+        [self releaseShareItems];
         NSLog(@"activityType = %@", activityType);
     }];
 }
+
+- (void)respondToDimAreaTapGesture: (UITapGestureRecognizer*) recognizer
+{
+    [self fadeOutCardChoice];
+    [self releaseShareItems];
+}
+
+- (void) fadeOutCardChoice
+{
+
+    [UIView animateWithDuration:0.42 animations:^{
+        self.grayOverlay.backgroundColor = [UIColor clearColor];
+        self.shareOptions.hidden = YES;
+    } completion:^(BOOL finished) {
+        [self.grayOverlay removeFromSuperview];
+        [self.shareOptions removeFromSuperview];
+        self.grayOverlay = nil;
+        self.shareOptions = nil;
+    }];
+}
+
+- (void) releaseShareItems
+{
+    self.shareImage = nil;
+    self.shareText = nil;
+
+}
+
+- (void)respondToTapForCardGesture: (UITapGestureRecognizer*) recognizer
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:ShareableWebViewWillShareNotification
+                                                        object:self
+                                                      userInfo:@{
+                                                                 @"useCard" : @YES
+                                                                 }];
+    
+    // TODO cleanup
+}
+
+- (void)respondToTapForTextGesture: (UITapGestureRecognizer*) recognizer
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:ShareableWebViewWillShareNotification
+                                                        object:self
+                                                      userInfo:@{
+                                                                 @"useText" : @YES
+                                                                 }];
+    
+    // TODO cleanup
+}
+
 
 - (void)backButtonPushed
 {

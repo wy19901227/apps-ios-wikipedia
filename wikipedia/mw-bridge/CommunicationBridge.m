@@ -3,6 +3,8 @@
 
 #import "CommunicationBridge.h"
 #import "UIWebView+LoadAssetsHtml.h"
+#import "WikipediaAppUtils.h"
+#import "ShareableWebView.h"
 
 @interface CommunicationBridge ()
 
@@ -151,6 +153,13 @@ static NSString *bridgeURLPrefix = @"x-wikipedia-bridge:";
 {
     self.shouldQueueMessages = YES;
     [self.webView loadHTML:string withAssetsFile:fileName];
+}
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView
+{
+    UIMenuItem *shareSnippet = [[UIMenuItem alloc] initWithTitle:MWLocalizedString(@"share-snippet", nil)
+                                                   action:@selector(shareSnippet:)];
+    [UIMenuController sharedMenuController].menuItems = @[shareSnippet];
 }
 
 @end

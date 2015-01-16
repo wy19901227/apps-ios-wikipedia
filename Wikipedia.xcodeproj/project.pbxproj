@@ -180,6 +180,17 @@
 		04F27B7818FE0F2E00EDD838 /* PageHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F27B7418FE0F2E00EDD838 /* PageHistoryViewController.m */; };
 		04F39590186CF80100B0D6FC /* TOCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F3958F186CF80100B0D6FC /* TOCViewController.m */; };
 		C9180EC418AED30C006C1DCA /* WikipediaAppUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = C9180EC318AED30C006C1DCA /* WikipediaAppUtils.m */; };
+		C979727A1A731EAA00C6ED7A /* ShareOptions.xib in Resources */ = {isa = PBXBuildFile; fileRef = C97972791A731EAA00C6ED7A /* ShareOptions.xib */; };
+		C979727D1A731F2D00C6ED7A /* ShareOptionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = C979727C1A731F2D00C6ED7A /* ShareOptionsView.m */; };
+		C982729B1A803DCC0039FAC3 /* Wikipedia_wordmark_gray.png in Resources */ = {isa = PBXBuildFile; fileRef = C982729A1A803DCC0039FAC3 /* Wikipedia_wordmark_gray.png */; };
+		C98990341A699DE000AF44FC /* ShareCardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C98990331A699DE000AF44FC /* ShareCardViewController.m */; };
+		C98990361A699DFB00AF44FC /* ShareCard.xib in Resources */ = {isa = PBXBuildFile; fileRef = C98990351A699DFB00AF44FC /* ShareCard.xib */; };
+		C989903B1A69B59A00AF44FC /* ShareCardView.m in Sources */ = {isa = PBXBuildFile; fileRef = C989903A1A69B59A00AF44FC /* ShareCardView.m */; };
+		C98990441A6EBC3900AF44FC /* ShareableWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = C98990431A6EBC3900AF44FC /* ShareableWebView.m */; };
+		C989904A1A6F74C900AF44FC /* FocalImageContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = C98990491A6F74C900AF44FC /* FocalImageContainer.m */; };
+		C9F0EECF1A710CE300969BE4 /* cc_gray.png in Resources */ = {isa = PBXBuildFile; fileRef = C9F0EECE1A710CE300969BE4 /* cc_gray.png */; };
+		C9F0EED31A710E0E00969BE4 /* sa_gray.png in Resources */ = {isa = PBXBuildFile; fileRef = C9F0EED21A710E0E00969BE4 /* sa_gray.png */; };
+		C9F0EED71A710E8900969BE4 /* by_gray.png in Resources */ = {isa = PBXBuildFile; fileRef = C9F0EED61A710E8900969BE4 /* by_gray.png */; };
 		D407E6411A51DBDA00CCC8B1 /* SchemaConverter.m in Sources */ = {isa = PBXBuildFile; fileRef = D407E6401A51DBDA00CCC8B1 /* SchemaConverter.m */; };
 		D42E75EB18D11237002EA7E5 /* MWLanguageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D42E75EA18D11237002EA7E5 /* MWLanguageInfo.m */; };
 		D46CD8C418A1AC4F0042959E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D46CD8C018A1AC4F0042959E /* InfoPlist.strings */; };
@@ -614,6 +625,22 @@
 		04F3958F186CF80100B0D6FC /* TOCViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TOCViewController.m; sourceTree = "<group>"; };
 		C9180EC218AED30C006C1DCA /* WikipediaAppUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WikipediaAppUtils.h; sourceTree = "<group>"; };
 		C9180EC318AED30C006C1DCA /* WikipediaAppUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WikipediaAppUtils.m; sourceTree = "<group>"; };
+		C97972791A731EAA00C6ED7A /* ShareOptions.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = ShareOptions.xib; path = ShareCard/ShareOptions.xib; sourceTree = "<group>"; };
+		C979727B1A731F2D00C6ED7A /* ShareOptionsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShareOptionsView.h; path = ShareCard/ShareOptionsView.h; sourceTree = "<group>"; };
+		C979727C1A731F2D00C6ED7A /* ShareOptionsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ShareOptionsView.m; path = ShareCard/ShareOptionsView.m; sourceTree = "<group>"; };
+		C982729A1A803DCC0039FAC3 /* Wikipedia_wordmark_gray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Wikipedia_wordmark_gray.png; path = ../../Wikipedia_wordmark_gray.png; sourceTree = "<group>"; };
+		C98990321A699DE000AF44FC /* ShareCardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShareCardViewController.h; path = ShareCard/ShareCardViewController.h; sourceTree = "<group>"; };
+		C98990331A699DE000AF44FC /* ShareCardViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ShareCardViewController.m; path = ShareCard/ShareCardViewController.m; sourceTree = "<group>"; };
+		C98990351A699DFB00AF44FC /* ShareCard.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = ShareCard.xib; path = ShareCard/ShareCard.xib; sourceTree = "<group>"; };
+		C98990391A69B59A00AF44FC /* ShareCardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShareCardView.h; path = ShareCard/ShareCardView.h; sourceTree = "<group>"; };
+		C989903A1A69B59A00AF44FC /* ShareCardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ShareCardView.m; path = ShareCard/ShareCardView.m; sourceTree = "<group>"; };
+		C98990421A6EBC3900AF44FC /* ShareableWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShareableWebView.h; sourceTree = "<group>"; };
+		C98990431A6EBC3900AF44FC /* ShareableWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShareableWebView.m; sourceTree = "<group>"; };
+		C98990481A6F74C900AF44FC /* FocalImageContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FocalImageContainer.h; path = ShareCard/FocalImageContainer.h; sourceTree = "<group>"; };
+		C98990491A6F74C900AF44FC /* FocalImageContainer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FocalImageContainer.m; path = ShareCard/FocalImageContainer.m; sourceTree = "<group>"; };
+		C9F0EECE1A710CE300969BE4 /* cc_gray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cc_gray.png; sourceTree = "<group>"; };
+		C9F0EED21A710E0E00969BE4 /* sa_gray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sa_gray.png; sourceTree = "<group>"; };
+		C9F0EED61A710E8900969BE4 /* by_gray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = by_gray.png; sourceTree = "<group>"; };
 		D407E63F1A51DBDA00CCC8B1 /* SchemaConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SchemaConverter.h; path = wikipedia/Data/SchemaConverter.h; sourceTree = SOURCE_ROOT; };
 		D407E6401A51DBDA00CCC8B1 /* SchemaConverter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SchemaConverter.m; path = wikipedia/Data/SchemaConverter.m; sourceTree = SOURCE_ROOT; };
 		D42E75E918D11237002EA7E5 /* MWLanguageInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MWLanguageInfo.h; path = "mw-support/MWLanguageInfo.h"; sourceTree = "<group>"; };
@@ -1142,6 +1169,10 @@
 			isa = PBXGroup;
 			children = (
 				0424874E1A54A93C00A5C905 /* lead-default.png */,
+				C9F0EECE1A710CE300969BE4 /* cc_gray.png */,
+				C9F0EED61A710E8900969BE4 /* by_gray.png */,
+				C9F0EED21A710E0E00969BE4 /* sa_gray.png */,
+				C982729A1A803DCC0039FAC3 /* Wikipedia_wordmark_gray.png */,
 				04082B5118ADA25A00FAF3D6 /* text_field_x_circle_gray.png */,
 				04082B5218ADA25A00FAF3D6 /* text_field_x_circle_gray@2x.png */,
 				04123624189C29EA00E0CF8E /* abuse-filter-disallowed.png */,
@@ -1358,6 +1389,8 @@
 			isa = PBXGroup;
 			children = (
 				04C43AAA18344131006C643B /* CommunicationBridge.h */,
+				C98990421A6EBC3900AF44FC /* ShareableWebView.h */,
+				C98990431A6EBC3900AF44FC /* ShareableWebView.m */,
 				04C43AAB18344131006C643B /* CommunicationBridge.m */,
 			);
 			path = "mw-bridge";
@@ -1388,6 +1421,7 @@
 				04293002186030B0002A13FC /* SavedPages */,
 				04292FEE185FBA70002A13FC /* SearchResults */,
 				044BD6B218849AD000FFE4BE /* SectionEditor */,
+				C98990311A699DA100AF44FC /* ShareCard */,
 				04F3958D186CF7CC00B0D6FC /* TableOfContents */,
 				04478625185145090050563B /* WebView */,
 			);
@@ -1606,6 +1640,23 @@
 				C9180EC318AED30C006C1DCA /* WikipediaAppUtils.m */,
 			);
 			path = "mw-utils";
+			sourceTree = "<group>";
+		};
+		C98990311A699DA100AF44FC /* ShareCard */ = {
+			isa = PBXGroup;
+			children = (
+				C98990321A699DE000AF44FC /* ShareCardViewController.h */,
+				C97972791A731EAA00C6ED7A /* ShareOptions.xib */,
+				C979727B1A731F2D00C6ED7A /* ShareOptionsView.h */,
+				C979727C1A731F2D00C6ED7A /* ShareOptionsView.m */,
+				C98990481A6F74C900AF44FC /* FocalImageContainer.h */,
+				C98990491A6F74C900AF44FC /* FocalImageContainer.m */,
+				C98990391A69B59A00AF44FC /* ShareCardView.h */,
+				C989903A1A69B59A00AF44FC /* ShareCardView.m */,
+				C98990331A699DE000AF44FC /* ShareCardViewController.m */,
+				C98990351A699DFB00AF44FC /* ShareCard.xib */,
+			);
+			name = ShareCard;
 			sourceTree = "<group>";
 		};
 		D497FCF01A0807ED004A36A5 /* Products */ = {
@@ -1999,8 +2050,10 @@
 				0487041419F7683300B7D307 /* Cocoapods Notes.txt in Resources */,
 				D46CD8C518A1AC4F0042959E /* Localizable.strings in Resources */,
 				04082B5318ADA25A00FAF3D6 /* text_field_x_circle_gray.png in Resources */,
+				C98990361A699DFB00AF44FC /* ShareCard.xib in Resources */,
 				04EDEE251A20788700798076 /* SearchResultPrototypeView.xib in Resources */,
 				04478631185145090050563B /* HistoryResultPrototypeView.xib in Resources */,
+				C982729B1A803DCC0039FAC3 /* Wikipedia_wordmark_gray.png in Resources */,
 				0493C2D619526FFE00EBB973 /* WikiFont-Glyphs-iOS.ttf in Resources */,
 				0493C2D419526A0100EBB973 /* WikiFont-Glyphs.ttf in Resources */,
 				04F27B7618FE0F2E00EDD838 /* PageHistoryResultPrototypeView.xib in Resources */,
@@ -2009,6 +2062,7 @@
 				04CCCFEF1935093A00E3F60C /* SecondaryMenuRowView.xib in Resources */,
 				04D3082B19991CB60034F106 /* logo-placeholder-nearby.png in Resources */,
 				04E106351A3560030046DC27 /* LeadImageContainer.xib in Resources */,
+				C9F0EECF1A710CE300969BE4 /* cc_gray.png in Resources */,
 				D4C16A6819709CDF00CD91AD /* (null) in Resources */,
 				047E74141860509000916964 /* SavedPagesResultPrototypeView.xib in Resources */,
 				04123630189C29EA00E0CF8E /* abuse-filter-disallowed@2x.png in Resources */,
@@ -2017,6 +2071,7 @@
 				04C7576F1A1AA2D00084AC39 /* RecentSearchCell.xib in Resources */,
 				041E588319B2D2C500AC140C /* logo-placeholder-saved@2x.png in Resources */,
 				04090A33187F53E400577EDF /* clear.png in Resources */,
+				C979727A1A731EAA00C6ED7A /* ShareOptions.xib in Resources */,
 				0412362E189C29EA00E0CF8E /* abuse-filter-disallowed.png in Resources */,
 				0443961D1A3C134F0081557D /* NearbyResultCollectionCell.xib in Resources */,
 				04082B5518ADA25A00FAF3D6 /* text_field_x_circle_gray@2x.png in Resources */,
@@ -2024,10 +2079,12 @@
 				045A9F0D18F6090E0057EA85 /* assets in Resources */,
 				D47FEE2019C8CB0000B998C8 /* (null) in Resources */,
 				04123638189C29EA00E0CF8E /* abuse-filter-flag-white@2x.png in Resources */,
+				C9F0EED71A710E8900969BE4 /* by_gray.png in Resources */,
 				04C91CEF195520990035ED1B /* logo-onboarding-subtitle@2x.png in Resources */,
 				0484411E19FF15AF00FD26C5 /* AboutViewController.plist in Resources */,
 				04C91CEE195520990035ED1B /* logo-onboarding-subtitle.png in Resources */,
 				045EFF1A19A25FEB00D0EDBB /* logo-placeholder-search.png in Resources */,
+				C9F0EED31A710E0E00969BE4 /* sa_gray.png in Resources */,
 				0424874F1A54A93C00A5C905 /* lead-default.png in Resources */,
 				04224502197F5E09005DD0BF /* BulletedLabel.xib in Resources */,
 				041E588219B2D2C500AC140C /* logo-placeholder-saved.png in Resources */,
@@ -2181,6 +2238,7 @@
 				D4E8A8A4190835C100DA4765 /* DataMigrator.m in Sources */,
 				0443961B1A3C11A30081557D /* NearbyResultCollectionCell.m in Sources */,
 				0487048519F8262600B7D307 /* EditTokenFetcher.m in Sources */,
+				C98990441A6EBC3900AF44FC /* ShareableWebView.m in Sources */,
 				04CCCFF71935094000E3F60C /* PrimaryMenuTableViewCell.m in Sources */,
 				0487048F19F8262600B7D307 /* WikiTextSectionFetcher.m in Sources */,
 				04EDEE2A1A215DBC00798076 /* UITableView+DynamicCellHeight.m in Sources */,
@@ -2206,6 +2264,7 @@
 				0487048019F8262600B7D307 /* AccountLogin.m in Sources */,
 				04D149DD18877343006B4104 /* AlertLabel.m in Sources */,
 				0433542618A093C5009305F0 /* UIView+RemoveConstraints.m in Sources */,
+				C98990341A699DE000AF44FC /* ShareCardViewController.m in Sources */,
 				047801BE18AE987900DBB747 /* UIButton+ColorMask.m in Sources */,
 				0429300A18604898002A13FC /* SavedPagesResultCell.m in Sources */,
 				0487048419F8262600B7D307 /* CaptchaResetter.m in Sources */,
@@ -2223,6 +2282,7 @@
 				0487049019F8262600B7D307 /* WikiTextSectionUploader.m in Sources */,
 				041C55D21950B27D006CE0EF /* EditSummaryViewController.m in Sources */,
 				04CCA0C01983086D000E982A /* ReferencesVC.m in Sources */,
+				C989903B1A69B59A00AF44FC /* ShareCardView.m in Sources */,
 				04C43ABE183442FC006C643B /* NSRunLoop+TimeOutAndFlag.m in Sources */,
 				0487048719F8262600B7D307 /* LoginTokenFetcher.m in Sources */,
 				D4B0AE0E19366A5400F0AC90 /* LoginFunnel.m in Sources */,
@@ -2230,9 +2290,11 @@
 				04C757671A1A9E1B0084AC39 /* RecentSearchesViewController.m in Sources */,
 				04C43AAE18344131006C643B /* CommunicationBridge.m in Sources */,
 				04224501197F5E09005DD0BF /* BulletedLabel.m in Sources */,
+				C979727D1A731F2D00C6ED7A /* ShareOptionsView.m in Sources */,
 				04B6050C193522650007185A /* WikiGlyphButton.m in Sources */,
 				042A5B2C19253E690095E172 /* BottomMenuViewController.m in Sources */,
 				0433542218A023FE009305F0 /* UIViewController+HideKeyboard.m in Sources */,
+				C989904A1A6F74C900AF44FC /* FocalImageContainer.m in Sources */,
 				0484E3DE19D9D19B0085D18D /* UIView+ConstraintsScale.m in Sources */,
 				0452C803195CB216007925A6 /* UIViewController+ModalsSearch.m in Sources */,
 				04CCA0C319830A44000E982A /* ReferenceVC.m in Sources */,
